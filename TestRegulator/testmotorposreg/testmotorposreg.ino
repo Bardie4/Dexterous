@@ -5,7 +5,7 @@
 
 #define UART_BAUDRATE       115200        //UART data rate in bits per second (baud)
 #define SPI_SCLK_FREQUENCY  10000000      //SPI SCLK Clock frequency in Hz
-#define SPI_CS_PIN          7             //SPI CS pin
+#define SPI_CS_PIN          10             //SPI CS pin
 
 MagAlpha magAlpha;
 
@@ -17,7 +17,7 @@ MagAlpha magAlpha;
 double Setpoint, Input, Output;
 
 //Specify the links and initial tuning parameters
-double Kp = 0, Ki = 0.0, Kd = 0.0;
+double Kp = 0.1, Ki = 0.0, Kd = 0.0;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 void setup() {
