@@ -15,7 +15,7 @@ int main()
     //Angle variable
     double theta;
     //Buffer
-    uint16_t spi_buffer;
+    unsigned char spi_buffer[16];
     int length=16;
     while (1){
         spi_buffer=0x0000;
