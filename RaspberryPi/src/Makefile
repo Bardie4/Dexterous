@@ -7,6 +7,5 @@ spi_test : main.o
 main.o : main.cpp wiringPiSPI.h
 		g++ -c main.cpp
 
-clean:
-
-	rm $(TARGET)
+clean :
+        rm spi_test main.o
