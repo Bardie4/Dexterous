@@ -7,7 +7,7 @@ SOURCES = main.cpp
 
 OBJECTS = $(SOURCES:%.c=%.o)
 
-COMPILER =  gcc
+COMPILER =  g++
 
 
 
