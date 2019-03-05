@@ -108,8 +108,9 @@ void loop() {
 //            }
 //            
 //    }
-  Serial.println(sumTheta);
-  Serial.println(micros());
+  Serial.println(theta);
+  
+// Serial.println(micros());
 //    Serial.print(" | Ana: ");
 //    Serial.print(reading);
 //    Serial.print(" | Kp : ");
