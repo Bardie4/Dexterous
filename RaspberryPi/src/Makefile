@@ -3,7 +3,7 @@
 
 
 
-SOURCES = main.cpp
+SOURCES = main.cpp wiringPiSPI.h
 
 OBJECTS = $(SOURCES:%.c=%.o)
 
