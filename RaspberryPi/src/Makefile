@@ -8,4 +8,4 @@ main.o : main.cpp wiringPiSPI.h
 		g++ -c main.cpp
 
 clean :
-        rm spi_test main.o
+		rm spi_test main.o
