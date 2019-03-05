@@ -1,5 +1,7 @@
 #include <iostream>
+#include <errno.h>
 #include <wiringPiSPI.h>
+#include <unistd.h>
 using namespace std;
 
 
