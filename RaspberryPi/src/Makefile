@@ -5,7 +5,7 @@ spi_test : main.o
 
 
 main.o : main.cpp
-		g++ -c main.cpp
+		g++ -c -lwiringPi main.cpp
 
 clean :
 		rm spi_test main.o
