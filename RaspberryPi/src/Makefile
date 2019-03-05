@@ -7,7 +7,7 @@ SOURCES = main.cpp
 
 OBJECTS = $(SOURCES:%.c=%.o)
 
-COMPILER = /home/user/bin/arm-linux-gnueabihf-c++
+COMPILER =  gcc
 
 
 
