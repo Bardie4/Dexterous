@@ -10,7 +10,7 @@ static const int SPI_SCLK_FREQUENCY=10000000;
 
 int main()
 {           
-    sensor wiringPiSPISetup (SENSOR_CHANNEL, SPI_SCLK_FREQUENCY);
+    int sensor wiringPiSPISetup (SENSOR_CHANNEL, SPI_SCLK_FREQUENCY);
     //Angle variable
     double theta; =
     //Buffer
