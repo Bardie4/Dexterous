@@ -19,7 +19,7 @@ int main()
     int length=16;
     while (1){
         spi_buffer=0x0000;
-        wiringPiSPIDataRW (channel, spi_buffer, length) ;
+        wiringPiSPIDataRW (SENSOR_CHANNEL, spi_buffer, length) ;
         theta=spi_buffer;
         cout << "Angle: " << theta << endl;
     }
