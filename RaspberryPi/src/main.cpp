@@ -20,6 +20,12 @@ int main()
     //Angle variable
     uint16_t theta1;
     uint16_t theta2;
+
+    uint8_t Theta1;
+    uint8_t Theta2;
+    uint8_t Theta3;
+    uint8_t Theta4;
+
     double idk;
     //Buffer
     unsigned char spi_buffer[4];
@@ -32,6 +38,10 @@ int main()
        idk=wiringPiSPIDataRW (SENSOR_CHANNEL, spi_buffer, length);
        theta1= (uint16_t) spi_buffer[0] << 8 | spi_buffer [1];
        theta2= (uint16_t) spi_buffer[2] << 8 | spi_buffer [3];
-       cout << "Angle1: " <<  unsigned(theta1) << " Angle2: " << unsigned(theta2) << endl;
+       Theta1= (uint8_t) spi_buffer[0];
+       Theta2= (uint8_t) spi_buffer[1];
+       Theta3= (uint8_t) spi_buffer[2];
+       Theta4= (uint8_t) spi_buffer[3];
+       cout << "Angle1: " <<  unsigned(Theta1) << " Angle2: " << unsigned(Theta2) << endl;
     }
 }
