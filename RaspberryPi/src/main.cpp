@@ -8,7 +8,7 @@ using namespace std;
 
 static const int SENSOR_CHANNEL = 0;
 static const int ESP_CHANNEL = 1;
-static const int SPI_SCLK_FREQUENCY=10000000;
+static const int SPI_SCLK_FREQUENCY=1000000;
 
 int main()
 {           
@@ -17,10 +17,11 @@ int main()
     //Angle variable
     double theta;
     //Buffer
-    unsigned char spi_buffer[16];
+    unsigned char spi_buffer[2];
     int length=16;
     while (1){
-        spi_buffer[0]=0x0000;
+        spi_buffer[0]=0x00;
+        spi_buffer[1]=0x00;
         theta=wiringPiSPIDataRW (SENSOR_CHANNEL, spi_buffer, length);
         cout << "Angle: " << theta << endl;
     }
