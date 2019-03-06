@@ -32,6 +32,6 @@ int main()
        idk=wiringPiSPIDataRW (SENSOR_CHANNEL, spi_buffer, length);
        theta1= (uint16_t) spi_buffer[0] << 8 | spi_buffer [1];
        theta2= (uint16_t) spi_buffer[2] << 8 | spi_buffer [3];
-       cout << "Angle1: " <<  unsigned(theta1 << " Angle2: " << unsigned(theta2) << endl;
+       cout << "Angle1: " <<  unsigned(theta1) << " Angle2: " << unsigned(theta2) << endl;
     }
 }
