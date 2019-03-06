@@ -18,7 +18,7 @@ int main()
     double theta;
     //Buffer
     unsigned char spi_buffer[2];
-    int length=16;
+    int length=2;
     while (1){
         spi_buffer[0]=0x00;
         spi_buffer[1]=0x00;
