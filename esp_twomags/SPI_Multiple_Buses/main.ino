@@ -42,6 +42,11 @@ SPIClass * hspi = NULL;
 #define V_CLK   18
 #define V_CS    5
 
+#define M1_PWM1 0
+#define M1_PWM2 2
+#define M1_PWM3 4
+#define M1_EN   16
+
 void setup() {
   //initialise two instances of the SPIClass attached to VSPI and HSPI respectively
   vspi = new SPIClass(VSPI);
