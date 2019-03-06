@@ -18,11 +18,11 @@ int main()
     //Angle variable
     double theta;
     //Buffer
-    unsigned char spi_buffer[2];
+    unsigned char spi_buffer[1];
     int length=1;
     while (1){
        spi_buffer[0]=0x00;
        theta=wiringPiSPIDataRW (SENSOR_CHANNEL, spi_buffer, length);
-       cout << "Angle: " << theta << endl;
+       cout << "Angle: " << buffer[0] << endl;
     }
 }
