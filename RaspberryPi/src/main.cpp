@@ -42,6 +42,6 @@ int main()
        Theta2= (uint8_t) spi_buffer[1];
        Theta3= (uint8_t) spi_buffer[2];
        Theta4= (uint8_t) spi_buffer[3];
-       cout << "Angle1: " <<  unsigned(Theta3) << " Angle2: " << unsigned(Theta4) << endl;
+       cout << "Angle1: " <<  unsigned(Theta1) << " Angle2: " << unsigned(Theta2) << " Angle3: " <<  unsigned(Theta3) << " Angle4: " << unsigned(Theta4) << endl;
     }
 }
