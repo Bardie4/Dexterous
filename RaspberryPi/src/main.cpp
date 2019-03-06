@@ -14,7 +14,6 @@ int main()
 {           
     int sensor;
     sensor = wiringPiSPISetupMode (SENSOR_CHANNEL, SPI_SCLK_FREQUENCY, 0);
-    esp = wiringPiSPISetupMode (SENSOR_CHANNEL, SPI_SCLK_FREQUENCY, 0); 
      
       
     cout << "Init result: " << sensor << endl;
