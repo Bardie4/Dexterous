@@ -16,7 +16,7 @@ int main()
     sensor = wiringPiSPISetupMode (SENSOR_CHANNEL, SPI_SCLK_FREQUENCY, 0);
     cout << "Init result: " << sensor << endl;
     //Angle variable
-    unit8_t theta;
+    uint8_t theta;
     double idk;
     //Buffer
     unsigned char spi_buffer[1];
@@ -24,7 +24,7 @@ int main()
     while (1){
        spi_buffer[0]=0x00;
        idk=wiringPiSPIDataRW (SENSOR_CHANNEL, spi_buffer, length);
-       theta= (unit8_t) spi_buffer[0];
+       theta= (uint8_t) spi_buffer[0];
        cout << "Angle: " << theta << endl;
     }
 }
