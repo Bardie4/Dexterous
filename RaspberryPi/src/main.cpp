@@ -11,7 +11,7 @@
 #define MOSI 19
 #define SCLK 12
 
-int main(int argc, char *argv[])
+int main()
 {
    int i, count, set_val, read_val;
    unsigned char inBuf[1];
