@@ -2,7 +2,7 @@
 // sudo ./bbSPIx_test
 
 #include <stdio.h>
-#include <iostream>
+#include <iostream.h>
 #include "pigpio.h"
 
 #define CE0 5
