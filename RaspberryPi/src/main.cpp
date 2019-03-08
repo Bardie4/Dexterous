@@ -1,47 +1,66 @@
-#include <iostream>
-#include <errno.h>
-#include <wiringPiSPI.h>
-#include <unistd.h>
-using namespace std;
+// gcc -Wall -pthread -o bbSPIx_test bbSPIx_test.c -lpigpio
+// sudo ./bbSPIx_test
 
+#include <stdio.h>
 
+#include "pigpio.h"
 
-static const int SENSOR_CHANNEL = 0;
-static const int ESP_CHANNEL = 1;
-static const int SPI_SCLK_FREQUENCY=100000;
+#define CE0 5
+#define CE1 6
+#define MISO 13
+#define MOSI 19
+#define SCLK 12
 
-int main()
-{           
-    int sensor;
-    sensor = wiringPiSPISetupMode (SENSOR_CHANNEL, SPI_SCLK_FREQUENCY, 0);
-     
-      
-    cout << "Init result: " << sensor << endl;
-    //Angle variable
-    uint16_t theta1;
-    uint16_t theta2;
+int main(int argc, char *argv[])
+{
+   int i, count, set_val, read_val;
+   unsigned char inBuf[1];
+   char cmd1[] = {0x00};
 
-    uint8_t Theta1;
-    uint8_t Theta2;
-    uint8_t Theta3;
-    uint8_t Theta4;
+   if (gpioInitialise() < 0)
+   {
+      fprintf(stderr, "pigpio initialisation failed.\n");
+      return 1;
+   }
 
-    double idk;
-    //Buffer
-    unsigned char spi_buffer[4];
-    int length=4;
-    while (1){
-       spi_buffer[0]=0x00;
-       spi_buffer[1]=0x00;
-       spi_buffer[2]=0x00;
-       spi_buffer[3]=0x00;
-       idk=wiringPiSPIDataRW (SENSOR_CHANNEL, spi_buffer, length);
-       theta1= (uint16_t) spi_buffer[0] << 8 | spi_buffer [1];
-       theta2= (uint16_t) spi_buffer[2] << 8 | spi_buffer [3];
-       Theta1= (uint8_t) spi_buffer[0];
-       Theta2= (uint8_t) spi_buffer[1];
-       Theta3= (uint8_t) spi_buffer[2];
-       Theta4= (uint8_t) spi_buffer[3];
-       cout << "Angle1: " <<  unsigned(Theta1) << " Angle2: " << unsigned(Theta2) << " Angle3: " <<  unsigned(Theta3) << " Angle4: " << unsigned(Theta4) << endl;
-    }
+   bbSPIOpen(CE0, MISO, MOSI, SCLK, 10000, 0); // MCP4251 DAC
+   bbSPIOpen(CE1, MISO, MOSI, SCLK, 20000, 3); // MCP3008 ADC
+
+   while (1)
+   {
+        count = bbSPIXfer(CE0, cmd1, (char *)inBuf, 1); // > DAC
+        cout  << unsigned(Theta1) << endl; 
+   }
+   /*
+   for (i=0; i<256; i++)
+   {
+      cmd1[1] = i;
+
+      count = bbSPIXfer(CE0, cmd1, (char *)inBuf, 2); // > DAC
+
+      if (count == 2)
+      {
+         count = bbSPIXfer(CE0, cmd2, (char *)inBuf, 2); // < DAC
+
+         if (count == 2)
+         {
+            set_val = inBuf[1];
+
+            count = bbSPIXfer(CE1, cmd3, (char *)inBuf, 3); // < ADC
+
+            if (count == 3)
+            {
+               read_val = ((inBuf[1]&3)<<8) | inBuf[2];
+               printf("%d %d\n", set_val, read_val);
+            }
+         }
+      }
+   }
+   */
+   bbSPIClose(CE0);
+   bbSPIClose(CE1);
+
+   gpioTerminate();
+
+   return 0;
 }
