@@ -2,7 +2,7 @@
 // sudo ./bbSPIx_test
 
 #include <stdio.h>
-#include <iostream.h>
+#include <iostream>
 #include "pigpio.h"
 
 #define CE0 5
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
    while (1)
    {
         count = bbSPIXfer(CE0, cmd1, (char *)inBuf, 1); // > DAC
-        cout  << unsigned(Theta1) << endl; 
+        cout  << unsigned(inBuf) << endl; 
    }
    /*
    for (i=0; i<256; i++)
