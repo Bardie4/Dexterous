@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <iostream>
-#include "pigpio.h"
+#include <pigpio.h>
 
 #define CE0 5
 #define CE1 6
