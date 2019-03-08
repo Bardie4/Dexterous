@@ -11,6 +11,9 @@
 #define MOSI 19
 #define SCLK 12
 
+
+using namespace std;
+
 int main()
 {
    int i, count, set_val, read_val;
