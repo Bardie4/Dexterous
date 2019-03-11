@@ -19,7 +19,9 @@ int main()
 {
    int i, count, set_val, read_val, x, SPI_init;
    unsigned char inBuf[1];
-   char cmd1[] = {0x00};
+   unsgined char flag= 3;
+   unsigned char cmd1[1]
+   cmd1[0]= {0x00};
 
    if (gpioInitialise() < 0)
    {
@@ -27,7 +29,7 @@ int main()
       return 1;
    }
 
-   SPI_init = bbSPIOpen(CE0, MISO, MOSI, SCLK, 100, 0); // MCP4251 DAC
+   SPI_init = bbSPIOpen(CE0, MISO, MOSI, SCLK, 100, 3); // MCP4251 DAC
    //bbSPIOpen(CE1, MISO, MOSI, SCLK, 20000, 3); // MCP3008 ADC
    cout << "Initiation of spi: " << SPI_init << endl;
 
