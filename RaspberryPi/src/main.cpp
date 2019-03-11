@@ -34,10 +34,10 @@ int main()
    uint8_t theta2;
    uint8_t setpoint1;
    uint8_t setpoint2;
-   int error1;
-   int error2;
-   int u1;
-   int u2;
+   int short error1;
+   int short error2;
+   int short u1;
+   int short u2;
 
 
    //INIT
@@ -58,7 +58,7 @@ int main()
    theta1=inBuf[0];
    count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
    theta2=inBuf[0];
-   cout  << "link1 angle: " << unsigned(theta1) <<"  link2 angle__ " << unsigned(theta2) << "intsize: "<< sizeof(int) <<endl; 
+   cout  << "link1 angle: " << unsigned(theta1) <<"  link2 angle__ " << unsigned(theta2) << endl; 
 
    setpoint1=theta2;
    setpoint2=theta2;
@@ -79,9 +79,9 @@ int main()
 
       //Report angle
       cout_itr++;
-      if (cout_itr < 100)
+      if (cout_itr > 10000)
       {
-         cout  << "link1 angle: " << unsigned(theta1) <<"  link2 angle__ " << unsigned(theta2) << endl; 
+         cout  << "link1 angle: " << unsigned(theta1) << " link1 error: " << error1 << " u1: "<< u1 << "| link2 angle__ " << unsigned(theta2) << " link2 error: " << error2 << " u2: "<< u2 << endl; 
          cout_itr=0;
       }
 
