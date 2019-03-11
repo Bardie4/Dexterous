@@ -19,7 +19,7 @@ int main()
 {
    int i, count, set_val, read_val, x, SPI_init;
    unsigned char inBuf[2];
-   char cmd1[]= {0,0}
+   char cmd1[]= {0,0};
 
    if (gpioInitialise() < 0)
    {
