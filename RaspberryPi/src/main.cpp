@@ -17,7 +17,7 @@ using namespace std;
 
 int main()
 {
-   int i, count, set_val, read_val x;
+   int i, count, set_val, read_val, x;
    unsigned char inBuf[1];
    char cmd1[] = {0x00};
 
