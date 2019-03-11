@@ -66,10 +66,10 @@ int main()
    cout  << "link1 angle: " << unsigned(theta1) <<"  link2 angle__ " << unsigned(theta2) << endl; 
 
    //Start by focing motors to start position
-   torque_cmd[0]=00x0
-   torque_cmd[1]=20;
-   torque_cmd[2]=00x0
-   torque_cmd[3]=20;
+   torque_cmd[0]=(uint8_t) 0;
+   torque_cmd[1]=(uint8_t) 2;
+   torque_cmd[2]=(uint8_t) 0;
+   torque_cmd[3]=(uint8_t) 2;
 
    sleep(3);
 
