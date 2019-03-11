@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <pigpio.h>
+#include <unistd.h>
 
 #define CE0 5
 #define CE1 6
@@ -16,7 +17,7 @@ using namespace std;
 
 int main()
 {
-   int i, count, set_val, read_val;
+   int i, count, set_val, read_val x;
    unsigned char inBuf[1];
    char cmd1[] = {0x00};
 
@@ -27,12 +28,14 @@ int main()
    }
 
    bbSPIOpen(CE0, MISO, MOSI, SCLK, 10000, 0); // MCP4251 DAC
-   bbSPIOpen(CE1, MISO, MOSI, SCLK, 20000, 3); // MCP3008 ADC
+   //bbSPIOpen(CE1, MISO, MOSI, SCLK, 20000, 3); // MCP3008 ADC
 
-   while (1)
+   while (while x < 100)
    {
         count = bbSPIXfer(CE0, cmd1, (char *)inBuf, 1); // > DAC
         cout  << unsigned(inBuf[0]) <<"fsdafasdf" << count << endl; 
+        sleep(unsigned(1));
+        x++;
    }
    /*
    for (i=0; i<256; i++)
