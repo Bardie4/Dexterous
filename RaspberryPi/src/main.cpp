@@ -114,7 +114,7 @@ int main()
    */
    bbSPIClose(link1);
    bbSPIClose(link2);
-   bbSPIClose(link3);
+   bbSPIClose(esp);
 
    gpioTerminate();
 
