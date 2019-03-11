@@ -30,7 +30,7 @@ int main()
    bbSPIOpen(CE0, MISO, MOSI, SCLK, 10000, 0); // MCP4251 DAC
    //bbSPIOpen(CE1, MISO, MOSI, SCLK, 20000, 3); // MCP3008 ADC
 
-   while (while x < 100)
+   while (x < 100)
    {
         count = bbSPIXfer(CE0, cmd1, (char *)inBuf, 1); // > DAC
         cout  << unsigned(inBuf[0]) <<"fsdafasdf" << count << endl; 
