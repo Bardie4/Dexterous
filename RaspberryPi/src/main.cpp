@@ -17,7 +17,7 @@ using namespace std;
 
 int main()
 {
-   int i, count, set_val, read_val, x;
+   int i, count, set_val, read_val, x, SPI_init;
    unsigned char inBuf[1];
    char cmd1[] = {0x00};
 
@@ -27,8 +27,9 @@ int main()
       return 1;
    }
 
-   bbSPIOpen(CE0, MISO, MOSI, SCLK, 10000, 0); // MCP4251 DAC
+   SPI_init = bbSPIOpen(CE0, MISO, MOSI, SCLK, 10000, 0); // MCP4251 DAC
    //bbSPIOpen(CE1, MISO, MOSI, SCLK, 20000, 3); // MCP3008 ADC
+   cout << "Initiation of spi: " << SPI_init << endl;
 
    while (x < 30)
    {
