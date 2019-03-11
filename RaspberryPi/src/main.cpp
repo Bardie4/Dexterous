@@ -21,6 +21,7 @@ int main()
    int count, set_val, read_val, x, SPI_init1, SPI_init2, SPI_init3, cout_itr=1;
    unsigned char inBuf[2];
    char read_angle_cmd[]= {0,0};
+   char set_zero_angle_cmd[2];
    char torque_cmd[4];
 
    //PID
@@ -32,6 +33,8 @@ int main()
 
    uint8_t theta1;
    uint8_t theta2;
+   uint8_t theta1_0;    //Angle bias link 1
+   uint8_t theta2_0;    //Angle bias link 2
    uint8_t setpoint1;
    uint8_t setpoint2;
    int short error1;
@@ -47,6 +50,7 @@ int main()
       return 1;
    }
 
+   //SPI INITATION
    SPI_init1 = bbSPIOpen(link1, MISO, MOSI, SCLK, 100000, 3);
    SPI_init2 = bbSPIOpen(link2, MISO, MOSI, SCLK, 100000, 3);
    SPI_init3 = bbSPIOpen(esp, MISO, MOSI, SCLK, 100000, 3);
@@ -54,14 +58,40 @@ int main()
    cout << "Initiation of spi2: " << SPI_init2 << endl;
    cout << "Initiation of spi3: " << SPI_init3 << endl;
 
+   //Report startangle
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
    theta1=inBuf[0];
    count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
    theta2=inBuf[0];
    cout  << "link1 angle: " << unsigned(theta1) <<"  link2 angle__ " << unsigned(theta2) << endl; 
 
-   setpoint1=theta1;
-   setpoint2=theta2;
+   //Start by focing motors to start position
+   torque_cmd[0]=00x0
+   torque_cmd[1]=20;
+   torque_cmd[2]=00x0
+   torque_cmd[3]=20;
+
+   sleep(3);
+
+   //Setting zero_angle
+   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
+   set_zero_angle_cmd[0]=(uint8_t) 2;
+   set_zero_angle_cmd[1]=inBuf[0];
+   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
+
+   count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
+   set_zero_angle_cmd[0]=(uint8_t) 2;
+   set_zero_angle_cmd[1]=inBuf[0];
+   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
+
+
+   //Report startangle
+   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
+   theta1=inBuf[0];
+   count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
+   theta2=inBuf[0];
+   cout  << "New link1 angle: " << unsigned(theta1) <<"New link2 angle__ " << unsigned(theta2) << endl; 
+
    while (1)
    {
       //Read angle
