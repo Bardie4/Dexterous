@@ -32,7 +32,7 @@ int main()
    while (1)
    {
         count = bbSPIXfer(CE0, cmd1, (char *)inBuf, 1); // > DAC
-        cout  << unsigned(inBuf[0]) << endl; 
+        cout  << unsigned(inBuf[0]) <<"fsdafasdf" << count << endl; 
    }
    /*
    for (i=0; i<256; i++)
