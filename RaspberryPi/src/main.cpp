@@ -32,7 +32,7 @@ int main()
    while (1)
    {
         count = bbSPIXfer(CE0, cmd1, (char *)inBuf, 1); // > DAC
-        cout  << unsigned(inBuf) << endl; 
+        cout  << unsigned(inBuf[0]) << endl; 
    }
    /*
    for (i=0; i<256; i++)
@@ -48,7 +48,6 @@ int main()
          if (count == 2)
          {
             set_val = inBuf[1];
-
             count = bbSPIXfer(CE1, cmd3, (char *)inBuf, 3); // < ADC
 
             if (count == 3)
