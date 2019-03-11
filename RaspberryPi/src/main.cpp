@@ -68,7 +68,7 @@ int main()
    //Start by focing motors to start position
    torque_cmd[0]=(uint8_t) 0;
    torque_cmd[1]=(uint8_t) 2;
-   torque_cmd[2]=(uint8_t) 0
+   torque_cmd[2]=(uint8_t) 0;
    torque_cmd[3]=(uint8_t) 2;
 
    sleep(3);
