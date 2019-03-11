@@ -27,7 +27,7 @@ int main()
       return 1;
    }
 
-   SPI_init = bbSPIOpen(CE0, MISO, MOSI, SCLK, 100, 3); // MCP4251 DAC
+   SPI_init = bbSPIOpen(CE0, MISO, MOSI, SCLK, 20000, 3); // MCP4251 DAC
    //bbSPIOpen(CE1, MISO, MOSI, SCLK, 20000, 3); // MCP3008 ADC
    cout << "Initiation of spi: " << SPI_init << endl;
 
