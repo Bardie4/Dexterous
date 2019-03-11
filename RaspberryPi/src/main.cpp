@@ -20,7 +20,7 @@ int main()
    int i, count, set_val, read_val, x, SPI_init;
    unsigned char inBuf[1];
    unsigned char flag= 3;
-   unsigned char cmd1[1]
+   unsigned char cmd1[1];
    cmd1[0]= {0x00};
 
    if (gpioInitialise() < 0)
