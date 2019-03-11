@@ -60,7 +60,7 @@ int main()
    theta2=inBuf[0];
    cout  << "link1 angle: " << unsigned(theta1) <<"  link2 angle__ " << unsigned(theta2) << endl; 
 
-   setpoint1=theta2;
+   setpoint1=theta1;
    setpoint2=theta2;
    while (1)
    {
@@ -71,8 +71,8 @@ int main()
       theta2=inBuf[0];
       
       //PID
-      error1=(int) setpoint1-theta1;
-      error2=(int) setpoint2-theta2;
+      error1= (int short) setpoint1-theta1;
+      error2= (int short) setpoint2-theta2;
 
       u1=kp1*error1;
       u2=kp2*error2;
