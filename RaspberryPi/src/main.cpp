@@ -68,19 +68,19 @@ int main()
    //Start by focing motors to start position
    torque_cmd[0]=(uint8_t) 0;
    torque_cmd[1]=(uint8_t) 2;
-   torque_cmd[2]=(uint8_t) 0;
+   torque_cmd[2]=(uint8_t) 0
    torque_cmd[3]=(uint8_t) 2;
 
    sleep(3);
 
    //Setting zero_angle
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
-   set_zero_angle_cmd[0]=(uint8_t) 20;
+   set_zero_angle_cmd[0]=(uint8_t) 0b00100100;
    set_zero_angle_cmd[1]=inBuf[0];
    count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
 
    count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
-   set_zero_angle_cmd[0]=(uint8_t) 20;
+   set_zero_angle_cmd[0]=(uint8_t) 0b00100100;
    set_zero_angle_cmd[1]=inBuf[0];
    count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
 
