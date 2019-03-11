@@ -27,7 +27,7 @@ int main()
       return 1;
    }
 
-   bbSPIOpen(CE0, MISO, MOSI, SCLK, 10000, 0); // MCP4251 DAC
+   bbSPIOpen(CE0, MISO, MOSI, SCLK, 10000, 3); // MCP4251 DAC
    //bbSPIOpen(CE1, MISO, MOSI, SCLK, 20000, 3); // MCP3008 ADC
 
    while (x < 30)
