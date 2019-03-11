@@ -34,7 +34,7 @@ int main()
    while (x < 30)
    {
         count = bbSPIXfer(CE0, cmd1, (char *)inBuf, 1); // > DAC
-        cout  << unsigned(inBuf[0]) <<"fsdafasdf" << count << "asdfasfas" <<unsigned(cmd1[0]) <<endl; 
+        cout  << unsigned(inBuf[0]) <<" __ " << inBuf[1] << " __ " << count <<endl; 
         sleep(unsigned(1));
         x++;
    }
