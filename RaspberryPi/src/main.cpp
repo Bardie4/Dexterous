@@ -18,10 +18,8 @@ using namespace std;
 int main()
 {
    int i, count, set_val, read_val, x, SPI_init;
-   unsigned char inBuf[1];
-   unsigned char flag= 3;
-   unsigned char cmd1[1];
-   cmd1[0]= {0x00};
+   unsigned char inBuf[2];
+   char cmd1[]= {0,0}
 
    if (gpioInitialise() < 0)
    {
@@ -35,7 +33,7 @@ int main()
 
    while (x < 30)
    {
-        count = bbSPIXfer(CE0, cmd1, *inBuf, 1); // > DAC
+        count = bbSPIXfer(CE0, cmd1, (char *)inBuf, 1); // > DAC
         cout  << unsigned(inBuf[0]) <<"fsdafasdf" << count << "asdfasfas" <<unsigned(cmd1[0]) <<endl; 
         sleep(unsigned(1));
         x++;
