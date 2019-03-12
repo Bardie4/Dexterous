@@ -5,6 +5,7 @@
 #include <iostream>
 #include <pigpio.h>
 #include <unistd.h>
+#include <bitset>
 
 #define link1 5
 #define link2 6
@@ -107,15 +108,26 @@ int main()
       u1=kp1*error1;
       u2=kp2*error2;
 
-      //Report angle
-      cout_itr++;
-      if (cout_itr > 10000)
-      {
-         cout  << "link1 angle: " << unsigned(theta1) << " link1 error: " << error1 << " u1: "<< u1 << "| link2 angle__ " << unsigned(theta2) << " link2 error: " << error2 << " u2: "<< u2 << endl; 
-         cout_itr=0;
-      }
+
+	  //The two 16bit torque commands is split into 8 bit values. 
+	  torque_cmd[0] = (uint8_t) u1 >> 8;		//MSB stored here. The 8 MSB is shifted to the 8 LSB positions. Casting removes the 8 new MSB.
+	  torque_cmd[1] = (uint8_t) u1;				//LSB is stored here. Casting removes the 8 MSB
+	  torque_cmd[2] = (uint8_t) u2 >> 8;
+	  torque_cmd[3] = (uint8_t) u2;		
 
 
+
+	 //Report angle (For testing)
+	  cout_itr++;
+	  if (cout_itr > 10000)
+	  {
+		  cout << "link1 angle: " << unsigned(theta1) << " link1 error: " << error1 << " u1: " << u1 << "| link2 angle__ " << unsigned(theta2) << " link2 error: " << error2 << " u2: " << u2 << endl;
+		  cout << "u1 bit string: "<< bitset<16>(u1) << "  " << bitset<8>(torque_cmd[0]) << bitset<8>(torque_cmd[1]) << " | u1 bit string: " << bitset<16>(u1) << "  " << bitset<8>(torque_cmd[2]) << bitset<8>(torque_cmd[3]) << endl;
+		  cout_itr = 0;
+	  }
+
+	  //Output
+	  count = bbSPIXfer(esp, torque_cmd, (char *)inBuf, 4);
    }
    /*
    for (i=0; i<256; i++)
