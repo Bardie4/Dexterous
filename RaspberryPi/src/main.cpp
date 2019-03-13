@@ -82,7 +82,7 @@ int main()
    zero_point = (inBuf[0] << 8);
    zero_point = zero_point + inBuf[1];
     cout << "zero_point_16: " << zero_point <<endl;
-    cout << "zero_point_8: " << <unsigned((zero_point >> 8)) << endl;
+    cout << "zero_point_8: " << unsigned((zero_point >> 8)) << endl;
    zero_point = (uint16_t) (0b10000000000000000-zero_point);
    cout << "zero_point_compliment_16: " << zero_point << endl;
    cout << "zero_point__compliment_bit: "<< bitset<16>(zero_point) << endl;
