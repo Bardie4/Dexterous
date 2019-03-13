@@ -59,12 +59,13 @@ int main()
    cout << "Initiation of spi2: " << SPI_init2 << endl;
    cout << "Initiation of spi3: " << SPI_init3 << endl;
 
+   /*
    //Report start angle
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
    theta1=inBuf[0];
    count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
    theta2=inBuf[0];
-   cout  << "link1 angle: " << unsigned(theta1) <<"  link2 angle__ " << unsigned(theta2) << endl; 
+   cout  << "link1 angle: " << unsigned(theta1) <<"  link2 angle: " << unsigned(theta2) << endl; 
 
    //Start by focing motors to start position
    torque_cmd[0]=(uint8_t) 0;
@@ -92,7 +93,7 @@ int main()
    count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
    theta2=inBuf[0];
    cout  << "New link1 angle: " << unsigned(theta1) <<"New link2 angle> " << unsigned(theta2) << endl; 
-
+   */
    while (1)
    {
       //Read angle
