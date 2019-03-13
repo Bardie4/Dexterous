@@ -78,11 +78,27 @@ int main()
    sleep(3);
 
    //Setting zero_angle at start position
+   set_zero_angle_cmd[0]=0b10000001;
+   set_zero_angle_cmd[1]=0b00000000;
+   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
+   sleep(1);
+   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
+   cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
+   sleep(1);
+   set_zero_angle_cmd[0]=0b10000000;
+   set_zero_angle_cmd[1]=0b00000000;
+   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
+   sleep(1);
+   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
+   cout  << "Register value: " <<  bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
+   sleep(1);
+
+
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2); // > DAC
    zero_point = (inBuf[0] << 8);
    zero_point = zero_point + inBuf[1];
-    cout << "zero_point_16: " << zero_point <<endl;
-    cout << "zero_point_8: " << unsigned((zero_point >> 8)) << endl;
+   cout << "zero_point_16: " << zero_point <<endl;
+   cout << "zero_point_8: " << unsigned((zero_point >> 8)) << endl;
    zero_point = (uint16_t) (0b10000000000000000-zero_point);
    cout << "zero_point_compliment_16: " << zero_point << endl;
    cout << "zero_point__compliment_bit: "<< bitset<16>(zero_point) << endl;
