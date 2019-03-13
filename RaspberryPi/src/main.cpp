@@ -52,9 +52,9 @@ int main()
    }
 
    //SPI INITATION
-   SPI_init1 = bbSPIOpen(link1, MISO, MOSI, SCLK, 100000, 3);
-   SPI_init2 = bbSPIOpen(link2, MISO, MOSI, SCLK, 100000, 3);
-   SPI_init3 = bbSPIOpen(esp, MISO, MOSI, SCLK, 100000, 3);
+   SPI_init1 = bbSPIOpen(link1, MISO, MOSI, SCLK, 10000, 3);
+   SPI_init2 = bbSPIOpen(link2, MISO, MOSI, SCLK, 10000, 3);
+   SPI_init3 = bbSPIOpen(esp, MISO, MOSI, SCLK, 10000, 3);
    cout << "Initiation of spi1: " << SPI_init1 << endl;
    cout << "Initiation of spi2: " << SPI_init2 << endl;
    cout << "Initiation of spi3: " << SPI_init3 << endl;
@@ -121,7 +121,7 @@ int main()
 	  cout_itr++;
 	  if (cout_itr > 1000)
 	  {
-		  cout << "link1 angle: " << unsigned(theta1) << " link1 error: " << error1 << " u1: " << u1 << "| link2 angle__ " << unsigned(theta2) << " link2 error: " << error2 << " u2: " << u2 << endl;
+		  cout << "link1 angle: " << unsigned(theta1) << " link1 error: " << error1 << " u1: " << u1 << "| link2 angle: " << unsigned(theta2) << " link2 error: " << error2 << " u2: " << u2 << endl;
 		  cout << "u1 bit string: "<< bitset<16>(u1) << "  " << bitset<8>(torque_cmd[0]) << bitset<8>(torque_cmd[1]) << " | u1 bit string: " << bitset<16>(u1) << "  " << bitset<8>(torque_cmd[2]) << bitset<8>(torque_cmd[3]) << endl;
 		  cout_itr = 0;
 	  }
