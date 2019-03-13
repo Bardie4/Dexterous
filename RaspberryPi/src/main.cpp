@@ -126,16 +126,16 @@ int main()
    //SENSOR 2
    set_zero_angle_cmd[0]=0b10000001;   //WRITE REG 1 (8 MSB of zero angle)
    set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
-   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); 
+   count = bbSPIXfer(link2, set_zero_angle_cmd, (char *)inBuf, 2); 
    sleep(1);
-   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
+   count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
    sleep(1);
    set_zero_angle_cmd[0]=0b10000000;   //WRITE REG 0 (8 LSB of zero angle)
    set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
-   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2);
+   count = bbSPIXfer(link2, set_zero_angle_cmd, (char *)inBuf, 2);
    sleep(1);
-   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
+   count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " <<  bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
    sleep(1);
 
