@@ -104,8 +104,8 @@ int main()
       //Read angle
       count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
       theta1=inBuf[0];
-      count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
-      theta2=inBuf[0];
+      //count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
+      //theta2=inBuf[0];
       
       //PID
       error1= (int short) setpoint1-theta1;
@@ -128,7 +128,7 @@ int main()
 
 	  //Output
      
-	  count = bbSPIXfer(esp, torque_cmd, (char *)inBuf, 4);
+	 // count = bbSPIXfer(esp, torque_cmd, (char *)inBuf, 4);
      
    }
    /*
