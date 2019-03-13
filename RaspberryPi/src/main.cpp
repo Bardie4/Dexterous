@@ -81,16 +81,17 @@ int main()
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2); // > DAC
    zero_point = inBuf[0] << 8;
    zero_point = zero_point + inBuf[1];
+   zero_point = (0b10000000000000000-zero_point);
    cout << zero_point << endl;
    set_zero_angle_cmd[0]=0b10000001;
-   set_zero_angle_cmd[1]=0b11110001;
+   set_zero_angle_cmd[1]=(uint8_t) zero_point >> 8;
    count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
    sleep(1);
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
    sleep(1);
    set_zero_angle_cmd[0]=0b10000000;
-   set_zero_angle_cmd[1]=0b11000111;
+   set_zero_angle_cmd[1]=(uint8_t) zero_point;
    count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
    sleep(1);
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
