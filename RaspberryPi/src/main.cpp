@@ -83,6 +83,7 @@ int main()
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
    sleep(1);
    cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
+   sleep(1);
    set_zero_angle_cmd[0]=0b10000001;
    set_zero_angle_cmd[1]=0b11000111;
    count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
