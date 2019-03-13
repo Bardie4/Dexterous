@@ -24,6 +24,7 @@ int main()
    char read_angle_cmd[]= {0b00000000, 0b00000000};
    char set_zero_angle_cmd[2];
    char torque_cmd[4];
+   uint16_t zero_point;
 
    //PID
    double kp1=0.1;
@@ -38,6 +39,7 @@ int main()
    uint8_t theta2_0;    //Angle bias link 2
    uint8_t setpoint1;
    uint8_t setpoint2;
+
    int short error1;
    int short error2;
    int short u1;
@@ -76,7 +78,10 @@ int main()
    sleep(3);
 
    //Setting zero_angle at start position
-   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
+   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2); // > DAC
+   zero_point = inBuf[0] << 8;
+   zero_point = zero_point + inBuf[1];
+   cout << zero_point << endl;
    set_zero_angle_cmd[0]=0b10000001;
    set_zero_angle_cmd[1]=0b11110001;
    count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
