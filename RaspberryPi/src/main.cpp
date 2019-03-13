@@ -1,6 +1,10 @@
 // gcc -Wall -pthread -o bbSPIx_test bbSPIx_test.c -lpigpio
 // sudo ./bbSPIx_test
 
+//  Hello World client
+#include <zmq.h>
+#include <string.h>
+
 #include <stdio.h>
 #include <iostream>
 #include <pigpio.h>
@@ -19,6 +23,15 @@ using namespace std;
 
 int main()
 {
+
+   // HELLO WORLD client
+    printf ("Connecting to hello world server…\n");
+    void *context = zmq_ctx_new ();
+    void *requester = zmq_socket (context, ZMQ_REQ);
+    zmq_connect (requester, "tcp://localhost:5555");
+    int request_nbr;
+
+
    int count, set_val, read_val, x, SPI_init1, SPI_init2, SPI_init3, cout_itr=1;
    unsigned char inBuf[4];
    char read_angle_cmd[]= {0b00000000, 0b00000000};
@@ -202,8 +215,19 @@ int main()
 	  //Output
      
 	 // count = bbSPIXfer(esp, torque_cmd, (char *)inBuf, 4);
-     
+   
+     //HELLO WORLD CLIENT
+        char buffer [10];
+        printf ("Sending Hello %d…\n", request_nbr);
+        zmq_send (requester, "Hello", 5, 0);
+        zmq_recv (requester, buffer, 10, 0);
+        printf ("Received World %d\n", request_nbr);
+
    }
+    //HELLO WORLD CLIENT
+    zmq_close (requester);
+    zmq_ctx_destroy (context);
+    return 0;
    /*
    for (i=0; i<256; i++)
    {
