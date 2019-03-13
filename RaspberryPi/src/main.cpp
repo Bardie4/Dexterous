@@ -77,20 +77,20 @@ int main()
 
    //Setting zero_angle at start position
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
-   set_zero_angle_cmd[0]=0b10000000;
+   set_zero_angle_cmd[0]=0b10000001;
    set_zero_angle_cmd[1]=0b11110001;
    count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
-   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
    sleep(1);
+   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
    sleep(1);
-   set_zero_angle_cmd[0]=0b10000001;
+   set_zero_angle_cmd[0]=0b10000000;
    set_zero_angle_cmd[1]=0b11000111;
    count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
-   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
    sleep(1);
+   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " <<  bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-
+   sleep(1);
    //count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
   // set_zero_angle_cmd[1]=0b10000001;
    //set_zero_angle_cmd[0]=255-inBuf[0];
