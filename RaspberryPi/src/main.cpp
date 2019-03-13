@@ -21,7 +21,7 @@ int main()
 {
    int count, set_val, read_val, x, SPI_init1, SPI_init2, SPI_init3, cout_itr=1;
    unsigned char inBuf[4];
-   char read_angle_cmd[]= {0};
+   char read_angle_cmd[]= {0b00000000};
    char set_zero_angle_cmd[2];
    char torque_cmd[4];
 
@@ -52,9 +52,9 @@ int main()
    }
 
    //SPI INITATION
-   SPI_init1 = bbSPIOpen(link1, MISO, MOSI, SCLK, 10000, 3);
-   SPI_init2 = bbSPIOpen(link2, MISO, MOSI, SCLK, 10000, 3);
-   SPI_init3 = bbSPIOpen(esp, MISO, MOSI, SCLK, 10000, 3);
+   SPI_init1 = bbSPIOpen(link1, MISO, MOSI, SCLK, 1000, 0);
+   SPI_init2 = bbSPIOpen(link2, MISO, MOSI, SCLK, 1000, 0);
+   SPI_init3 = bbSPIOpen(esp, MISO, MOSI, SCLK, 1000, 0;
    cout << "Initiation of spi1: " << SPI_init1 << endl;
    cout << "Initiation of spi2: " << SPI_init2 << endl;
    cout << "Initiation of spi3: " << SPI_init3 << endl;
