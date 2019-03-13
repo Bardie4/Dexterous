@@ -59,7 +59,7 @@ int main()
    cout << "Initiation of spi2: " << SPI_init2 << endl;
    cout << "Initiation of spi3: " << SPI_init3 << endl;
 
-   /*
+   
    //Report start angle
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
    theta1=inBuf[0];
@@ -93,7 +93,7 @@ int main()
    count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
    theta2=inBuf[0];
    cout  << "New link1 angle: " << unsigned(theta1) <<"New link2 angle> " << unsigned(theta2) << endl; 
-   */
+   
    while (1)
    {
       //Read angle
@@ -109,13 +109,7 @@ int main()
       u1=kp1*error1;
       u2=kp2*error2;
 
-      
-	  //The two 16bit torque commands is split into 8 bit values. 
-	  torque_cmd[0] = (uint8_t) u1 >> 8;		//MSB stored here. The 8 MSB is shifted to the 8 LSB positions. Casting removes the 8 new MSB.
-	  torque_cmd[1] = (uint8_t) u1;				//LSB is stored here. Casting removes the 8 MSB
-	  torque_cmd[2] = (uint8_t) u2 >> 8;
-	  torque_cmd[3] = (uint8_t) u2;		
-      
+       
 
 
 	 //Report angle (For testing)
