@@ -98,7 +98,7 @@ int main()
    count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
    theta2=inBuf[0];
    cout  << "New link1 angle: " << unsigned(theta1) <<"New link2 angle " << unsigned(theta2) << endl; 
-   /*
+   
    while (1)
    {
       //Read angle
