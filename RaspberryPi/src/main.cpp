@@ -85,6 +85,7 @@ int main()
    cout << bitset<16>(zero_point) << endl;
    set_zero_angle_cmd[0]=0b10000001;
    set_zero_angle_cmd[1]=(uint8_t) zero_point >> 8;
+   cout << set_zero_angle_cmd[1] << endl;
    count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
    sleep(1);
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
