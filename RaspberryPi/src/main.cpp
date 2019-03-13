@@ -79,9 +79,9 @@ int main()
 
    //Setting zero_angle at start position
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2); // > DAC
-   zero_point = inBuf[0] << 8;
+   zero_point = (inBuf[0] << 8);
    zero_point = zero_point + inBuf[1];
-   zero_point = (uint16_t) (0b10000000000000000-zero_point);
+   zero_point = (uint16_t) (zero_point);
    cout << bitset<16>(zero_point) << endl;
    set_zero_angle_cmd[0]=0b10000001;
    set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);
