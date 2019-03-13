@@ -109,13 +109,13 @@ int main()
       u1=kp1*error1;
       u2=kp2*error2;
 
-
+      /*
 	  //The two 16bit torque commands is split into 8 bit values. 
 	  torque_cmd[0] = (uint8_t) u1 >> 8;		//MSB stored here. The 8 MSB is shifted to the 8 LSB positions. Casting removes the 8 new MSB.
 	  torque_cmd[1] = (uint8_t) u1;				//LSB is stored here. Casting removes the 8 MSB
 	  torque_cmd[2] = (uint8_t) u2 >> 8;
 	  torque_cmd[3] = (uint8_t) u2;		
-
+      */
 
 
 	 //Report angle (For testing)
@@ -128,7 +128,9 @@ int main()
 	  }
 
 	  //Output
+     /*
 	  count = bbSPIXfer(esp, torque_cmd, (char *)inBuf, 4);
+     */
    }
    /*
    for (i=0; i<256; i++)
