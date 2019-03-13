@@ -54,7 +54,7 @@ int main()
    //SPI INITATION
    SPI_init1 = bbSPIOpen(link1, MISO, MOSI, SCLK, 1000, 0);
    SPI_init2 = bbSPIOpen(link2, MISO, MOSI, SCLK, 1000, 0);
-   SPI_init3 = bbSPIOpen(esp, MISO, MOSI, SCLK, 1000, 0;
+   SPI_init3 = bbSPIOpen(esp, MISO, MOSI, SCLK, 1000, 0);
    cout << "Initiation of spi1: " << SPI_init1 << endl;
    cout << "Initiation of spi2: " << SPI_init2 << endl;
    cout << "Initiation of spi3: " << SPI_init3 << endl;
