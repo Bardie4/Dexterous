@@ -54,9 +54,9 @@ int main()
    }
 
    //SPI INITATION
-   SPI_init1 = bbSPIOpen(link1, MISO, MOSI, SCLK, 100000, 3);
-   SPI_init2 = bbSPIOpen(link2, MISO, MOSI, SCLK, 100000, 3);
-   SPI_init3 = bbSPIOpen(esp, MISO, MOSI, SCLK, 100000, 3);
+   SPI_init1 = bbSPIOpen(link1, MISO, MOSI, SCLK, 250000, 3);
+   SPI_init2 = bbSPIOpen(link2, MISO, MOSI, SCLK, 250000, 3);
+   SPI_init3 = bbSPIOpen(esp, MISO, MOSI, SCLK, 250000, 3);
    cout << "Initiation of spi1: " << SPI_init1 << endl;
    cout << "Initiation of spi2: " << SPI_init2 << endl;
    cout << "Initiation of spi3: " << SPI_init3 << endl;
@@ -86,17 +86,17 @@ int main()
    set_zero_angle_cmd[0]=0b10000001; //WRITE REG 1 (8 MSB of zero angle)
    set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
    count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); 
-   usleep(100000);
+   uusleep(50000);
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-   usleep(100000);
+   uusleep(50000);
    set_zero_angle_cmd[0]=0b10000000; //WRITE REG 0 (8 LSB of zero angle)
    set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
    count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2);
-   usleep(100000);
+   uusleep(50000);
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " <<  bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-   usleep(100000);
+   uusleep(50000);
 
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2); //MEASURE CURRENT ANGLE
    zero_point = (inBuf[0] << 8);                               //COMBINE 8 bit values to 16 bit
@@ -111,33 +111,33 @@ int main()
    set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //8 MSB of Compliment of new zero angle
    cout << bitset<8>(set_zero_angle_cmd[1]) << endl;
    count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); 
-   usleep(100000);
+   uusleep(50000);
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-   usleep(100000);
+   uusleep(50000);
    set_zero_angle_cmd[0]=0b10000000;
    set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //8 LSB of Compliment of new zero angle
    count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); 
-   usleep(100000);
+   uusleep(50000);
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " <<  bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-   usleep(100000);
+   uusleep(50000);
 
    //SENSOR 2
    set_zero_angle_cmd[0]=0b10000001;   //WRITE REG 1 (8 MSB of zero angle)
    set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
    count = bbSPIXfer(link2, set_zero_angle_cmd, (char *)inBuf, 2); 
-   usleep(100000);
+   uusleep(50000);
    count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-   usleep(100000);
+   uusleep(50000);
    set_zero_angle_cmd[0]=0b10000000;   //WRITE REG 0 (8 LSB of zero angle)
    set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
    count = bbSPIXfer(link2, set_zero_angle_cmd, (char *)inBuf, 2);
-   usleep(100000);
+   uusleep(50000);
    count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " <<  bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-   usleep(100000);
+   uusleep(50000);
 
    count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 2); // MEASURE ZERO ANGLE
    zero_point = (inBuf[0] << 8);
@@ -151,17 +151,17 @@ int main()
    set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //ZERO ANGLE SET TO CURRENT ANGLE
    cout << bitset<8>(set_zero_angle_cmd[1]) << endl;
    count = bbSPIXfer(link2, set_zero_angle_cmd, (char *)inBuf, 2); 
-   usleep(100000);
+   uusleep(50000);
    count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-   usleep(100000);
+   uusleep(50000);
    set_zero_angle_cmd[0]=0b10000000;                           //WRITE REG 0 (8 LSB of zero angle)
    set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //ZERO ANGLE SET TO CURRENT ANGLE
    count = bbSPIXfer(link2, set_zero_angle_cmd, (char *)inBuf, 2);
-   usleep(100000);
+   uusleep(50000);
    count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " <<  bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-   usleep(100000);
+   uusleep(50000);
 
 
    //Report new angle with modified zero angle:
@@ -171,7 +171,7 @@ int main()
    theta2=inBuf[0];
    cout  << "New link1 angle: " << unsigned(theta1) <<"New link2 angle " << unsigned(theta2) << endl; 
    
-   usleep(100000);
+   uusleep(50000);
    while (1)
    {
       //Read angle
