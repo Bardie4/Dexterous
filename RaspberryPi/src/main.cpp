@@ -81,12 +81,14 @@ int main()
    set_zero_angle_cmd[1]=0b11110001;
    count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
-   cout  << "Register: " << bitset<8>(inBuf[0]) <<"| value " << bitset<8>(inBuf[1]) << endl;
+   sleep(1);
+   cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
    set_zero_angle_cmd[0]=0b10000001;
    set_zero_angle_cmd[1]=0b11000111;
    count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
-   cout  << "Register: " <<  bitset<8>(inBuf[0]) <<"| value " << bitset<8>(inBuf[1]) << endl;
+   sleep(1);
+   cout  << "Register value: " <<  bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
 
    //count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
   // set_zero_angle_cmd[1]=0b10000001;
@@ -103,6 +105,7 @@ int main()
    theta2=inBuf[0];
    cout  << "New link1 angle: " << unsigned(theta1) <<"New link2 angle " << unsigned(theta2) << endl; 
    
+   sleep(1);
    while (1)
    {
       //Read angle
