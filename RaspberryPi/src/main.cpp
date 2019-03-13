@@ -75,14 +75,14 @@ int main()
 
    //Setting zero_angle
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
-   set_zero_angle_cmd[0]=(uint8_t) 0b00100100;
+   set_zero_angle_cmd[0]=0b00100100;
    set_zero_angle_cmd[1]=inBuf[0];
    count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
 
    count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
-   set_zero_angle_cmd[0]=(uint8_t) 0b00100100;
+   set_zero_angle_cmd[0]= 0b00100100;
    set_zero_angle_cmd[1]=inBuf[0];
-   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
+   count = bbSPIXfer(link2, set_zero_angle_cmd, (char *)inBuf, 2); // > DAC
 
 
    //Report startangle
