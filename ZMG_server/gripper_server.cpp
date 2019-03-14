@@ -3,7 +3,8 @@
 //  Binds REP socket to tcp://*:5555
 //  Expects "Hello" from client, replies with "World"
 //
-#include <zmq.hpp>
+#include <C:\Program Files\ZeroMQ 4.0.4\include\zmq.h>
+#include <C:\Program Files\ZeroMQ 4.0.4\include\zmq_utils.h>
 #include <string>
 #include <iostream>
 #ifndef _WIN32
