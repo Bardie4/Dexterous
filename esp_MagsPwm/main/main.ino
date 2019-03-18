@@ -1,4 +1,4 @@
-/* asdThe ESP32 has four SPi buses, however as of right now only two of
+/* The ESP32 has four SPi buses, however as of right now only two of
  * them are available to use, HSPI and VSPI. Simply using the SPI API 
  * as illustrated in Arduino examples will use VSPI, leaving HSPI unused.
  * 
@@ -37,7 +37,7 @@
 #define M1_PWM2 2
 #define M1_PWM3 4
 #define M1_EN   16
-#define PWM_FRQ 25*1000
+#define PWM_FRQ 100*1000
 
 xQueueHandle mot1_queue;
 xQueueHandle mot2_queue;
@@ -61,24 +61,24 @@ static const int spiClk = 10*1000*1000; // 10 MHz
 int start;
 int phaseShift;
 
-const uint8_t pwmSin[] = {128,131,134,137,140,143,146,149,152,155,158,162,165,167,170,173,176,179,182,185,188,190,193,196,198,201,203,206,208,211,213,215,218,220,222,224,226,228,230,232,234,235,237,238,240,241,243,244,245,246,248,249,250,250,251,252,253,253,254,254,254,255,255,255,255,255,255,255,254,254,254,253,253,252,251,250,250,249,248,246,245,244,243,241,240,238,237,235,234,232,230,228,226,224,222,220,218,215,213,211,208,206,203,201,198,196,193,190,188,185,182,179,176,173,170,167,165,162,158,155,152,149,146,143,140,137,134,131,128,124,121,118,115,112,109,106,103,100,97,93,90,88,85,82,79,76,73,70,67,65,62,59,57,54,52,49,47,44,42,40,37,35,33,31,29,27,25,23,21,20,18,17,15,14,12,11,10,9,7,6,5,5,4,3,2,2,1,1,1,0,0,0,0,0,0,0,1,1,1,2,2,3,4,5,5,6,7,9,10,11,12,14,15,17,18,20,21,23,25,27,29,31,33,35,37,40,42,44,47,49,52,54,57,59,62,65,67,70,73,76,79,82,85,88,90,93,97,100,103,106,109,112,115,118,121,124};
+const int pwmSin[] = {128, 132, 136, 140, 143, 147, 151, 155, 159, 162, 166, 170, 174, 178, 181, 185, 189, 192, 196, 200, 203, 207, 211, 214, 218, 221, 225, 228, 232, 235, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 248, 249, 250, 250, 251, 252, 252, 253, 253, 253, 254, 254, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 254, 254, 254, 253, 253, 253, 252, 252, 251, 250, 250, 249, 248, 248, 247, 246, 245, 244, 243, 242, 241, 240, 239, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 248, 249, 250, 250, 251, 252, 252, 253, 253, 253, 254, 254, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 254, 254, 254, 253, 253, 253, 252, 252, 251, 250, 250, 249, 248, 248, 247, 246, 245, 244, 243, 242, 241, 240, 239, 238, 235, 232, 228, 225, 221, 218, 214, 211, 207, 203, 200, 196, 192, 189, 185, 181, 178, 174, 170, 166, 162, 159, 155, 151, 147, 143, 140, 136, 132, 128, 124, 120, 116, 113, 109, 105, 101, 97, 94, 90, 86, 82, 78, 75, 71, 67, 64, 60, 56, 53, 49, 45, 42, 38, 35, 31, 28, 24, 21, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 8, 7, 6, 6, 5, 4, 4, 3, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 8, 7, 6, 6, 5, 4, 4, 3, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 24, 28, 31, 35, 38, 42, 45, 49, 53, 56, 60, 64, 67, 71, 75, 78, 82, 86, 90, 94, 97, 101, 105, 109, 113, 116, 120, 124};
 
 // SPI read -> motor
 QueueHandle_t qMotorAngle;
 QueueHandle_t qMotorSumAngle;
 
 // motor write -> Serial write
-QueueHandle_t qPrintOutput;  
-QueueHandle_t qPrintSetpoint;  
-QueueHandle_t qPrintPWMA;
-QueueHandle_t qPrintPWMB; 
-QueueHandle_t qPrintPWMC;
-QueueHandle_t qPrintMTheta;  
-QueueHandle_t qPrintMSumTheta;  
-QueueHandle_t qPrintVTheta;  
-QueueHandle_t qPrintVSumTheta;  
-QueueHandle_t qPrintHTheta;  
-QueueHandle_t qPrintHSumTheta;  
+QueueHandle_t qPrintOutput ;  
+QueueHandle_t qPrintSetpoint ;  
+QueueHandle_t qPrintPWMA ;
+QueueHandle_t qPrintPWMB ; 
+QueueHandle_t qPrintPWMC ;
+QueueHandle_t qPrintMTheta ;  
+QueueHandle_t qPrintMSumTheta ;  
+QueueHandle_t qPrintVTheta ;  
+QueueHandle_t qPrintVSumTheta ;  
+QueueHandle_t qPrintHTheta ;  
+QueueHandle_t qPrintHSumTheta ;  
 
 
 void setup() {
@@ -113,10 +113,10 @@ void setup() {
   // motor write -> Serial write
   qPrintOutput = xQueueCreate( 1, sizeof( double ) );
   qPrintSetpoint = xQueueCreate( 1, sizeof( double ) );
-  qPrintPWMA = xQueueCreate( 1, sizeof( uint8_t ) );
-  qPrintPWMB = xQueueCreate( 1, sizeof( uint8_t ) );
-  qPrintPWMC = xQueueCreate( 1, sizeof( uint8_t ) );
-  qPrintMTheta = xQueueCreate( 1, sizeof( uint8_t ) );
+  qPrintPWMA = xQueueCreate( 1, sizeof( int ) );
+  qPrintPWMB = xQueueCreate( 1, sizeof( int ) );
+  qPrintPWMC = xQueueCreate( 1, sizeof( int ) );
+  qPrintMTheta = xQueueCreate( 1, sizeof( double ) );
   qPrintMSumTheta = xQueueCreate( 1, sizeof( double ) );
   qPrintVTheta = xQueueCreate( 1, sizeof( uint8_t ) );
   qPrintVSumTheta = xQueueCreate( 1, sizeof( double ) );
@@ -230,7 +230,7 @@ void vspiCommand8(void *pvParameters) {
     theta = (uiAngle*360.0)/65536.0;
     vspi->endTransaction();
 
-    xQueueOverwrite(qMotorAngle, &uiAngle);
+    xQueueOverwrite( qPrintVTheta, &uiAngle);
 
     vTaskDelay(1 / portTICK_RATE_MS);
   }
@@ -248,7 +248,7 @@ void hspiCommand8(void *pvParameters) {
     theta = (uiAngle*360.0)/65536.0;
     hspi->endTransaction();
 
-    // xQueueOverwrite( qPrintHTheta, &uiAngle);
+    xQueueOverwrite( qPrintHTheta, &uiAngle);
 
     vTaskDelay(1 / portTICK_RATE_MS);
   }
@@ -265,16 +265,15 @@ void M1_ctrl(void *pvParameters) {
   uint8_t theta3;
 
   //Calculation variables
-  uint8_t phaseShift8_120 = 85;
-  uint8_t phaseShift8_90 = 64;
-  uint8_t phaseShift8_90_minus = 192;
+  uint8_t phaseShift8_120=85;
+  uint8_t phaseShift8_90=64;
+  uint8_t phaseShift8_90_minus=192;
   uint8_t startPos=0;
-  double outputScale;
   
   //Initializatin values;
   int start = 1;
   uint8_t theta_0 = 0;
-  double u = 1;
+  double u = 0;
   
   //Starting motor in position zero
   uint8_t theta_0_mek = 0;
@@ -295,7 +294,7 @@ void M1_ctrl(void *pvParameters) {
   Serial.println("start");
 
   xQueuePeek(qMotorAngle, &theta_0_mek, 0);
-  theta_0 = theta_0_mek << 2;
+  theta_0=theta_0_mek << 2;
 
   while(1){
     //Leading or lagging electrical field
@@ -303,7 +302,7 @@ void M1_ctrl(void *pvParameters) {
     else if (u > 0) lead_lag = phaseShift8_90_minus;
     
     // Read angle
-    xQueuePeek(qMotorAngle, &theta_raw, 0);
+    theta_raw = xQueuePeek( qMotorAngle, &theta_raw, 0);
     theta_multiplied = theta_raw << 2;        //Multiplied by 4 for electrical angle.
     startPos = 255 - theta_0 + 1;  
     theta_multiplied += startPos;
@@ -313,23 +312,23 @@ void M1_ctrl(void *pvParameters) {
     currentStepC = currentStepB + phaseShift8_120;
 
     //Output
-    // if (Serial.available() > 0) {
-    //         // read the incoming byte:
-    //   float buf = Serial.parseFloat();
-    //   if(buf != 0){
-    //     u = buf;
-    //   }
-    //   if(buf == 's'){
-    //     u = 0;
-    //   }
-    // }
+    if (Serial.available() > 0) {
+            // read the incoming byte:
+      float buf = Serial.parseFloat();
+      if(buf != 0){
+        u = buf;
+      }
+      if(buf == 's'){
+        u = 0;
+      }
+    }
 
-    outputScale = abs((uint8_t)u);
+    outputScale = abs(u);
 
     //Output
     pwmA = (uint8_t)(pwmSin[currentStepA] * outputScale);
-    pwmB = (uint8_t)(pwmSin[currentStepB] * outputScale);
-    pwmC = (uint8_t)(pwmSin[currentStepC] * outputScale);
+    pwmB = (uint8_t)(pwmSin[currentStepA] * outputScale);
+    pwmC = (uint8_t)(pwmSin[currentStepA] * outputScale);
     sigmaDeltaWrite(M1_PWM1, pwmA);
     sigmaDeltaWrite(M1_PWM2, pwmA);
     sigmaDeltaWrite(M1_PWM3, pwmA);
@@ -338,22 +337,20 @@ void M1_ctrl(void *pvParameters) {
     xQueueOverwrite(qPrintPWMB, &pwmB);
     xQueueOverwrite(qPrintPWMC, &pwmC);
 
-    xQueueOverwrite(qPrintMTheta, &theta_raw);
-
     vTaskDelay(1 / portTICK_RATE_MS);
     }
 }
 
 void printer(void *pvParameters) {
-  double output, Setpoint, vSumTheta, hSumTheta, moSumTheta;
-  uint8_t hTheta, vTheta, moTheta;
-  uint8_t pwmA, pwmB, pwmC; 
+  double output, Setpoint, vSumTheta, hSumTheta, mTheta, mSumTheta;
+  uint8_t hTheta, vTheta;
+  int pwmA, pwmB, pwmC; 
 
   while(1){
     xQueuePeek( qPrintOutput, &output, 0 );
     xQueuePeek( qPrintSetpoint, &Setpoint, 0 );
-    xQueuePeek( qPrintMTheta, &moTheta, 0 );
-    xQueuePeek( qPrintMSumTheta, &moSumTheta, 0 );
+    xQueuePeek( qPrintMTheta, &mTheta, 0 );
+    xQueuePeek( qPrintMSumTheta, &mSumTheta, 0 );
     xQueuePeek( qPrintVTheta, &vTheta, 0 );
     xQueuePeek( qPrintVSumTheta, &vSumTheta, 0 );
     xQueuePeek( qPrintHTheta, &hTheta, 0 );
@@ -366,16 +363,16 @@ void printer(void *pvParameters) {
     // Serial.print(output);
     // Serial.print(" | Set: ");
     // Serial.print(Setpoint);
-    // Serial.print(" | vTheta: ");
-    // Serial.print(vTheta);
+    Serial.print(" | vTheta: ");
+    Serial.print(vTheta);
     // Serial.print(" | vSumTheta: ");
     // Serial.print(vSumTheta);
-    // Serial.print(" | hTheta: ");
-    // Serial.print(hTheta);
+    Serial.print(" | hTheta: ");
+    Serial.print(hTheta);
     // Serial.println(" | hSumTheta: ");
     // Serial.print(hSumTheta);
     Serial.print(" | mTheta: ");
-    Serial.print(moTheta);
+    Serial.print(mTheta);
     // Serial.print(" | mSumTheta: ");
     // Serial.print(mSumTheta);
 
