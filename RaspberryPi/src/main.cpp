@@ -2,8 +2,8 @@
 // sudo ./bbSPIx_test
 
 //  Hello World client
-#include <zmq.h>
-#include <string.h>
+
+
 #include "zhelpers.hpp"
 
 #include <stdio.h>
