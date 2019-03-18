@@ -15,7 +15,7 @@
 #include <SPI.h>
 #include "freertos/event_groups.h"
 #include "freertos/queue.h"
-#include <PID_v1.h>
+//#include <PID_v1.h>
 
 #if CONFIG_FREERTOS_UNICORE
 #define ARDUINO_RUNNING_CORE 0
@@ -37,7 +37,7 @@
 #define M1_PWM2 2
 #define M1_PWM3 4
 #define M1_EN   16
-#define PWM_FRQ 25*1000
+#define PWM_FRQ 200000
 
 xQueueHandle mot1_queue;
 xQueueHandle mot2_queue;
@@ -47,7 +47,7 @@ EventGroupHandle_t mot_eventgroup;
 SPIClass * vspi = NULL;
 SPIClass * hspi = NULL;
 
-static const int spiClk = 10*1000*1000; // 10 MHz
+static const int spiClk = 20*1000*1000; // 20 MHz
 
 // //Define Variables we'll be connecting to
 // double Setpoint, Input, Output;
@@ -94,8 +94,6 @@ void setup() {
 
   pinMode(V_CS, OUTPUT); //VSPI SS
   pinMode(H_CS, OUTPUT); //HSPI SS
-  
-  mot_eventgroup = xEventGroupCreate();
 
   // PWM
   sigmaDeltaSetup(0, PWM_FRQ);
@@ -126,11 +124,11 @@ void setup() {
   // xTaskCreatePinnedToCore(vspiCommand16, "vspi", 4096, (void *)1, 1, NULL, 0);
   // xTaskCreatePinnedToCore(hspiCommand16, "hspi", 4096, (void *)2, 1, NULL, 1);
   xTaskCreatePinnedToCore(vspiCommand8, "vspi", 4096, (void *)1, 1, NULL, 0);
-  delay(200);
+
   xTaskCreatePinnedToCore(hspiCommand8, "hspi", 4096, (void *)2, 1, NULL, 1);
-  delay(200);
+
   xTaskCreatePinnedToCore(M1_ctrl, "M1_ctrl", 4096, (void *)1, 1, NULL, 0);
-  delay(200);
+
   xTaskCreatePinnedToCore(printer, "printer", 4096, (void *)1, 1, NULL, 1);
 
   Serial.begin(115200);
@@ -223,14 +221,14 @@ void vspiCommand8(void *pvParameters) {
   double theta, deltaTheta, sumTheta = 0, prevTheta = 0;
 
   while (1) {
-    vspi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE3));
-    digitalWrite(5, LOW);
-    uiAngle = vspi->transfer(0b00000000);
-    digitalWrite(5, HIGH);
+    vspi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
+    digitalWrite(V_CS, LOW);
+    uiAngle = vspi->transfer(0x00);
+    digitalWrite(V_CS, HIGH);
     theta = (uiAngle*360.0)/65536.0;
     vspi->endTransaction();
 
-    xQueueOverwrite(qMotorAngle, &uiAngle);
+    //xQueueOverwrite(qMotorAngle, &uiAngle);
 
     vTaskDelay(1 / portTICK_RATE_MS);
   }
@@ -241,13 +239,14 @@ void hspiCommand8(void *pvParameters) {
   double theta, deltaTheta, sumTheta = 0, prevTheta = 0;
 
   while(1){
-    hspi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE3));
-    digitalWrite(15, LOW);
-    uiAngle = hspi->transfer(0b00000000);
-    digitalWrite(15, HIGH);
+    hspi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
+    digitalWrite(H_CS, LOW);
+    uiAngle = hspi->transfer(0x00);
+    digitalWrite(H_CS, HIGH);
     theta = (uiAngle*360.0)/65536.0;
     hspi->endTransaction();
 
+    xQueueOverwrite(qMotorAngle, &uiAngle);
     // xQueueOverwrite( qPrintHTheta, &uiAngle);
 
     vTaskDelay(1 / portTICK_RATE_MS);
@@ -265,7 +264,7 @@ void M1_ctrl(void *pvParameters) {
   uint8_t theta3;
 
   //Calculation variables
-  uint8_t phaseShift8_120 = 85;
+  uint8_t phaseShift8_120 = 256/3;
   uint8_t phaseShift8_90 = 64;
   uint8_t phaseShift8_90_minus = 192;
   uint8_t startPos=0;
@@ -274,7 +273,7 @@ void M1_ctrl(void *pvParameters) {
   //Initializatin values;
   int start = 1;
   uint8_t theta_0 = 0;
-  double u = 1;
+  double u = 0.2;
   
   //Starting motor in position zero
   uint8_t theta_0_mek = 0;
@@ -285,17 +284,33 @@ void M1_ctrl(void *pvParameters) {
   //pwm
   uint8_t pwmA, pwmB, pwmC;
 
-  sigmaDeltaWrite(M1_PWM1, (uint8_t)(pwmSin[currentStepA] * 0.5));
-  sigmaDeltaWrite(M1_PWM2, (uint8_t)(pwmSin[currentStepB] * 0.5));
-  sigmaDeltaWrite(M1_PWM3, (uint8_t)(pwmSin[currentStepC] * 0.5));
+    pwmA = (pwmSin[currentStepA]);
+    pwmB = (pwmSin[currentStepB]);
+    pwmC = (pwmSin[currentStepC]);
+    sigmaDeltaWrite(0, pwmA);
+    sigmaDeltaWrite(1, pwmB);
+    sigmaDeltaWrite(2, pwmC);
+    
+for(int i = 0; i < 10000; i++)
+{
+  Serial.print("A: ");
+  Serial.print((pwmSin[currentStepA]));
+  Serial.print(" | B: ");
+  Serial.print((pwmSin[currentStepB]));
+  Serial.print(" | C: ");
+  Serial.println((pwmSin[currentStepC]));
+}
 
-  Serial.println("Synchronizing");
-  delay(2000);   //Waiting for motor to settle in position 0
 
+
+  
+Serial.println("Synchronizing");
   Serial.println("start");
+  
 
   xQueuePeek(qMotorAngle, &theta_0_mek, 0);
   theta_0 = theta_0_mek << 2;
+  Serial.println(theta_0);
 
   while(1){
     //Leading or lagging electrical field
@@ -324,21 +339,23 @@ void M1_ctrl(void *pvParameters) {
     //   }
     // }
 
-    outputScale = abs((uint8_t)u);
+    outputScale = fabs(u);
 
     //Output
-    pwmA = (uint8_t)(pwmSin[currentStepA] * outputScale);
-    pwmB = (uint8_t)(pwmSin[currentStepB] * outputScale);
-    pwmC = (uint8_t)(pwmSin[currentStepC] * outputScale);
-    sigmaDeltaWrite(M1_PWM1, pwmA);
-    sigmaDeltaWrite(M1_PWM2, pwmA);
-    sigmaDeltaWrite(M1_PWM3, pwmA);
+    pwmA = (pwmSin[currentStepA]);
+    pwmB = (pwmSin[currentStepB]);
+    pwmC = (pwmSin[currentStepC]);
+    sigmaDeltaWrite(0, pwmA);
+    sigmaDeltaWrite(1, pwmB);
+    sigmaDeltaWrite(2, pwmC);
 
     xQueueOverwrite(qPrintPWMA, &pwmA);
     xQueueOverwrite(qPrintPWMB, &pwmB);
     xQueueOverwrite(qPrintPWMC, &pwmC);
 
     xQueueOverwrite(qPrintMTheta, &theta_raw);
+
+    xQueueOverwrite(qPrintVTheta, &theta_multiplied);
 
     vTaskDelay(1 / portTICK_RATE_MS);
     }
@@ -374,12 +391,12 @@ void printer(void *pvParameters) {
     // Serial.print(hTheta);
     // Serial.println(" | hSumTheta: ");
     // Serial.print(hSumTheta);
-    Serial.print(" | mTheta: ");
-    Serial.print(moTheta);
-    // Serial.print(" | mSumTheta: ");
-    // Serial.print(mSumTheta);
+    // Serial.print(" | mTheta: ");
+    // Serial.print(moTheta);
+    // Serial.print(" | Theta mult: ");
+    // Serial.print(vTheta);
 
-    Serial.print(" | PWM :");
+    Serial.print(" | PWM : ");
     Serial.print(pwmA);
     Serial.print(" | ");
     Serial.print(pwmB);
