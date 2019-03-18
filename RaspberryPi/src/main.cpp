@@ -27,7 +27,7 @@ int main()
    //  Prepare our context and subscriber
    zmq::context_t context(1);
    zmq::socket_t subscriber (context, ZMQ_SUB);
-   subscriber.connect("tcp://localhost:5563");
+   subscriber.connect("tcp://10.218.130.229:5563");
    subscriber.setsockopt( ZMQ_SUBSCRIBE, "B", 1);
 
 
