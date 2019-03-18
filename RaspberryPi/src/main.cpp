@@ -4,6 +4,7 @@
 //  Hello World client
 #include <zmq.h>
 #include <string.h>
+#include "zhelpers.hpp"
 
 #include <stdio.h>
 #include <iostream>
@@ -23,13 +24,11 @@ using namespace std;
 
 int main()
 {
-
-   // HELLO WORLD client
-    printf ("Connecting to hello world server…\n");
-    void *context = zmq_ctx_new ();
-    void *requester = zmq_socket (context, ZMQ_REQ);
-    zmq_connect (requester, "tcp://localhost:5555");
-    int request_nbr;
+   //  Prepare our context and subscriber
+   zmq::context_t context(1);
+   zmq::socket_t subscriber (context, ZMQ_SUB);
+   subscriber.connect("tcp://localhost:5563");
+   subscriber.setsockopt( ZMQ_SUBSCRIBE, "B", 1);
 
 
    int count, set_val, read_val, x, SPI_init1, SPI_init2, SPI_init3, cout_itr=1;
@@ -44,7 +43,7 @@ int main()
    double kp2=0.1;
    double max_torque1=0.3;    //unused
    double max_torque2=0.15;   //unused
-   
+
 
    uint8_t theta1;
    uint8_t theta2;
@@ -74,13 +73,13 @@ int main()
    cout << "Initiation of spi2: " << SPI_init2 << endl;
    cout << "Initiation of spi3: " << SPI_init3 << endl;
 
-   
+
    //Report start angle
-   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); 
+   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1);
    theta1=inBuf[0];
-   count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); 
+   count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1);
    theta2=inBuf[0];
-   cout  << "link1 angle: " << unsigned(theta1) <<"  link2 angle: " << unsigned(theta2) << endl; 
+   cout  << "link1 angle: " << unsigned(theta1) <<"  link2 angle: " << unsigned(theta2) << endl;
 
    //Start by focing motors to start position
    torque_cmd[0]=(uint8_t) 0;
@@ -98,7 +97,7 @@ int main()
    //SENSOR 1
    set_zero_angle_cmd[0]=0b10000001; //WRITE REG 1 (8 MSB of zero angle)
    set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
-   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); 
+   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2);
    usleep(50000);
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
@@ -117,20 +116,20 @@ int main()
    cout << "zero_point_16: " << zero_point <<endl;
    cout << "zero_point_8: " << unsigned((zero_point >> 8)) << endl;
    zero_point = (uint16_t) (0b10000000000000000-zero_point);   //CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
- 
+
    cout << "zero_point_compliment_16: " << zero_point << endl;
    cout << "zero_point__compliment_bit: "<< bitset<16>(zero_point) << endl;
    set_zero_angle_cmd[0]=0b10000001;
    set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //8 MSB of Compliment of new zero angle
    cout << bitset<8>(set_zero_angle_cmd[1]) << endl;
-   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); 
+   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2);
    usleep(50000);
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
    usleep(50000);
    set_zero_angle_cmd[0]=0b10000000;
    set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //8 LSB of Compliment of new zero angle
-   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2); 
+   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2);
    usleep(50000);
    count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " <<  bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
@@ -139,7 +138,7 @@ int main()
    //SENSOR 2
    set_zero_angle_cmd[0]=0b10000001;   //WRITE REG 1 (8 MSB of zero angle)
    set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
-   count = bbSPIXfer(link2, set_zero_angle_cmd, (char *)inBuf, 2); 
+   count = bbSPIXfer(link2, set_zero_angle_cmd, (char *)inBuf, 2);
    usleep(50000);
    count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
@@ -163,7 +162,7 @@ int main()
    set_zero_angle_cmd[0]=0b10000001;                           //WRITE REG 1 (8 MSB of zero angle)
    set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //ZERO ANGLE SET TO CURRENT ANGLE
    cout << bitset<8>(set_zero_angle_cmd[1]) << endl;
-   count = bbSPIXfer(link2, set_zero_angle_cmd, (char *)inBuf, 2); 
+   count = bbSPIXfer(link2, set_zero_angle_cmd, (char *)inBuf, 2);
    usleep(50000);
    count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 2);
    cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
@@ -178,12 +177,12 @@ int main()
 
 
    //Report new angle with modified zero angle:
-   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); 
+   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1);
    theta1=inBuf[0];
-   count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); 
+   count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1);
    theta2=inBuf[0];
-   cout  << "New link1 angle: " << unsigned(theta1) <<"New link2 angle " << unsigned(theta2) << endl; 
-   
+   cout  << "New link1 angle: " << unsigned(theta1) <<"New link2 angle " << unsigned(theta2) << endl;
+
    usleep(50000);
    while (1)
    {
@@ -192,7 +191,7 @@ int main()
       theta1=inBuf[0];
       //count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
       //theta2=inBuf[0];
-      
+
       //PID
       error1= (int short) setpoint1-theta1;
       error2= (int short) setpoint2-theta2;
@@ -200,7 +199,7 @@ int main()
       u1=kp1*error1;
       u2=kp2*error2;
 
-       
+
 
 
 	 //Report angle (For testing)
@@ -213,21 +212,17 @@ int main()
 	  }
 
 	  //Output
-     
-	 // count = bbSPIXfer(esp, torque_cmd, (char *)inBuf, 4);
-   
-     //HELLO WORLD CLIENT
-        char buffer [10];
-        printf ("Sending Hello %d…\n", request_nbr);
-        zmq_send (requester, "Hello", 5, 0);
-        zmq_recv (requester, buffer, 10, 0);
-        printf ("Received World %d\n", request_nbr);
 
+	 // count = bbSPIXfer(esp, torque_cmd, (char *)inBuf, 4);
+
+   //  Read envelope with address
+   std::string address = s_recv (subscriber);
+   //  Read message contents
+   std::string contents = s_recv (subscriber);
+
+   std::cout << "[" << address << "] " << contents << std::endl;
    }
-    //HELLO WORLD CLIENT
-    zmq_close (requester);
-    zmq_ctx_destroy (context);
-    return 0;
+
    /*
    for (i=0; i<256; i++)
    {
