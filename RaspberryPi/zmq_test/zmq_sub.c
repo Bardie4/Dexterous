@@ -7,7 +7,7 @@ int main (void)
     //  Prepare our context and subscriber
     void *context = zmq_ctx_new ();
     void *subscriber = zmq_socket (context, ZMQ_SUB);
-    zmq_connect (subscriber, "tcp://localhost:5563");
+    zmq_connect (subscriber, "tcp://192.168.0.69:5563");
     zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "B", 1);
 
     while (1) {
