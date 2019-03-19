@@ -2,7 +2,7 @@
 
 #include "zhelpers.h"
 
-void main (void)
+int main (void)
 {
     //  Prepare our context and subscriber
     void *context = zmq_ctx_new ();
