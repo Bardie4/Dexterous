@@ -14,7 +14,7 @@ int main (void)
     printf("init\n");
     void *publisher = zmq_socket (context, ZMQ_PUB);
     printf("init\n");
-    zmq_bind (publisher, "tcp://192.254.27.157:5563");
+    zmq_bind (publisher, "tcp://*:5563");
     printf("init\n");
 
     while (1) {
