@@ -1,4 +1,4 @@
-/* The ESP32 has four SPi buses, however as of right now only two of
+/* asdThe ESP32 has four SPi buses, however as of right now only two of
  * them are available to use, HSPI and VSPI. Simply using the SPI API 
  * as illustrated in Arduino examples will use VSPI, leaving HSPI unused.
  * 
@@ -23,16 +23,6 @@
 #define ARDUINO_RUNNING_CORE 1
 #endif
 
-xQueueHandle mot1_queue;
-xQueueHandle mot2_queue;
-EventGroupHandle_t mot_eventgroup;
-
-static const int spiClk = 10*1000*1000; // 10 MHz
-
-//uninitalised pointers to SPI objects
-SPIClass * vspi = NULL;
-SPIClass * hspi = NULL;
-
 #define H_MOSI  13
 #define H_MISO  12
 #define H_CLK   14
@@ -47,37 +37,48 @@ SPIClass * hspi = NULL;
 #define M1_PWM2 2
 #define M1_PWM3 4
 #define M1_EN   16
+#define PWM_FRQ 25*1000
 
-//Define Variables we'll be connecting to
-double Setpoint, Input, Output;
-double probe;
-double time_loop;
+xQueueHandle mot1_queue;
+xQueueHandle mot2_queue;
+EventGroupHandle_t mot_eventgroup;
 
-//Specify the links and initial tuning parameters
-double Kp = 0.8, Ki = 0.2, Kd = 0.0;
-PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, REVERSE);
+//uninitalised pointers to SPI objects
+SPIClass * vspi = NULL;
+SPIClass * hspi = NULL;
+
+static const int spiClk = 10*1000*1000; // 10 MHz
+
+// //Define Variables we'll be connecting to
+// double Setpoint, Input, Output;
+// double probe;
+// double time_loop;
+
+// //Specify the links and initial tuning parameters
+// double Kp = 0.8, Ki = 0.2, Kd = 0.0;
+// PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, REVERSE);
 
 int start;
 int phaseShift;
 
-const int pwmSin[] = {128, 132, 136, 140, 143, 147, 151, 155, 159, 162, 166, 170, 174, 178, 181, 185, 189, 192, 196, 200, 203, 207, 211, 214, 218, 221, 225, 228, 232, 235, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 248, 249, 250, 250, 251, 252, 252, 253, 253, 253, 254, 254, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 254, 254, 254, 253, 253, 253, 252, 252, 251, 250, 250, 249, 248, 248, 247, 246, 245, 244, 243, 242, 241, 240, 239, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 248, 249, 250, 250, 251, 252, 252, 253, 253, 253, 254, 254, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 254, 254, 254, 253, 253, 253, 252, 252, 251, 250, 250, 249, 248, 248, 247, 246, 245, 244, 243, 242, 241, 240, 239, 238, 235, 232, 228, 225, 221, 218, 214, 211, 207, 203, 200, 196, 192, 189, 185, 181, 178, 174, 170, 166, 162, 159, 155, 151, 147, 143, 140, 136, 132, 128, 124, 120, 116, 113, 109, 105, 101, 97, 94, 90, 86, 82, 78, 75, 71, 67, 64, 60, 56, 53, 49, 45, 42, 38, 35, 31, 28, 24, 21, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 8, 7, 6, 6, 5, 4, 4, 3, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 8, 7, 6, 6, 5, 4, 4, 3, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 24, 28, 31, 35, 38, 42, 45, 49, 53, 56, 60, 64, 67, 71, 75, 78, 82, 86, 90, 94, 97, 101, 105, 109, 113, 116, 120, 124};
+const uint8_t pwmSin[] = {128,131,134,137,140,143,146,149,152,155,158,162,165,167,170,173,176,179,182,185,188,190,193,196,198,201,203,206,208,211,213,215,218,220,222,224,226,228,230,232,234,235,237,238,240,241,243,244,245,246,248,249,250,250,251,252,253,253,254,254,254,255,255,255,255,255,255,255,254,254,254,253,253,252,251,250,250,249,248,246,245,244,243,241,240,238,237,235,234,232,230,228,226,224,222,220,218,215,213,211,208,206,203,201,198,196,193,190,188,185,182,179,176,173,170,167,165,162,158,155,152,149,146,143,140,137,134,131,128,124,121,118,115,112,109,106,103,100,97,93,90,88,85,82,79,76,73,70,67,65,62,59,57,54,52,49,47,44,42,40,37,35,33,31,29,27,25,23,21,20,18,17,15,14,12,11,10,9,7,6,5,5,4,3,2,2,1,1,1,0,0,0,0,0,0,0,1,1,1,2,2,3,4,5,5,6,7,9,10,11,12,14,15,17,18,20,21,23,25,27,29,31,33,35,37,40,42,44,47,49,52,54,57,59,62,65,67,70,73,76,79,82,85,88,90,93,97,100,103,106,109,112,115,118,121,124};
 
 // SPI read -> motor
 QueueHandle_t qMotorAngle;
 QueueHandle_t qMotorSumAngle;
 
 // motor write -> Serial write
-QueueHandle_t qPrintOutput ;  
-QueueHandle_t qPrintSetpoint ;  
-QueueHandle_t qPrintPWMA ;
-QueueHandle_t qPrintPWMB ; 
-QueueHandle_t qPrintPWMC ;
-QueueHandle_t qPrintMTheta ;  
-QueueHandle_t qPrintMSumTheta ;  
-QueueHandle_t qPrintVTheta ;  
-QueueHandle_t qPrintVSumTheta ;  
-QueueHandle_t qPrintHTheta ;  
-QueueHandle_t qPrintHSumTheta ;  
+QueueHandle_t qPrintOutput;  
+QueueHandle_t qPrintSetpoint;  
+QueueHandle_t qPrintPWMA;
+QueueHandle_t qPrintPWMB; 
+QueueHandle_t qPrintPWMC;
+QueueHandle_t qPrintMTheta;  
+QueueHandle_t qPrintMSumTheta;  
+QueueHandle_t qPrintVTheta;  
+QueueHandle_t qPrintVSumTheta;  
+QueueHandle_t qPrintHTheta;  
+QueueHandle_t qPrintHSumTheta;  
 
 
 void setup() {
@@ -96,6 +97,15 @@ void setup() {
   
   mot_eventgroup = xEventGroupCreate();
 
+  // PWM
+  sigmaDeltaSetup(0, PWM_FRQ);
+  sigmaDeltaSetup(1, PWM_FRQ);
+  sigmaDeltaSetup(2, PWM_FRQ);
+
+  sigmaDeltaAttachPin(M1_PWM1, 0);
+  sigmaDeltaAttachPin(M1_PWM2, 1);
+  sigmaDeltaAttachPin(M1_PWM3, 2);
+
   // Angle read -> motor write
   qMotorAngle = xQueueCreate( 1, sizeof( double ) );
   qMotorSumAngle = xQueueCreate( 1, sizeof( double ) );
@@ -103,10 +113,10 @@ void setup() {
   // motor write -> Serial write
   qPrintOutput = xQueueCreate( 1, sizeof( double ) );
   qPrintSetpoint = xQueueCreate( 1, sizeof( double ) );
-  qPrintPWMA = xQueueCreate( 1, sizeof( int ) );
-  qPrintPWMB = xQueueCreate( 1, sizeof( int ) );
-  qPrintPWMC = xQueueCreate( 1, sizeof( int ) );
-  qPrintMTheta = xQueueCreate( 1, sizeof( double ) );
+  qPrintPWMA = xQueueCreate( 1, sizeof( uint8_t ) );
+  qPrintPWMB = xQueueCreate( 1, sizeof( uint8_t ) );
+  qPrintPWMC = xQueueCreate( 1, sizeof( uint8_t ) );
+  qPrintMTheta = xQueueCreate( 1, sizeof( uint8_t ) );
   qPrintMSumTheta = xQueueCreate( 1, sizeof( double ) );
   qPrintVTheta = xQueueCreate( 1, sizeof( uint8_t ) );
   qPrintVSumTheta = xQueueCreate( 1, sizeof( double ) );
@@ -116,8 +126,11 @@ void setup() {
   // xTaskCreatePinnedToCore(vspiCommand16, "vspi", 4096, (void *)1, 1, NULL, 0);
   // xTaskCreatePinnedToCore(hspiCommand16, "hspi", 4096, (void *)2, 1, NULL, 1);
   xTaskCreatePinnedToCore(vspiCommand8, "vspi", 4096, (void *)1, 1, NULL, 0);
+  delay(200);
   xTaskCreatePinnedToCore(hspiCommand8, "hspi", 4096, (void *)2, 1, NULL, 1);
+  delay(200);
   xTaskCreatePinnedToCore(M1_ctrl, "M1_ctrl", 4096, (void *)1, 1, NULL, 0);
+  delay(200);
   xTaskCreatePinnedToCore(printer, "printer", 4096, (void *)1, 1, NULL, 1);
 
   Serial.begin(115200);
@@ -217,7 +230,7 @@ void vspiCommand8(void *pvParameters) {
     theta = (uiAngle*360.0)/65536.0;
     vspi->endTransaction();
 
-    xQueueOverwrite( qPrintVTheta, &uiAngle);
+    xQueueOverwrite(qMotorAngle, &uiAngle);
 
     vTaskDelay(1 / portTICK_RATE_MS);
   }
@@ -235,147 +248,112 @@ void hspiCommand8(void *pvParameters) {
     theta = (uiAngle*360.0)/65536.0;
     hspi->endTransaction();
 
-    xQueueOverwrite( qPrintHTheta, &uiAngle);
+    // xQueueOverwrite( qPrintHTheta, &uiAngle);
 
     vTaskDelay(1 / portTICK_RATE_MS);
   }
 }
 
 void M1_ctrl(void *pvParameters) {
-  int lead_lag;
-  double e_theta_0;
-  int currentStepA;
-  int currentStepB;
-  int currentStepC;
-  int pwmA, pwmB, pwmC;
-  int sineArraySize;
-  int increment = 0;
-  double e_theta; //electrical angle
-  double a_theta; //array angle
-  boolean direct = 1; // direction true=forward, false=backward
-  int read_pot;
-  //90 degrees angle;
-  int ea_nintey = sineArraySize/4;
 
-  const int freq = 250000;
-  const int resolution = 8;
+  //Angle measurement
+  uint8_t theta_raw;
+  uint8_t theta_multiplied;
+  uint8_t lead_lag;
+  uint8_t theta;
+  uint8_t theta2;
+  uint8_t theta3;
 
-  // Read angle
-  double sumTheta, theta;
-
-  // PV
-  double output;
- 
-  // configure LED PWM functionalitites
-  sigmaDeltaSetup(0, freq);
-  sigmaDeltaSetup(1, freq);
-  sigmaDeltaSetup(2, freq);
-
-  // attach the channel to the GPIO to be controlled
-  sigmaDeltaAttachPin(M1_PWM1, 0);
-  sigmaDeltaAttachPin(M1_PWM2, 1);
-  sigmaDeltaAttachPin(M1_PWM3, 2);
-
-  // PID
-  Setpoint = 80;
-  myPID.SetOutputLimits(-100,100);
-  myPID.SetMode(AUTOMATIC);
+  //Calculation variables
+  uint8_t phaseShift8_120 = 85;
+  uint8_t phaseShift8_90 = 64;
+  uint8_t phaseShift8_90_minus = 192;
+  uint8_t startPos=0;
+  double outputScale;
   
-  pinMode(M1_PWM1, OUTPUT); 
-  pinMode(M1_PWM2, OUTPUT); 
-  pinMode(M1_PWM3, OUTPUT); 
+  //Initializatin values;
+  int start = 1;
+  uint8_t theta_0 = 0;
+  double u = 1;
   
-  pinMode(M1_EN, OUTPUT); 
+  //Starting motor in position zero
+  uint8_t theta_0_mek = 0;
+  uint8_t currentStepA = 0;
+  uint8_t currentStepB = currentStepA + 85;
+  uint8_t currentStepC = currentStepB + 85;
 
-  digitalWrite(M1_EN, HIGH);
+  //pwm
+  uint8_t pwmA, pwmB, pwmC;
 
-  sineArraySize = sizeof(pwmSin) / sizeof(int); // Find lookup table size 
-  int phaseShift = sineArraySize / 3.0; 
-  currentStepA = 0;
-  currentStepB = currentStepA + phaseShift;
-  currentStepC = currentStepB + phaseShift;
- 
-  sineArraySize--; // Convert from array Size to last PWM array number
+  sigmaDeltaWrite(M1_PWM1, (uint8_t)(pwmSin[currentStepA] * 0.5));
+  sigmaDeltaWrite(M1_PWM2, (uint8_t)(pwmSin[currentStepB] * 0.5));
+  sigmaDeltaWrite(M1_PWM3, (uint8_t)(pwmSin[currentStepC] * 0.5));
+
+  Serial.println("Synchronizing");
+  delay(2000);   //Waiting for motor to settle in position 0
+
+  Serial.println("start");
+
+  xQueuePeek(qMotorAngle, &theta_0_mek, 0);
+  theta_0 = theta_0_mek << 2;
 
   while(1){
-    xQueuePeek( qMotorSumAngle, &sumTheta, 0 );
-    xQueuePeek( qMotorAngle, &theta, 0 );
-
-    // PID
-    Input = sumTheta;
-
-    e_theta = 4.0 * theta - e_theta_0;
-    if (e_theta < 0.0) e_theta = 360.0 + e_theta;
-    else if (e_theta > 360.0 && e_theta <= 720.0) e_theta = e_theta - 360.0;
-    else if (e_theta > 720.0 && e_theta <= 1080.0) e_theta = e_theta - 720.0;
-    else if (e_theta > 1080.0) e_theta = e_theta - 1080.0;
-
-    if (start == 1){
-      e_theta_0 = e_theta;
-      start = 0;
-      e_theta = 0.0;
-    }
-
-    a_theta = floor((sineArraySize/360.0) * e_theta);
+    //Leading or lagging electrical field
+    if (u <= 0) lead_lag = phaseShift8_90;
+    else if (u > 0) lead_lag = phaseShift8_90_minus;
     
-    myPID.Compute(); // Update Output
-    
-    ea_nintey = sineArraySize/4.0;
-    if (Output < 0)
-      lead_lag = -ea_nintey;
-    else if (Output >= 0)
-      lead_lag = ea_nintey;
-    
-    // PWM
-    output = abs(Output) / 100.0; // 10 - (10+x)%
+    // Read angle
+    xQueuePeek(qMotorAngle, &theta_raw, 0);
+    theta_multiplied = theta_raw << 2;        //Multiplied by 4 for electrical angle.
+    startPos = 255 - theta_0 + 1;  
+    theta_multiplied += startPos;
+    theta_multiplied += lead_lag;             //Adding lead/lag angle based on direction
+    currentStepA = theta_multiplied;          //Masked by conversion back to 16 bit to cycle around 360 deg 4 times in one mechanical rotation. (Modulus 360 degrees)
+    currentStepB = currentStepA + phaseShift8_120;
+    currentStepC = currentStepB + phaseShift8_120;
 
-    currentStepA = a_theta + lead_lag;
-    currentStepB = currentStepA + phaseShift;
-    currentStepC = currentStepB + phaseShift;
+    //Output
+    // if (Serial.available() > 0) {
+    //         // read the incoming byte:
+    //   float buf = Serial.parseFloat();
+    //   if(buf != 0){
+    //     u = buf;
+    //   }
+    //   if(buf == 's'){
+    //     u = 0;
+    //   }
+    // }
 
-    if(currentStepA > sineArraySize)  currentStepA -= sineArraySize;
-    else if(currentStepA < 0)  currentStepA += sineArraySize;
- 
-    if(currentStepB > sineArraySize)  currentStepB -= sineArraySize;
-    else if(currentStepB < 0)  currentStepB += sineArraySize;
- 
-    if(currentStepC > sineArraySize)  currentStepC -= sineArraySize;
-    else if(currentStepC < 0) currentStepC += sineArraySize;
+    outputScale = abs((uint8_t)u);
 
+    //Output
+    pwmA = (uint8_t)(pwmSin[currentStepA] * outputScale);
+    pwmB = (uint8_t)(pwmSin[currentStepB] * outputScale);
+    pwmC = (uint8_t)(pwmSin[currentStepC] * outputScale);
+    sigmaDeltaWrite(M1_PWM1, pwmA);
+    sigmaDeltaWrite(M1_PWM2, pwmA);
+    sigmaDeltaWrite(M1_PWM3, pwmA);
 
-    // WRITE PWM
-    // analogWrite(M1_PWM1, pwmSin[currentStepA]*u);
-    // analogWrite(M1_PWM2, pwmSin[currentStepB]*u);
-    // analogWrite(M1_PWM3, pwmSin[currentStepC]*u);  
-    pwmA = ((int)(pwmSin[currentStepA])*output);
-    pwmB = ((int)(pwmSin[currentStepB])*output);
-    pwmC = ((int)(pwmSin[currentStepC])*output);
-    sigmaDeltaWrite(0, pwmA);
-    sigmaDeltaWrite(1, pwmB);
-    sigmaDeltaWrite(2, pwmC);
+    xQueueOverwrite(qPrintPWMA, &pwmA);
+    xQueueOverwrite(qPrintPWMB, &pwmB);
+    xQueueOverwrite(qPrintPWMC, &pwmC);
 
-    xQueueOverwrite( qPrintPWMA, &pwmA);
-    xQueueOverwrite( qPrintPWMB, &pwmB );
-    xQueueOverwrite( qPrintPWMC, &pwmC );
-    xQueueOverwrite( qPrintOutput, &output);
-    xQueueOverwrite( qPrintSetpoint, &Setpoint );
-    xQueueOverwrite( qPrintMTheta, &theta );
-    xQueueOverwrite( qPrintMSumTheta, &sumTheta);
+    xQueueOverwrite(qPrintMTheta, &theta_raw);
 
     vTaskDelay(1 / portTICK_RATE_MS);
     }
 }
 
 void printer(void *pvParameters) {
-  double output, Setpoint, vSumTheta, hSumTheta, mTheta, mSumTheta;
-  uint8_t hTheta, vTheta;
-  int pwmA, pwmB, pwmC; 
+  double output, Setpoint, vSumTheta, hSumTheta, moSumTheta;
+  uint8_t hTheta, vTheta, moTheta;
+  uint8_t pwmA, pwmB, pwmC; 
 
   while(1){
     xQueuePeek( qPrintOutput, &output, 0 );
     xQueuePeek( qPrintSetpoint, &Setpoint, 0 );
-    xQueuePeek( qPrintMTheta, &mTheta, 0 );
-    xQueuePeek( qPrintMSumTheta, &mSumTheta, 0 );
+    xQueuePeek( qPrintMTheta, &moTheta, 0 );
+    xQueuePeek( qPrintMSumTheta, &moSumTheta, 0 );
     xQueuePeek( qPrintVTheta, &vTheta, 0 );
     xQueuePeek( qPrintVSumTheta, &vSumTheta, 0 );
     xQueuePeek( qPrintHTheta, &hTheta, 0 );
@@ -388,25 +366,25 @@ void printer(void *pvParameters) {
     // Serial.print(output);
     // Serial.print(" | Set: ");
     // Serial.print(Setpoint);
-    Serial.print(" | vTheta: ");
-    Serial.print(vTheta);
+    // Serial.print(" | vTheta: ");
+    // Serial.print(vTheta);
     // Serial.print(" | vSumTheta: ");
     // Serial.print(vSumTheta);
-    Serial.print(" | hTheta: ");
-    Serial.print(hTheta);
+    // Serial.print(" | hTheta: ");
+    // Serial.print(hTheta);
     // Serial.println(" | hSumTheta: ");
     // Serial.print(hSumTheta);
     Serial.print(" | mTheta: ");
-    Serial.println(mTheta);
+    Serial.print(moTheta);
     // Serial.print(" | mSumTheta: ");
     // Serial.print(mSumTheta);
 
-    // Serial.print(" | PWM :");
-    // Serial.print(pwmA);
-    // Serial.print(" | ");
-    // Serial.print(pwmB);
-    // Serial.print(" | ");
-    // Serial.println(pwmC);
+    Serial.print(" | PWM :");
+    Serial.print(pwmA);
+    Serial.print(" | ");
+    Serial.print(pwmB);
+    Serial.print(" | ");
+    Serial.println(pwmC);
 
     vTaskDelay(100 / portTICK_RATE_MS);
   }
