@@ -4,7 +4,8 @@
 //  Expects "Hello" from client, replies with "World"
 //
 #include <C:\Program Files\ZeroMQ 4.0.4\include\zmq.h>
-#include <C:\Program Files\ZeroMQ 4.0.4\include\zmq_utils.h>
+//#include <C:\Program Files\ZeroMQ 4.0.4\include\zmq_utils.h>
+#include <C:\Users\User\Documents\master\Dexterous\ZMG_server\cppzmq-master\zmq.hpp>
 #include <string>
 #include <iostream>
 #ifndef _WIN32
