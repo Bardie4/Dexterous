@@ -38,6 +38,9 @@ const int IN1 = 3;
 const int IN2 = 5;
 const int IN3 = 6;
 
+const int fault = 2;
+const int nreset = 4;
+
 // SPWM (Sine Wave)
 const int pwmSin1[] = {128,133,138,144,149,155,160,165,171,176,181,186,192,197,202,207,212,217,222,227,232,236,239,241,242,243,245,246,247,248,249,250,251,252,252,253,253,254,254,255,255,255,255,255,255,255,255,254,254,254,253,252,252,251,250,249,248,247,246,245,244,242,241,240,238,240,241,242,244,245,246,247,248,249,250,251,252,252,253,254,254,254,255,255,255,255,255,255,255,255,254,254,253,253,252,252,251,250,249,248,247,246,245,243,242,241,239,236,232,227,222,217,212,207,202,197,192,186,181,176,171,165,160,155,149,144,138,133,128,122,117,111,106,100,95,90,84,79,74,69,63,58,53,48,43,38,33,28,23,19,16,14,13,12,10,9,8,7,6,5,4,3,3,2,2,1,1,0,0,0,0,0,0,0,0,1,1,1,2,3,3,4,5,6,7,8,9,10,11,13,14,15,17,15,14,13,11,10,9,8,7,6,5,4,3,3,2,1,1,1,0,0,0,0,0,0,0,0,1,1,2,2,3,3,4,5,6,7,8,9,10,12,13,14,16,19,23,28,33,38,43,48,53,58,63,69,74,79,84,90,95,100,106,111,117,122};
  
@@ -63,7 +66,9 @@ void setup() {
  setPwmFrequency(IN1); // Increase PWM frequency to 32 kHz  (make unaudible)
  setPwmFrequency(IN2);
  setPwmFrequency(IN3);
- 
+
+
+  
   pinMode(IN1, OUTPUT); 
   pinMode(IN2, OUTPUT); 
   pinMode(IN3, OUTPUT); 
@@ -72,11 +77,13 @@ void setup() {
   pinMode(EN2, OUTPUT); 
   pinMode(EN3, OUTPUT); 
  
- 
+  pinMode(fault, INPUT);
+  pinMode(nreset, OUTPUT);
+  
   digitalWrite(EN1, HIGH);
   digitalWrite(EN2, HIGH);
   digitalWrite(EN3, HIGH);
-  
+  digitalWrite(nreset, HIGH);
  
   sineArraySize = sizeof(pwmSin)/sizeof(int); // Find lookup table size
   sineArraySize--; // Convert from array Size to last PWM array number
@@ -104,12 +111,16 @@ void loop() {
   analogWrite(IN3, pwmSin[currentStepC]*0.5);
   
   Serial.println("Synchronizing");
-  delay(150000);   //Waiting for motor to settle in position 0
+  delay(300000);   //Waiting for motor to settle in position 0
   
     Serial.println("start");
   theta_0_mek=magAlpha.readAngleRaw8();
   theta_0=theta_0_mek << 2;
   while(1){
+
+  
+    
+   Serial.println(digitalRead(fault));
     
     time_old=micros();
     for (double i=0; i <10000; i++){
