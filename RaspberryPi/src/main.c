@@ -35,7 +35,7 @@ pthread_mutex_t lock;
 
 void* pid_(void* zmq_read_input){
   pthread_mutex_lock(&lock);
-  rintf("while out mutex init");
+  printf("while out mutex init");
   read_zmq_bundle* zmq_read = (read_zmq_bundle*)zmq_read_input;
   pthread_mutex_unlock(&lock);
   while(1){
