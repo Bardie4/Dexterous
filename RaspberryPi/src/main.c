@@ -80,7 +80,7 @@ void* pid_(void* zmq_read_input){
 
 void* read_reference_angle(void* zmq_read_input){
   pthread_mutex_lock(&lock);
-  read_zmq_bundle* zmq_read = (read_zmq_bundle*)zmq_read_input;
+  read_zmq_bundle* zmq_read = (read_zmq_bundle*) zmq_read_input;
   pthread_mutex_unlock(&lock);
   while (1) {
       pthread_mutex_lock(&lock);
@@ -97,6 +97,8 @@ void* read_reference_angle(void* zmq_read_input){
       //printf("%s\n", contents);
       free (zmq_read->address);
       free (zmq_read->contents);
+
+      printf("while read mutex end");
       pthread_mutex_unlock(&lock);
       usleep(500000);
     }
