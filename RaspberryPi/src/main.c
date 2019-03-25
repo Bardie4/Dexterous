@@ -270,7 +270,7 @@ int main()
 
    usleep(50000);
    pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_read);
-   pthread_create(&(tid[0]), NULL, &pid_, &zmq_read);/*
+   pthread_create(&(tid[1]), NULL, &pid_, &zmq_read);/*
    while (1)
    {
       //Read angle
