@@ -34,11 +34,11 @@ pthread_t tid[2];
 pthread_mutex_t lock;
 
 void* pid_(void* zmq_read_input){
+  ead_zmq_bundle* zmq_read = (read_zmq_bundle*)zmq_read_input;
   while(1){
 
   pthread_mutex_lock(&lock);
   /*
-  read_zmq_bundle* zmq_read = (read_zmq_bundle*)zmq_read_input;
   //Read angle
   char read_angle_cmd[]= {0b00000000, 0b00000000};
   unsigned char inBuf[4];
