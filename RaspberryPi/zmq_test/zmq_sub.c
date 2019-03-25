@@ -59,7 +59,7 @@ int main (void)
     }
 
     while(1){
-      printf("I am now reading from memory modified on another thread: %d | %d"\n,zmq_read.link1_angle, zmq_read.link2_angle);
+      printf("I am now reading from memory modified on another thread: %d | %d \n",zmq_read.link1_angle, zmq_read.link2_angle);
     }
   //  while (1) {
   //      //  Read envelope with address
