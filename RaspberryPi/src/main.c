@@ -68,6 +68,15 @@ int main()
   zmq_setsockopt (zmq_read.subscriber, ZMQ_SUBSCRIBE, "B", 1);
 
   pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_read);
+
+  if (pthread_mutex_init(&lock, NULL) != 0)
+  {
+      printf("\n mutex init failed\n");
+      return 1;
+  }
+  zmq_close (zmq_read.subscriber);
+  zmq_ctx_destroy (zmq_read.context);
+  return 0;
   //read_reference_angle(address, contents, subscriber, &link1_angle, &link2_angle);
 
 
