@@ -77,7 +77,9 @@ void* pid_(void* zmq_read_input){
 //   cout << "[" << address << "] " << contents << std::endl;
 
 void* read_reference_angle(void* zmq_read_input){
+  pthread_mutex_lock(&lock);
   read_zmq_bundle* zmq_read = (read_zmq_bundle*)zmq_read_input;
+  pthread_mutex_unlock(&lock);
   while (1) {
       pthread_mutex_lock(&lock);
       //  Read envelope with address
