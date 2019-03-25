@@ -121,7 +121,7 @@ int main()
   printf("Before threading");
   pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_read);
   usleep(1000000);
-  pthread_create(&(tid[1]), NULL, &pid_, &zmq_read);
+  //pthread_create(&(tid[1]), NULL, &pid_, &zmq_read);
   //pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_read);
 
   /*
