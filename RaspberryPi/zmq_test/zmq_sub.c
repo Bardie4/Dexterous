@@ -25,7 +25,7 @@ void* read_reference_angle(void* zmq_read_input){
       zmq_read->contents = s_recv (zmq_read->subscriber);
       //printf("%s\n", contents);
       pthread_mutex_lock(&lock);
-      sscanf(zmq_read->contents, "%d %d", &zmq_read->link1_angle, &zmq_read->link2_angle);
+      sscanf(zmq_read->contents, "%d %d", &(zmq_read->link1_angle), &(zmq_read->link2_angle));
       //printf("| %s %s\n", garbage1,garbage2);
       //sscanf(contents, "%lf[^ ]%lf[^\n]", &link1_angle, &link2_angle);
       printf("%d %d\n", zmq_read->link1_angle, zmq_read->link2_angle);
@@ -59,7 +59,7 @@ int main (void)
     }
 
     while(1){
-      printf("I am now reading from memory modified on another thread: %d | %d",&zmq_read.link1_angle, &zmq_read.link2_angle);
+      printf("I am now reading from memory modified on another thread: %d | %d",zmq_read.link1_angle, zmq_read.link2_angle);
     }
   //  while (1) {
   //      //  Read envelope with address
