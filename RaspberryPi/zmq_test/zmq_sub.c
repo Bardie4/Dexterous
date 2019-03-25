@@ -75,7 +75,7 @@ int main (void)
   //      free (contents);
   //  }
     //  We never get here, but clean up anyhow
-    zmq_close (subscriber);
-    zmq_ctx_destroy (context);
+    zmq_close (zmq_read.subscriber);
+    zmq_ctx_destroy (zmq_read.context);
     return 0;
 }
