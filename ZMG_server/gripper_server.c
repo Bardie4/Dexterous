@@ -33,7 +33,7 @@ void zmq_update(gpointer input_ptr){
   char message [16];
   double first;
   double second;
-  sprintf (message, "%c %d %d",(char) 0b00000010, casted_iptr->link1_angle, casted_iptr->link2_angle);
+  sprintf (message, "%c %d %d", casted_iptr->controller_select, casted_iptr->link1_angle, casted_iptr->link2_angle);
   //g_printf("%s",message);
   s_sendmore (casted_iptr->publisher, "B");
   s_send (casted_iptr->publisher, message);
@@ -69,23 +69,30 @@ void transmission_toggle(GtkWidget *widget, gpointer* input_ptr) {
   }
 }
 
-void tab1(GtkWidget *widget){
-  g_printf("Tab1\n");
-}
-void tab2(GtkWidget *widget){
-  g_printf("Tab2\n");
-}
-void tab3(GtkWidget *widget){
-  g_printf("Tab3\n");
-}
-void tab4(GtkWidget *widget){
-  g_printf("Tab4\n");
+//Controller is swapped by clicking on tabs
+void controller_swap(GtkWidget *widget1, GtkWidget *widget2, int stuff, gpointer* input_ptr){
+    input_bundle* casted_iptr = (input_bundle*)input_ptr;
+    g_printf("%d\n",stuff);
+    if (stuff == 0){
+      casted_iptr->controller_select = 0b00000001;
+    }  else if (stuff == 1){
+      casted_iptr->controller_select = 0b00000010;
+    }  else if (stuff == 2){
+      casted_iptr->controller_select = 0b00000011;
+    }  else if (stuff ==3){
+      casted_iptr->controller_select = 0b00000100;
+    }
+    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(casted_iptr->toggle))){
+      g_printf("Hello world 2\n");
+      zmq_update(input_ptr);
+    }
 }
 
 
 int main (int  argc, char *argv[])
 {
     input_bundle *input = g_new0(input_bundle, 1);
+    input->controller_select=0b00000001;
     //input->publisher = g_new0(void*, 1)
     //input->random_nunmber =  g_new0(void*, 1)
     //
@@ -180,37 +187,30 @@ int main (int  argc, char *argv[])
     gtk_table_attach_defaults(GTK_TABLE(grid_tab1), hscale2, 1, 2, 1, 2);
     gtk_table_attach_defaults(GTK_TABLE(grid_tab1), input->toggle, 0, 1, 2, 3);
 
-    //INSERT TABS TO NOTEBOOK (With functionality)
-    gtk_notebook_append_page( notebook,  grid_tab1, e_box1);
-    gtk_container_add (GTK_CONTAINER (e_box1), tablabel1);
-    gtk_widget_show(e_box1);
-    gtk_widget_show (tablabel1);
-    gtk_widget_set_events (e_box1, GDK_BUTTON_PRESS_MASK);
-    gtk_signal_connect (GTK_OBJECT(e_box1), "button_press_event", GTK_SIGNAL_FUNC (tab1), NULL);
-
-    gtk_notebook_append_page( notebook,  grid_tab2, e_box2);
-    gtk_container_add (GTK_CONTAINER (e_box2), tablabel2);
-    gtk_widget_show(e_box2);
-    gtk_widget_show (tablabel2);
-    gtk_widget_set_events (e_box2, GDK_BUTTON_PRESS_MASK);
-    gtk_signal_connect (GTK_OBJECT(e_box2), "button_press_event", GTK_SIGNAL_FUNC (tab2), NULL);
 
 
-    gtk_notebook_append_page( notebook,  grid_tab3, e_box3);
-    gtk_container_add (GTK_CONTAINER (e_box4), tablabel3);
-    gtk_widget_show(e_box3);
-    gtk_widget_show (tablabel3);
-    gtk_widget_set_events (e_box3, GDK_BUTTON_PRESS_MASK);
-    gtk_signal_connect (GTK_OBJECT(e_box3), "button_press_event", GTK_SIGNAL_FUNC (tab4), NULL);
 
 
+    //gtk_container_add (GTK_CONTAINER (e_box3), tablabel3);
+    //gtk_widget_show(e_box3);
+    //gtk_widget_show (tablabel3);
+    //gtk_widget_set_events (e_box3, GDK_BUTTON_PRESS_MASK);
+    //gtk_signal_connect (GTK_OBJECT(e_box3), "button_press_event", GTK_SIGNAL_FUNC (tab3), NULL);
+
+    gtk_notebook_append_page( notebook,  grid_tab1, tablabel1);
+    gtk_notebook_append_page( notebook,  grid_tab2, tablabel2);
+    gtk_notebook_append_page( notebook,  grid_tab3, tablabel3);
+    gtk_notebook_append_page( notebook,  grid_tab4, tablabel4);
+
+  //  notebook->connect('switch-page',GTK_SIGNAL_FUNC(tabs3));
+/*
     gtk_notebook_append_page( notebook,  grid_tab4, e_box4);
     gtk_container_add (GTK_CONTAINER (e_box4), tablabel4);
     gtk_widget_show(e_box4);
     gtk_widget_show (tablabel4);
     gtk_widget_set_events (e_box4, GDK_BUTTON_PRESS_MASK);
     gtk_signal_connect (GTK_OBJECT(e_box4), "button_press_event", GTK_SIGNAL_FUNC (tab4), NULL);
-
+*/
     //INSERT NOTEBOOK INTO WINDOW
     gtk_container_add(GTK_CONTAINER(window), notebook);
 
@@ -226,6 +226,8 @@ int main (int  argc, char *argv[])
 
     g_signal_connect(input->toggle, "clicked",
         G_CALLBACK(transmission_toggle), (gpointer)input);
+
+    g_signal_connect(notebook, "switch-page",GTK_SIGNAL_FUNC(controller_swap), (gpointer)input);
 
   //  g_signal_connect(tablabel4, "clicked", G_CALLBACK(tab4), NULL);
 
