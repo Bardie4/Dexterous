@@ -41,6 +41,8 @@ void* pid_(void* zmq_read_input){
   unsigned char inBuf[4];
   uint8_t theta1;
   uint8_t theta2;
+  int error1;
+  int error2;
   bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
   theta1=inBuf[0];
   error1= (int short)( ((uint8_t) zmq_read.link1_angle)-inBuf[0]);
