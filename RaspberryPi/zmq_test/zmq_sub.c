@@ -16,7 +16,7 @@ typedef struct read_zmq_bundle {
 pthread_t tid[2];
 pthread_mutex_t lock;
 
-void read_reference_angle(read_zmq_bundle* zmq_read){
+void* read_reference_angle(read_zmq_bundle* zmq_read){
   while (1) {
       //  Read envelope with address
       zmq_read->address = s_recv (zmq_read->subscriber);
