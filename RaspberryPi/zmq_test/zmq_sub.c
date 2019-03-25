@@ -6,6 +6,7 @@
 typedef struct read_zmq_bundle {
    char* address;
    char* contents;
+   void* context;
    void* subscriber;
    int link1_angle;
    int link2_angle;
@@ -39,7 +40,7 @@ int main (void)
     read_zmq_bundle zmq_read;
     //  Prepare our context and subscriber
     zmq_read.context = zmq_ctx_new ();
-    zmq_read.subscriber = zmq_socket (context, ZMQ_SUB);
+    zmq_read.subscriber = zmq_socket (zmq_read.context, ZMQ_SUB);
 
     //void *context = zmq_ctx_new ();
     //void *subscriber = zmq_socket (context, ZMQ_SUB);
