@@ -33,6 +33,45 @@ typedef struct read_zmq_bundle {
 pthread_t tid[2];
 pthread_mutex_t lock;
 
+void* pid_(void* zmq_read_input){
+  pthread_mutex_lock(&lock);
+  read_zmq_bundle* zmq_read = (read_zmq_bundle*)zmq_read_input;
+  //Read angle
+  char read_angle_cmd[]= {0b00000000, 0b00000000};
+  unsigned char inBuf[4];
+  uint8_t theta1;
+  uint8_t theta2;
+  bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
+  theta1=inBuf[0];
+  error1= (int short)( ((uint8_t) zmq_read.link1_angle)-inBuf[0]);
+  bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
+  theta2=inBuf[0];
+  error1= (int short)( ((uint8_t) zmq_read.link2_angle)-inBuf[0]);
+  //PID
+
+
+  printf("I am now reading from memory modified on another thread: %d | %d \n",zmq_read.link1_angle, zmq_read.link2_angle);
+  printf("erro1: %d | error2: %d \n",error1,error2);
+//Report angle (For testing)
+cout_itr++;
+if (cout_itr > 1000)
+{
+//	  cout << "link1 angle: " << unsigned(theta1) << " link1 error: " << error1 << " u1: " << u1 << "| link2 angle: " << unsigned(theta2) << " link2 error: " << error2 << " u2: " << u2 << endl;
+//	  cout << "u1 bit string: "<< bitset<16>(u1) << "  " << bitset<8>(torque_cmd[0]) << bitset<8>(torque_cmd[1]) << " | u1 bit string: " << bitset<16>(u1) << "  " << bitset<8>(torque_cmd[2]) << bitset<8>(torque_cmd[3]) << endl;
+  cout_itr = 0;
+
+}
+  pthread_mutex_unlock(&lock);
+}
+
+//Output
+
+// count = bbSPIXfer(esp, torque_cmd, (char *)inBuf, 4);
+//   cout << "ZMQ: "<<endl;
+//  Read envelope with address
+
+//   cout << "[" << address << "] " << contents << std::endl;
+
 void* read_reference_angle(void* zmq_read_input){
   read_zmq_bundle* zmq_read = (read_zmq_bundle*)zmq_read_input;
   while (1) {
@@ -231,6 +270,7 @@ int main()
 
    usleep(50000);
    pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_read);
+   pthread_create(&(tid[0]), NULL, &pid_, &zmq_read);/*
    while (1)
    {
       //Read angle
@@ -265,7 +305,7 @@ int main()
    //  Read envelope with address
 
 //   cout << "[" << address << "] " << contents << std::endl;
-   }
+}*/
    //mq_close (zmq_read.subscriber);
    //zmq_ctx_destroy (zmq_read.context);
    //return 0;
