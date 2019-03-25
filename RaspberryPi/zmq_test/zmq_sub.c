@@ -18,9 +18,9 @@ pthread_mutex_t lock;
 void read_reference_angle(read_zmq_bundle* zmq_read){
   while (1) {
       //  Read envelope with address
-      zmq_read->address = s_recv (subscriber);
+      zmq_read->address = s_recv (zmq_read->subscriber);
       //  Read message contents
-      zmq_read->contents = s_recv (subscriber);
+      zmq_read->contents = s_recv (zmq_read->subscriber);
       //printf("%s\n", contents);
       pthread_mutex_lock(&lock);
       sscanf(zmq_read->contents, "%d %d", &zmq_read->link1_angle, &zmq_read->link2_angle);
@@ -29,8 +29,8 @@ void read_reference_angle(read_zmq_bundle* zmq_read){
       printf("%d %d\n", zmq_read->link1_angle, zmq_read->link2_angle);
       pthread_mutex_unlock(&lock);
       //printf("%s\n", contents);
-      free (address);
-      free (contents);
+      free (zmq_read->address);
+      free (zmq_read->contents);
     }
 }
 
@@ -55,9 +55,9 @@ int main (void)
         printf("\n mutex init failed\n");
         return 1;
     }
-    
+
     while(1){
-      printf("I am now reading from memory modified on another thread: %d | %d",&link1_angle, &link2_angle);
+      printf("I am now reading from memory modified on another thread: %d | %d",&zmq_read.link1_angle, &zmq_read.link2_angle);
     }
   //  while (1) {
   //      //  Read envelope with address
