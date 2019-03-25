@@ -52,7 +52,7 @@ void* pid_(void* zmq_read_input){
   //PID
 
 
-  printf("I am now reading from memory modified on another thread: %d | %d \n",zmq_read.link1_angle, zmq_read.link2_angle);
+  printf("I am now reading from memory modified on another thread: %d | %d \n",zmq_read->link1_angle, zmq_read->link2_angle);
   printf("erro1: %d | error2: %d \n",error1,error2);
 //Report angle (For testing)
 //cout_itr++;
