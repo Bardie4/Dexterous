@@ -35,6 +35,7 @@ pthread_mutex_t lock;
 
 void* pid_(void* zmq_read_input){
   while(1){
+    /*
   pthread_mutex_lock(&lock);
   read_zmq_bundle* zmq_read = (read_zmq_bundle*)zmq_read_input;
   //Read angle
@@ -51,10 +52,11 @@ void* pid_(void* zmq_read_input){
   theta2=inBuf[0];
   error1= (int short)( ((uint8_t) zmq_read->link2_angle)-inBuf[0]);
   //PID
+  */
 
 
   printf("I am now reading from memory modified on another thread: %d | %d \n",zmq_read->link1_angle, zmq_read->link2_angle);
-  printf("erro1: %d | error2: %d \n",error1,error2);
+  //printf("erro1: %d | error2: %d \n",error1,error2);
 //Report angle (For testing)
 //cout_itr++;
 
