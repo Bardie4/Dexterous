@@ -289,7 +289,7 @@ int main()
          }
       }
    }
-   */
+   *//*
    bbSPIClose(link1);
    bbSPIClose(link2);
    bbSPIClose(esp);
@@ -297,4 +297,5 @@ int main()
    gpioTerminate();
 
    return 0;
+   */
 }
