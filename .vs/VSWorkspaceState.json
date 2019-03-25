@@ -1,9 +1,8 @@
 {
   "ExpandedNodes": [
     "",
-    "\\RaspberryPi",
     "\\RaspberryPi\\src"
   ],
-  "SelectedNode": "\\RaspberryPi\\src\\main.cpp",
+  "SelectedNode": "\\ZMG_server",
   "PreviewInSolutionExplorer": false
 }

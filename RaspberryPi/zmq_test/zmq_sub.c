@@ -10,7 +10,7 @@ int main (void)
     int link1_angle;
     int link2_angle;
     //zmq_connect (subscriber, "tcp://10.218.130.229:5563");
-    zmq_connect (subscriber, "tcp://localhost:5563");
+    zmq_connect (subscriber, "tcp://169.254.27.157:5563");
     zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "B", 1);
 
     while (1) {
