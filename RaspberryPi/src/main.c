@@ -18,8 +18,10 @@
 #define MOSI 26
 #define SCLK 21
 
+pthread_t tid[2];
+static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
-//Variables used with ZMQ, shared by all functions
+//Variables used by ZMQ, shared by all two threads, useable by all controllers
 typedef struct zmq_bundle {
    char* address;
    char* contents;
@@ -31,7 +33,7 @@ typedef struct zmq_bundle {
 }zmq_bundle;
 
 //Variables used by PID function
-typedef struct pid_specific_var {
+typedef struct jointspace_pid_var {
    zmq_bundle* zmq_bundle;
    char read_angle_cmd[2];        //Set as 16bit in case of upgrade
    unsigned char inBuf[2];
@@ -45,71 +47,29 @@ typedef struct pid_specific_var {
    double kp2;
    short u1;
    short u2;
-}pid_specific_var;
+   char run;
+}jointspace_pid_var;
 
-pthread_t tid[2];
-static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-
-
-//READS SETPOINT FROM ZMQ, AND ANGLE FROM SPI SENSORS. OUTPUTS TORQUE ON SPI
-void* pid(void* input){
-  //Casting input
-  pid_specific_var* pid_var = (pid_specific_var*) input;
-  //Variables
-  /*
-  char read_angle_cmd[]= {0b00000000, 0b00000000};  //Use 8 or 16 zeros to get 8 or 12bit angle value from sensor
-  unsigned char inBuf[2];                           //Buffer for sensor response
-  short theta1;                                     //
-  short theta2;
-  short error1;
-  short error2;
-  short theta1_setpoint;
-  short theta2_setpoint;
-  double Kp1 = 1;              //Proportional gain link 1
-  double Kp2 = 0.5;              //Proportional gain link 2
-  short u1;                    //Output motor 1 (SPI)
-  short u2;                    //Output motor 2 (SPI)
-  */
+//Variables used by PID function
+typedef struct cartesian_pid_var {
+   zmq_bundle* zmq_bundle;
+   char read_angle_cmd[2];        //Set as 16bit in case of upgrade
+   unsigned char inBuf[2];
+   short theta1;
+   short theta2;
+   short error1;
+   short error2;
+   short theta1_setpoint;
+   short theta2_setpoint;
+   double kp1;
+   double kp2;
+   short u1;
+   short u2;
+   char run;
+}cartesian_pid_var;
 
 
-
-  while(1){
-  //Read SPI SENSORS
-  pid_var->theta1 = 50;        //For thesting without sensor (Remove this) CAST TO SHORT ON REAL IMPLEMENTATION
-  pid_var->theta2 = 50;        //For thesting without sensor (Remove this) CAST TO SHORT
-  /*
-  bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
-  theta1=inBuf[0];
-  error1= (int short)( ((uint8_t) zmq_read->link1_angle)-inBuf[0]);
-  bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
-  theta2=inBuf[0];
-  */
-
-  pthread_mutex_lock(&lock);
-  pid_var->theta1_setpoint = pid_var->zmq_bundle->link1_angle;
-  pid_var->theta2_setpoint = pid_var->zmq_bundle->link2_angle;
-  pthread_mutex_unlock(&lock);
-
-  //Proportional controller
-  pid_var->error1 = (pid_var->theta1_setpoint - pid_var->theta1);
-  pid_var->u1 = (short) (pid_var->error1*pid_var->kp1);
-  pid_var->error2 = (pid_var->theta2_setpoint - pid_var->theta2);
-  pid_var->u2 = (short) (pid_var->error2*pid_var->kp2);
-  printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", pid_var->theta1 ,pid_var->theta1_setpoint, pid_var->error1, pid_var->u1);
-  printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", pid_var->theta2 ,pid_var->theta2_setpoint, pid_var->error2, pid_var->u2);
-  usleep(1000);
-  }
-}
-
-//Output
-
-// count = bbSPIXfer(esp, torque_cmd, (char *)inBuf, 4);
-//   cout << "ZMQ: "<<endl;
-//  Read envelope with address
-
-//   cout << "[" << address << "] " << contents << std::endl;
-
-void* read_reference_angle(void* zmq_read_input){
+void* read_zmq_server(void* zmq_read_input){
   zmq_bundle* zmq_read = (zmq_bundle*) zmq_read_input;
   while (1) {
       //printf("while read mutex");
@@ -119,7 +79,7 @@ void* read_reference_angle(void* zmq_read_input){
       //  Read message contents
       zmq_read->contents = s_recv (zmq_read->subscriber);
       //printf("%s\n", contents);
-      sscanf(zmq_read->contents, "%d %d", &(zmq_read->link1_angle), &(zmq_read->link2_angle));
+      sscanf(zmq_read->contents, "%c %d %d",&(zmq_read->function_flag) , &(zmq_read->link1_angle), &(zmq_read->link2_angle));
       //printf("| %s %s\n", garbage1,garbage2);
       //sscanf(contents, "%lf[^ ]%lf[^\n]", &link1_angle, &link2_angle);
       //printf("%d %d\n", zmq_read->link1_angle, zmq_read->link2_angle);
@@ -133,6 +93,77 @@ void* read_reference_angle(void* zmq_read_input){
     }
 }
 
+void jointspace_pid(void* input){
+  //Casting input
+  jointspace_pid_var* pid_var = (jointspace_pid_var*) input;
+  //Run controller
+  while(1){
+  //Read SPI SENSORS
+  pid_var->theta1 = 50;        //For thesting without sensor (Remove this) CAST TO SHORT ON REAL IMPLEMENTATION
+  pid_var->theta2 = 50;        //For thesting without sensor (Remove this)
+  /*
+  bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
+  theta1=inBuf[0];
+  error1= (int short)( ((uint8_t) zmq_read->link1_angle)-inBuf[0]);
+  bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
+  theta2=inBuf[0];
+  */
+
+  //Read input, check if controller is still selected (Shared resources)
+  pthread_mutex_lock(&lock);
+  pid_var->theta1_setpoint = pid_var->zmq_bundle->link1_angle;
+  pid_var->theta2_setpoint = pid_var->zmq_bundle->link2_angle;
+  pid_var->run = (pid_var->zmq_bundle->function_flag == 0b00000001);
+  pthread_mutex_unlock(&lock);
+  if (!pid_var->run){ //Input data not relevant for this controller
+    break;            //Try next controller
+  }
+  printf("Jointspace\n");
+
+  //Proportional controller
+  pid_var->error1 = (pid_var->theta1_setpoint - pid_var->theta1);
+  pid_var->u1 = (short) (pid_var->error1*pid_var->kp1);
+  pid_var->error2 = (pid_var->theta2_setpoint - pid_var->theta2);
+  pid_var->u2 = (short) (pid_var->error2*pid_var->kp2);
+  printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", pid_var->theta1 ,pid_var->theta1_setpoint, pid_var->error1, pid_var->u1);
+  printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", pid_var->theta2 ,pid_var->theta2_setpoint, pid_var->error2, pid_var->u2);
+
+  //Write to ESP32 through SPI
+  usleep(1000);
+  }
+}
+
+
+void cartesian_pid_controller(void* input){
+  //Casting input
+  cartesian_pid_var* pid_var = (cartesian_pid_var*) input;
+  //Run controller
+  while(1){
+
+    //Read input, check if controller is still selected (Shared resources)
+    pthread_mutex_lock(&lock);
+    //INSERT READINGS HERE
+    pid_var->run = (pid_var->zmq_bundle->function_flag == 0b00000010);
+    pthread_mutex_unlock(&lock);
+    if (!pid_var->run){ //Input not relevant for this controller
+      break;            //Try next controller
+    }
+    printf("Cartesian\n");
+
+    /*
+    Insert controller here
+    */
+
+    usleep(10000);
+  }
+}
+
+void controller_select(void* jointspace_pid_var, void* cartesian_pid_var){
+  while(1){
+    jointspace_pid(jointspace_pid_var);
+    cartesian_pid_controller(cartesian_pid_var);
+  }
+}
 
 int main()
 {
@@ -142,25 +173,35 @@ int main()
   zmq_var.context = zmq_ctx_new ();
   zmq_var.subscriber = zmq_socket (zmq_var.context, ZMQ_SUB);
 
-  pid_specific_var pid_var;
-  pid_var.zmq_bundle = &zmq_var;
-  pid_var.read_angle_cmd[0] = 0b00000000;
-  pid_var.read_angle_cmd[1] = 0b00000000;
-  pid_var.kp1 = 1;
-  pid_var.kp2 = 0.5;
+  jointspace_pid_var j_pid_var;
+  j_pid_var.zmq_bundle = &zmq_var;
+  j_pid_var.read_angle_cmd[0] = 0b00000000;
+  j_pid_var.read_angle_cmd[1] = 0b00000000;
+  j_pid_var.kp1 = 1;
+  j_pid_var.kp2 = 0.5;
 
+  cartesian_pid_var c_pid_var;
+  c_pid_var.zmq_bundle = &zmq_var;
+  c_pid_var.read_angle_cmd[0] = 0b00000000;
+  c_pid_var.read_angle_cmd[1] = 0b00000000;
+  c_pid_var.kp1 = 1;
+  c_pid_var.kp2 = 0.5;
 
   //void *context = zmq_ctx_new ();
   //void *subscriber = zmq_socket (context, ZMQ_SUB);
   //zmq_connect (subscrpid_var->iber, "tcp://10.218.130.229:5563");
   zmq_connect (zmq_var.subscriber, "tcp://localhost:5563");
   zmq_setsockopt (zmq_var.subscriber, ZMQ_SUBSCRIBE, "B", 1);
-  printf("Before threading\n");
-  pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_var);
+
+
+  //ZMQ thread:
+  pthread_create(&(tid[0]), NULL, &read_zmq_server, &zmq_var);
   usleep(1000);
-  pthread_create(&(tid[1]), NULL, &pid, &pid_var);
+
+  controller_select(&c_pid_var, &j_pid_var);
+  //pthread_create(&(tid[1]), NULL, &pid, &pid_var);
   pthread_join(tid[0], NULL);
-  pthread_join(tid[1], NULL);
+  //pthread_join(tid[1], NULL);
 
   //pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_read);
 
