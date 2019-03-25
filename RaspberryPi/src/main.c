@@ -74,6 +74,9 @@ int main()
       printf("\n mutex init failed\n");
       return 1;
   }
+  while(1){
+    printf("I am now reading from memory modified on another thread: %d | %d \n",zmq_read.link1_angle, zmq_read.link2_angle);
+  }
   zmq_close (zmq_read.subscriber);
   zmq_ctx_destroy (zmq_read.context);
   return 0;
