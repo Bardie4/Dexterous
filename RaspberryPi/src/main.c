@@ -74,16 +74,9 @@ int main()
       printf("\n mutex init failed\n");
       return 1;
   }
-  while(1){
-    printf("I am now reading from memory modified on another thread: %d | %d \n",zmq_read.link1_angle, zmq_read.link2_angle);
-  }
-  zmq_close (zmq_read.subscriber);
-  zmq_ctx_destroy (zmq_read.context);
-  return 0;
-  //read_reference_angle(address, contents, subscriber, &link1_angle, &link2_angle);
 
 
-  /*
+
    int count, set_val, read_val, x, SPI_init1, SPI_init2, SPI_init3, cout_itr=1;
    unsigned char inBuf[4];
    char read_angle_cmd[]= {0b00000000, 0b00000000};
