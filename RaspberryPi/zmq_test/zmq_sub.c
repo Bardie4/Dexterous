@@ -17,6 +17,7 @@ void read_reference_angle(char* address, char* contents,void* subscriber , int* 
       //printf("%s\n", contents);
       free (address);
       free (contents);
+    }
 }
 
 int main (void)
