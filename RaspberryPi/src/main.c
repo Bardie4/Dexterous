@@ -62,7 +62,7 @@ void* pid_(void* zmq_read_input){
 //cout_itr++;
 
   pthread_mutex_unlock(&lock);
-  usleep(1000);
+  usleep(1000000);
 }
 }
 
@@ -91,7 +91,7 @@ void* read_reference_angle(void* zmq_read_input){
       free (zmq_read->address);
       free (zmq_read->contents);
       pthread_mutex_unlock(&lock);
-      usleep(500);
+      usleep(500000);
     }
 }
 
