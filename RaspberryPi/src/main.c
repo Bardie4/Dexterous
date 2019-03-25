@@ -40,6 +40,8 @@ void* pid_(void* zmq_read_input){
   while(1){
 
   pthread_mutex_lock(&lock);
+
+  printf("while out mutex");
   /*
   //Read angle
   char read_angle_cmd[]= {0b00000000, 0b00000000};
@@ -82,6 +84,7 @@ void* read_reference_angle(void* zmq_read_input){
   pthread_mutex_unlock(&lock);
   while (1) {
       pthread_mutex_lock(&lock);
+      printf("while read mutex");
       //  Read envelope with address
       zmq_read->address = s_recv (zmq_read->subscriber);
       //  Read message contents
@@ -112,7 +115,7 @@ int main()
   //zmq_connect (subscriber, "tcp://10.218.130.229:5563");
   zmq_connect (zmq_read.subscriber, "tcp://169.254.27.157:5563");
   zmq_setsockopt (zmq_read.subscriber, ZMQ_SUBSCRIBE, "B", 1);
-
+  printf("Before threading");
   pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_read);
   usleep(1000000);
   pthread_create(&(tid[1]), NULL, &pid_, &zmq_read);
