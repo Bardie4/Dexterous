@@ -265,7 +265,7 @@ int main()
    //  Read envelope with address
 
 //   cout << "[" << address << "] " << contents << std::endl;
-   }*/
+   }
    //mq_close (zmq_read.subscriber);
    //zmq_ctx_destroy (zmq_read.context);
    //return 0;
