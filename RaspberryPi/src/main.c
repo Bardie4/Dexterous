@@ -55,14 +55,8 @@ void* pid_(void* zmq_read_input){
   printf("I am now reading from memory modified on another thread: %d | %d \n",zmq_read.link1_angle, zmq_read.link2_angle);
   printf("erro1: %d | error2: %d \n",error1,error2);
 //Report angle (For testing)
-cout_itr++;
-if (cout_itr > 1000)
-{
-//	  cout << "link1 angle: " << unsigned(theta1) << " link1 error: " << error1 << " u1: " << u1 << "| link2 angle: " << unsigned(theta2) << " link2 error: " << error2 << " u2: " << u2 << endl;
-//	  cout << "u1 bit string: "<< bitset<16>(u1) << "  " << bitset<8>(torque_cmd[0]) << bitset<8>(torque_cmd[1]) << " | u1 bit string: " << bitset<16>(u1) << "  " << bitset<8>(torque_cmd[2]) << bitset<8>(torque_cmd[3]) << endl;
-  cout_itr = 0;
+//cout_itr++;
 
-}
   pthread_mutex_unlock(&lock);
 }
 
