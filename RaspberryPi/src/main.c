@@ -247,7 +247,7 @@ int main()
       u2=kp2*error2;
 
 
-
+      printf("I am now reading from memory modified on another thread: %d | %d \n",zmq_read.link1_angle, zmq_read.link2_angle);
 
 	 //Report angle (For testing)
 	  cout_itr++;
