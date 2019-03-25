@@ -6,7 +6,7 @@
 
 #include "zhelpers.h"
 #include <stdio.h>
-#include <pigpio.h>
+//#include <pigpio.h>
 #include <unistd.h>
 //#include <bitset>
 #include "pthread.h"
@@ -19,55 +19,85 @@
 #define SCLK 21
 
 
-
-typedef struct read_zmq_bundle {
+//Variables used with ZMQ, shared by all functions
+typedef struct zmq_bundle {
    char* address;
    char* contents;
    void* context;
    void* subscriber;
+   char function_flag;
    int link1_angle;
    int link2_angle;
-}read_zmq_bundle;
+}zmq_bundle;
 
+//Variables used by PID function
+typedef struct pid_specific_var {
+   zmq_bundle* zmq_bundle;
+   char read_angle_cmd[2];        //Set as 16bit in case of upgrade
+   unsigned char inBuf[2];
+   short theta1;
+   short theta2;
+   short error1;
+   short error2;
+   short theta1_setpoint;
+   short theta2_setpoint;
+   double kp1;
+   double kp2;
+   short u1;
+   short u2;
+}pid_specific_var;
 
 pthread_t tid[2];
-pthread_mutex_t lock;
+static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
-void* pid_(void* zmq_read_input){
-  pthread_mutex_lock(&lock);
-  printf("while out mutex init");
-  read_zmq_bundle* zmq_read = (read_zmq_bundle*)zmq_read_input;
-  pthread_mutex_unlock(&lock);
-  while(1){
 
-  pthread_mutex_lock(&lock);
-
-  printf("while out mutex");
+//READS SETPOINT FROM ZMQ, AND ANGLE FROM SPI SENSORS. OUTPUTS TORQUE ON SPI
+void* pid(void* input){
+  //Casting input
+  pid_specific_var* pid_var = (pid_specific_var*) input;
+  //Variables
   /*
-  //Read angle
-  char read_angle_cmd[]= {0b00000000, 0b00000000};
-  unsigned char inBuf[4];
-  uint8_t theta1;
-  uint8_t theta2;
-  int error1;
-  int error2;
+  char read_angle_cmd[]= {0b00000000, 0b00000000};  //Use 8 or 16 zeros to get 8 or 12bit angle value from sensor
+  unsigned char inBuf[2];                           //Buffer for sensor response
+  short theta1;                                     //
+  short theta2;
+  short error1;
+  short error2;
+  short theta1_setpoint;
+  short theta2_setpoint;
+  double Kp1 = 1;              //Proportional gain link 1
+  double Kp2 = 0.5;              //Proportional gain link 2
+  short u1;                    //Output motor 1 (SPI)
+  short u2;                    //Output motor 2 (SPI)
+  */
+
+
+
+  while(1){
+  //Read SPI SENSORS
+  pid_var->theta1 = 50;        //For thesting without sensor (Remove this) CAST TO SHORT ON REAL IMPLEMENTATION
+  pid_var->theta2 = 50;        //For thesting without sensor (Remove this) CAST TO SHORT
+  /*
   bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
   theta1=inBuf[0];
   error1= (int short)( ((uint8_t) zmq_read->link1_angle)-inBuf[0]);
   bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
   theta2=inBuf[0];
-  error1= (int short)( ((uint8_t) zmq_read->link2_angle)-inBuf[0]);
-  //PID
   */
 
-
-  printf("I am now reading from memory modified on another thread: %d | %d \n",zmq_read->link1_angle, zmq_read->link2_angle);
-  //printf("erro1: %d | error2: %d \n",error1,error2);
-//Report angle (For testing)
-//cout_itr++;
-
+  pthread_mutex_lock(&lock);
+  pid_var->theta1_setpoint = pid_var->zmq_bundle->link1_angle;
+  pid_var->theta2_setpoint = pid_var->zmq_bundle->link2_angle;
   pthread_mutex_unlock(&lock);
-  usleep(1000000);
+
+  //Proportional controller
+  pid_var->error1 = (pid_var->theta1_setpoint - pid_var->theta1);
+  pid_var->u1 = (short) (pid_var->error1*pid_var->kp1);
+  pid_var->error2 = (pid_var->theta2_setpoint - pid_var->theta2);
+  pid_var->u2 = (short) (pid_var->error2*pid_var->kp2);
+  printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", pid_var->theta1 ,pid_var->theta1_setpoint, pid_var->error1, pid_var->u1);
+  printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", pid_var->theta2 ,pid_var->theta2_setpoint, pid_var->error2, pid_var->u2);
+  usleep(1000);
   }
 }
 
@@ -80,13 +110,11 @@ void* pid_(void* zmq_read_input){
 //   cout << "[" << address << "] " << contents << std::endl;
 
 void* read_reference_angle(void* zmq_read_input){
-  pthread_mutex_lock(&lock);
-  read_zmq_bundle* zmq_read = (read_zmq_bundle*) zmq_read_input;
-  pthread_mutex_unlock(&lock);
+  zmq_bundle* zmq_read = (zmq_bundle*) zmq_read_input;
   while (1) {
-      pthread_mutex_lock(&lock);
-      printf("while read mutex");
+      //printf("while read mutex");
       //  Read envelope with address
+      pthread_mutex_lock(&lock);
       zmq_read->address = s_recv (zmq_read->subscriber);
       //  Read message contents
       zmq_read->contents = s_recv (zmq_read->subscriber);
@@ -94,34 +122,46 @@ void* read_reference_angle(void* zmq_read_input){
       sscanf(zmq_read->contents, "%d %d", &(zmq_read->link1_angle), &(zmq_read->link2_angle));
       //printf("| %s %s\n", garbage1,garbage2);
       //sscanf(contents, "%lf[^ ]%lf[^\n]", &link1_angle, &link2_angle);
-      printf("%d %d\n", zmq_read->link1_angle, zmq_read->link2_angle);
+      //printf("%d %d\n", zmq_read->link1_angle, zmq_read->link2_angle);
       //printf("%s\n", contents);
       free (zmq_read->address);
       free (zmq_read->contents);
 
-      printf("while read mutex end");
+    //  printf("while read mutex end");
       pthread_mutex_unlock(&lock);
-      usleep(500000);
+      usleep(1000);
     }
 }
 
 
 int main()
 {
-  read_zmq_bundle zmq_read;
+  //VARIABLES USED IN FUNCTIONS
+  zmq_bundle zmq_var;
   //  Prepare our context and subscriber
-  zmq_read.context = zmq_ctx_new ();
-  zmq_read.subscriber = zmq_socket (zmq_read.context, ZMQ_SUB);
+  zmq_var.context = zmq_ctx_new ();
+  zmq_var.subscriber = zmq_socket (zmq_var.context, ZMQ_SUB);
+
+  pid_specific_var pid_var;
+  pid_var.zmq_bundle = &zmq_var;
+  pid_var.read_angle_cmd[0] = 0b00000000;
+  pid_var.read_angle_cmd[1] = 0b00000000;
+  pid_var.kp1 = 1;
+  pid_var.kp2 = 0.5;
+
 
   //void *context = zmq_ctx_new ();
   //void *subscriber = zmq_socket (context, ZMQ_SUB);
-  //zmq_connect (subscriber, "tcp://10.218.130.229:5563");
-  zmq_connect (zmq_read.subscriber, "tcp://169.254.27.157:5563");
-  zmq_setsockopt (zmq_read.subscriber, ZMQ_SUBSCRIBE, "B", 1);
-  printf("Before threading");
-  pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_read);
-  usleep(1000000);
-  //pthread_create(&(tid[1]), NULL, &pid_, &zmq_read);
+  //zmq_connect (subscrpid_var->iber, "tcp://10.218.130.229:5563");
+  zmq_connect (zmq_var.subscriber, "tcp://localhost:5563");
+  zmq_setsockopt (zmq_var.subscriber, ZMQ_SUBSCRIBE, "B", 1);
+  printf("Before threading\n");
+  pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_var);
+  usleep(1000);
+  pthread_create(&(tid[1]), NULL, &pid, &pid_var);
+  pthread_join(tid[0], NULL);
+  pthread_join(tid[1], NULL);
+
   //pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_read);
 
   /*
