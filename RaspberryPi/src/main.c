@@ -45,10 +45,10 @@ void* pid_(void* zmq_read_input){
   int error2;
   bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
   theta1=inBuf[0];
-  error1= (int short)( ((uint8_t) zmq_read.link1_angle)-inBuf[0]);
+  error1= (int short)( ((uint8_t) zmq_read->link1_angle)-inBuf[0]);
   bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
   theta2=inBuf[0];
-  error1= (int short)( ((uint8_t) zmq_read.link2_angle)-inBuf[0]);
+  error1= (int short)( ((uint8_t) zmq_read->link2_angle)-inBuf[0]);
   //PID
 
 
