@@ -13,6 +13,7 @@ typedef struct input_bundle {
    GtkWidget* toggle;
    int link1_angle;
    int link2_angle;
+   char controller_select;
 }input_bundle;
 
 
@@ -32,11 +33,11 @@ void zmq_update(gpointer input_ptr){
   char message [16];
   double first;
   double second;
-  sprintf (message, "%d %d", casted_iptr->link1_angle, casted_iptr->link2_angle);
+  sprintf (message, "%c %d %d",(char) 0b00000010, casted_iptr->link1_angle, casted_iptr->link2_angle);
   //g_printf("%s",message);
   s_sendmore (casted_iptr->publisher, "B");
   s_send (casted_iptr->publisher, message);
-  g_printf("Link 1: %d | Link 2: %d \n",casted_iptr->link1_angle, casted_iptr->link2_angle);
+  //g_printf("Link 1: %d | Link 2: %d \n" ,casted_iptr->link1_angle, casted_iptr->link2_angle);
 }
 
 void value_changed1(GtkRange *range, gpointer* input_ptr) {
@@ -68,6 +69,20 @@ void transmission_toggle(GtkWidget *widget, gpointer* input_ptr) {
   }
 }
 
+void tab1(GtkWidget *widget){
+  g_printf("Tab1\n");
+}
+void tab2(GtkWidget *widget){
+  g_printf("Tab2\n");
+}
+void tab3(GtkWidget *widget){
+  g_printf("Tab3\n");
+}
+void tab4(GtkWidget *widget){
+  g_printf("Tab4\n");
+}
+
+
 int main (int  argc, char *argv[])
 {
     input_bundle *input = g_new0(input_bundle, 1);
@@ -86,11 +101,23 @@ int main (int  argc, char *argv[])
     //GTK: Widget pointers
     GtkWidget *window;
     GtkWidget *halign;
-    GtkWidget *grid;
+    GtkWidget *grid_tab1;
+    GtkWidget *grid_tab2;
+    GtkWidget *grid_tab3;
+    GtkWidget *grid_tab4;
     GtkWidget *hscale1;
     GtkWidget *hscale2;
     GtkWidget *label1;
     GtkWidget *label2;
+    GtkWidget *tablabel1;
+    GtkWidget *tablabel2;
+    GtkWidget *tablabel3;
+    GtkWidget *tablabel4;
+    GtkWidget *e_box1;
+    GtkWidget *e_box2;
+    GtkWidget *e_box3;
+    GtkWidget *e_box4;
+    GtkWidget *notebook;
 
     //input.toggle = check;
 
@@ -102,6 +129,9 @@ int main (int  argc, char *argv[])
     gtk_window_set_default_size(GTK_WINDOW(window), 300, 250);
     gtk_container_set_border_width(GTK_CONTAINER(window), 10);
     gtk_window_set_title(GTK_WINDOW(window), "Gripper");
+
+    notebook = gtk_notebook_new();
+    //gtk_notebook_set_tab_pos(notebook, GTK_POS_TOP);
 
     hscale1 = gtk_hscale_new_with_range(0, 100, 1);
     gtk_scale_set_draw_value(GTK_SCALE(hscale1), TRUE);
@@ -117,20 +147,72 @@ int main (int  argc, char *argv[])
 
     label1 = gtk_label_new("Link 1 angle: ");
     label2 = gtk_label_new("Link 2 angle: ");
+    tablabel1 = gtk_label_new("Joint space PID");
+    tablabel2 = gtk_label_new("Cartesian PID");
+    tablabel3 = gtk_label_new("Hybrid position/force control [Cartesian]");
+    tablabel4 = gtk_label_new("Hybrid position/force control [Polar]");
 
-    grid = gtk_table_new(5,4,FALSE);
-    gtk_table_set_row_spacings(GTK_TABLE(grid), 2);
-    gtk_table_set_col_spacings(GTK_TABLE(grid), 2);
+    grid_tab1 = gtk_table_new(5,4,FALSE);
+    gtk_table_set_row_spacings(GTK_TABLE(grid_tab1), 2);
+    gtk_table_set_col_spacings(GTK_TABLE(grid_tab1), 2);
+
+    grid_tab2 = gtk_table_new(5,4,FALSE);
+    gtk_table_set_row_spacings(GTK_TABLE(grid_tab2), 2);
+    gtk_table_set_col_spacings(GTK_TABLE(grid_tab2), 2);
+
+    grid_tab3 = gtk_table_new(5,4,FALSE);
+    gtk_table_set_row_spacings(GTK_TABLE(grid_tab3), 2);
+    gtk_table_set_col_spacings(GTK_TABLE(grid_tab3), 2);
+
+    grid_tab4 = gtk_table_new(5,4,FALSE);
+    gtk_table_set_row_spacings(GTK_TABLE(grid_tab4), 2);
+    gtk_table_set_col_spacings(GTK_TABLE(grid_tab4), 2);
+
+    e_box1 = gtk_event_box_new ();
+    e_box2 = gtk_event_box_new ();
+    e_box3 = gtk_event_box_new ();
+    e_box4 = gtk_event_box_new ();
 
     //Insert widgets to 4x4 table
-    gtk_table_attach_defaults(GTK_TABLE(grid), label1, 0, 1, 0, 1);
-    gtk_table_attach_defaults(GTK_TABLE(grid), hscale1, 1, 2, 0, 1);
-    gtk_table_attach_defaults(GTK_TABLE(grid), label2, 0, 1, 1, 2);
-    gtk_table_attach_defaults(GTK_TABLE(grid), hscale2, 1, 2, 1, 2);
-    gtk_table_attach_defaults(GTK_TABLE(grid), input->toggle, 0, 1, 2, 3);
+    gtk_table_attach_defaults(GTK_TABLE(grid_tab1), label1, 0, 1, 0, 1);
+    gtk_table_attach_defaults(GTK_TABLE(grid_tab1), hscale1, 1, 2, 0, 1);
+    gtk_table_attach_defaults(GTK_TABLE(grid_tab1), label2, 0, 1, 1, 2);
+    gtk_table_attach_defaults(GTK_TABLE(grid_tab1), hscale2, 1, 2, 1, 2);
+    gtk_table_attach_defaults(GTK_TABLE(grid_tab1), input->toggle, 0, 1, 2, 3);
 
-    //Insert table into window
-    gtk_container_add(GTK_CONTAINER(window), grid);
+    //INSERT TABS TO NOTEBOOK (With functionality)
+    gtk_notebook_append_page( notebook,  grid_tab1, e_box1);
+    gtk_container_add (GTK_CONTAINER (e_box1), tablabel1);
+    gtk_widget_show(e_box1);
+    gtk_widget_show (tablabel1);
+    gtk_widget_set_events (e_box1, GDK_BUTTON_PRESS_MASK);
+    gtk_signal_connect (GTK_OBJECT(e_box1), "button_press_event", GTK_SIGNAL_FUNC (tab1), NULL);
+
+    gtk_notebook_append_page( notebook,  grid_tab2, e_box2);
+    gtk_container_add (GTK_CONTAINER (e_box2), tablabel2);
+    gtk_widget_show(e_box2);
+    gtk_widget_show (tablabel2);
+    gtk_widget_set_events (e_box2, GDK_BUTTON_PRESS_MASK);
+    gtk_signal_connect (GTK_OBJECT(e_box2), "button_press_event", GTK_SIGNAL_FUNC (tab2), NULL);
+
+
+    gtk_notebook_append_page( notebook,  grid_tab3, e_box3);
+    gtk_container_add (GTK_CONTAINER (e_box4), tablabel3);
+    gtk_widget_show(e_box3);
+    gtk_widget_show (tablabel3);
+    gtk_widget_set_events (e_box3, GDK_BUTTON_PRESS_MASK);
+    gtk_signal_connect (GTK_OBJECT(e_box3), "button_press_event", GTK_SIGNAL_FUNC (tab4), NULL);
+
+
+    gtk_notebook_append_page( notebook,  grid_tab4, e_box4);
+    gtk_container_add (GTK_CONTAINER (e_box4), tablabel4);
+    gtk_widget_show(e_box4);
+    gtk_widget_show (tablabel4);
+    gtk_widget_set_events (e_box4, GDK_BUTTON_PRESS_MASK);
+    gtk_signal_connect (GTK_OBJECT(e_box4), "button_press_event", GTK_SIGNAL_FUNC (tab4), NULL);
+
+    //INSERT NOTEBOOK INTO WINDOW
+    gtk_container_add(GTK_CONTAINER(window), notebook);
 
     //Connect widgets to functionalities
     g_signal_connect(window, "destroy",
@@ -144,6 +226,8 @@ int main (int  argc, char *argv[])
 
     g_signal_connect(input->toggle, "clicked",
         G_CALLBACK(transmission_toggle), (gpointer)input);
+
+  //  g_signal_connect(tablabel4, "clicked", G_CALLBACK(tab4), NULL);
 
     gtk_widget_show_all(window);
 
