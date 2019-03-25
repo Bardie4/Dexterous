@@ -258,9 +258,6 @@ int main()
 	 // count = bbSPIXfer(esp, torque_cmd, (char *)inBuf, 4);
 //   cout << "ZMQ: "<<endl;
    //  Read envelope with address
-   string address = s_recv (subscriber);
-   //  Read message contents
-   string contents = s_recv (subscriber);
 
 //   cout << "[" << address << "] " << contents << std::endl;
    }
