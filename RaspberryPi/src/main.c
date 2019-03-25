@@ -77,12 +77,12 @@ void* pid_(void* zmq_read_input){
 void* read_reference_angle(void* zmq_read_input){
   read_zmq_bundle* zmq_read = (read_zmq_bundle*)zmq_read_input;
   while (1) {
+      pthread_mutex_lock(&lock);
       //  Read envelope with address
       zmq_read->address = s_recv (zmq_read->subscriber);
       //  Read message contents
       zmq_read->contents = s_recv (zmq_read->subscriber);
       //printf("%s\n", contents);
-      pthread_mutex_lock(&lock);
       sscanf(zmq_read->contents, "%d %d", &(zmq_read->link1_angle), &(zmq_read->link2_angle));
       //printf("| %s %s\n", garbage1,garbage2);
       //sscanf(contents, "%lf[^ ]%lf[^\n]", &link1_angle, &link2_angle);
@@ -109,13 +109,8 @@ int main()
   zmq_connect (zmq_read.subscriber, "tcp://169.254.27.157:5563");
   zmq_setsockopt (zmq_read.subscriber, ZMQ_SUBSCRIBE, "B", 1);
 
-  pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_read);
+  //pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_read);
 
-  if (pthread_mutex_init(&lock, NULL) != 0)
-  {
-      printf("\n mutex init failed\n");
-      return 1;
-  }
 
 
 
@@ -273,7 +268,12 @@ int main()
 
    usleep(50000);
    pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_read);
-   pthread_create(&(tid[1]), NULL, &pid_, &zmq_read);/*
+   pthread_create(&(tid[1]), NULL, &pid_, &zmq_read);
+   if (pthread_mutex_init(&lock, NULL) != 0)
+   {
+       printf("\n mutex init failed\n");
+       return 1;
+   }/*
    while (1)
    {
       //Read angle
