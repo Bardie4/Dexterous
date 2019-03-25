@@ -34,7 +34,9 @@ pthread_t tid[2];
 pthread_mutex_t lock;
 
 void* pid_(void* zmq_read_input){
+  pthread_mutex_lock(&lock);
   read_zmq_bundle* zmq_read = (read_zmq_bundle*)zmq_read_input;
+  pthread_mutex_unlock(&lock);
   while(1){
 
   pthread_mutex_lock(&lock);
@@ -63,7 +65,7 @@ void* pid_(void* zmq_read_input){
 
   pthread_mutex_unlock(&lock);
   usleep(1000000);
-}
+  }
 }
 
 //Output
@@ -109,9 +111,12 @@ int main()
   zmq_connect (zmq_read.subscriber, "tcp://169.254.27.157:5563");
   zmq_setsockopt (zmq_read.subscriber, ZMQ_SUBSCRIBE, "B", 1);
 
+  pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_read);
+  usleep(1000000);
+  pthread_create(&(tid[1]), NULL, &pid_, &zmq_read);
   //pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_read);
 
-
+  /*
 
 
    int count, set_val, read_val, x, SPI_init1, SPI_init2, SPI_init3, cout_itr=1;
@@ -274,7 +279,7 @@ int main()
    {
        printf("\n mutex init failed\n");
        return 1;
-   }/*
+   }*//*
    while (1)
    {
       //Read angle
