@@ -4,13 +4,12 @@
 //  Hello World client
 
 
-#include "zhelpers.hpp"
-
+#include "zhelpers.h"
 #include <stdio.h>
-#include <iostream>
 #include <pigpio.h>
 #include <unistd.h>
 #include <bitset>
+#include "pthread.h"
 
 #define link1 5
 #define link2 6
