@@ -62,6 +62,7 @@ void* pid_(void* zmq_read_input){
 //cout_itr++;
 
   pthread_mutex_unlock(&lock);
+  usleep(1000);
 }
 }
 
@@ -86,10 +87,11 @@ void* read_reference_angle(void* zmq_read_input){
       //printf("| %s %s\n", garbage1,garbage2);
       //sscanf(contents, "%lf[^ ]%lf[^\n]", &link1_angle, &link2_angle);
       printf("%d %d\n", zmq_read->link1_angle, zmq_read->link2_angle);
-      pthread_mutex_unlock(&lock);
       //printf("%s\n", contents);
       free (zmq_read->address);
       free (zmq_read->contents);
+      pthread_mutex_unlock(&lock);
+      usleep(500);
     }
 }
 
