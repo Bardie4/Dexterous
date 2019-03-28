@@ -15,7 +15,7 @@
 #define SCLK (11)
 #define MOSI (10)
 #define MISO 9
-#define CS0 8
+#define CS0 0
 
 typedef struct spi_setup{
 	int freq;
