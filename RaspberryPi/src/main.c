@@ -222,9 +222,9 @@ void jointspace_pid(void* payload_in, void* vars, void* spi_){
 
 
 	spi_ptr->outBuf[0] = 0b00000000;
-	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_2,0);
 	spi_result = spiXfer(spi_ptr->handle, spi_ptr->outBuf, spi_ptr->inBuf, 1);
-	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
+	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_2,1);
 	controller_vars->js.theta2 = spi_ptr->inBuf[0];
 	pthread_mutex_unlock(&lock);
   //printf("Jointspace\n");
@@ -323,6 +323,8 @@ finger_controllers(zmq_data* shared){
   default_cntrl_set.js.kp2 = 0.5;                      //joint space controller vaules
   default_cntrl_set.js.read_angle_cmd[0] = 0b00000000; //SPI command
   default_cntrl_set.js.read_angle_cmd[1] = 0b00000000; //SPI command
+	default_cntrl_set.js.theta1_setpoint= 50;
+	default_cntrl_set.js.theta2_setpoint= 50;
   default_cntrl_set.cs.kp1 = 1;                        //cartesian space controller values
   default_cntrl_set.cs.kp2 = 0.5;                      //cartesian space controller values
   default_cntrl_set.cs.read_angle_cmd[0] = 0b00000000; //SPI command
