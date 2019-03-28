@@ -18,7 +18,7 @@
 #define CS0 8
 
 typedef struct spi_setup{
-	int freq
+	int freq;
 	int clk;
 	int mosi;
 	int miso;
