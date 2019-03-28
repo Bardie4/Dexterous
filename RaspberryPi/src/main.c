@@ -396,7 +396,7 @@ int main()
   zmq_var.controller_ptr[2] = &calibration;;
   zmq_var.controller_ptr[3] = no_controller;
   //Default controller at startup for each finger
-  zmq_var.instr_finger1.controller = no_controller;
+  zmq_var.instr_finger1.controller = &calibration;;
   zmq_var.instr_finger2.controller = no_controller;
   zmq_var.instr_finger3.controller = no_controller;
   zmq_var.instr_finger4.controller = no_controller;
