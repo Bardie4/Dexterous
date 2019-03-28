@@ -327,7 +327,7 @@ finger_controllers(zmq_data* shared){
   f5_data.controller_var = default_cntrl_set;
 
   //Select an empty controller by default_widget
-  f1_data.zmq_local.controller = no_controller;
+  f1_data.zmq_local.controller = &calibration;
   f2_data.zmq_local.controller = no_controller;
   f3_data.zmq_local.controller = no_controller;
   f4_data.zmq_local.controller = no_controller;
@@ -393,7 +393,7 @@ int main()
   //Assigning controllers to choose from
   zmq_var.controller_ptr[0] = &jointspace_pid;
   zmq_var.controller_ptr[1] = &cartesian_pid_controller;
-  zmq_var.controller_ptr[2] = no_controller;
+  zmq_var.controller_ptr[2] = &calibration;;
   zmq_var.controller_ptr[3] = no_controller;
   //Default controller at startup for each finger
   zmq_var.instr_finger1.controller = no_controller;
