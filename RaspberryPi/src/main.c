@@ -1,4 +1,4 @@
-printf// gcc -Wall -pthread -o bbSPIx_test bbSPIx_test.c -lpigpio
+// gcc -Wall -pthread -o bbSPIx_test bbSPIx_test.c -lpigpio
 // sudo ./bbSPIx_test
 
 //  Hello World client
@@ -8,7 +8,7 @@ printf// gcc -Wall -pthread -o bbSPIx_test bbSPIx_test.c -lpigpio
 #include <stdio.h>
 #include <pigpio.h>
 #include <unistd.h>
-//#include <bitset>
+#include <bitset>
 #include "pthread.h"
 
 #define FREQ (15000000)
