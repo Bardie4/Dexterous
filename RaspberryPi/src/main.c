@@ -141,7 +141,7 @@ void* read_zmq_server(void* zmq_read_input){
   	zmq_read->controller_select = zmq_read->contents[0] & 00001111;			//4 LSB in first byte represent controller
 
   	//Store payload
-         	if	( zmq_read->finger_select = 0b00000000){
+         	if	( (zmq_read->finger_select) = 0b00000000){
   		sscanf(zmq_read->contents, "%*c %d %d %d %d %d"	, &(zmq_read->instr_finger1.payload.data1)
   						 		, &(zmq_read->instr_finger1.payload.data2)
   								, &(zmq_read->instr_finger1.payload.data3)
@@ -149,7 +149,7 @@ void* read_zmq_server(void* zmq_read_input){
   								, &(zmq_read->instr_finger1.payload.data5));
   		zmq_read->instr_finger1.controller = zmq_read->controller_ptr[zmq_read->controller_select];
   	}
-  	else if	( zmq_read->finger_select = 0b00000001){
+  	else if	( (zmq_read->finger_select) = 0b00000001){
   		sscanf(zmq_read->contents, "%*c %d %d %d %d %d"	, &(zmq_read->instr_finger2.payload.data1)
   						 		, &(zmq_read->instr_finger2.payload.data2)
   								, &(zmq_read->instr_finger2.payload.data3)
@@ -157,7 +157,7 @@ void* read_zmq_server(void* zmq_read_input){
   								, &(zmq_read->instr_finger2.payload.data5));
   		zmq_read->instr_finger1.controller = zmq_read->controller_ptr[zmq_read->controller_select];
   	}
-  	else if	( zmq_read->finger_select == 0b00000010){
+  	else if	( (zmq_read->finger_select) == 0b00000010){
   		sscanf(zmq_read->contents, "%*c %d %d %d %d %d"	, &(zmq_read->instr_finger3.payload.data1)
   						 		, &(zmq_read->instr_finger3.payload.data2)
   								, &(zmq_read->instr_finger3.payload.data3)
@@ -165,7 +165,7 @@ void* read_zmq_server(void* zmq_read_input){
   								, &(zmq_read->instr_finger3.payload.data5));
   		zmq_read->instr_finger1.controller = zmq_read->controller_ptr[zmq_read->controller_select];
   	}
-  	else if	( zmq_read->finger_select == 0b00000011){
+  	else if	( (zmq_read->finger_select) == 0b00000011){
   		sscanf(zmq_read->contents, "%*c %d %d %d %d %d"	, &(zmq_read->instr_finger4.payload.data1)
   						 		, &(zmq_read->instr_finger4.payload.data2)
   								, &(zmq_read->instr_finger4.payload.data3)
@@ -173,7 +173,7 @@ void* read_zmq_server(void* zmq_read_input){
   								, &(zmq_read->instr_finger4.payload.data5));
   		zmq_read->instr_finger1.controller = zmq_read->controller_ptr[zmq_read->controller_select];
   	}
-  	else if	( zmq_read->finger_select == 0b00000100){
+  	else if	( (zmq_read->finger_select) == 0b00000100){
   		sscanf(zmq_read->contents, "%*c %d %d %d %d %d"	, &(zmq_read->instr_finger5.payload.data1)
   						 		, &(zmq_read->instr_finger5.payload.data2)
   								, &(zmq_read->instr_finger5.payload.data3)
@@ -196,7 +196,7 @@ void jointspace_pid(void* payload_in, void* vars, void* spi_){
   //Casting input
   zmq_payload* payload = (zmq_payload*) payload_in;
   controller_variables* controller_vars = (controller_variables*) vars;
-	spi_data* spi = (spidata*) spi_;
+	spi* spi = (spi*) spi_;
   //Run controller
   //Read SPI SENSORS
 	/*
@@ -510,7 +510,7 @@ void calibration(void* payload, void* vars,  void* spi_){
 	//Casting input
 	zmq_payload* payload = (zmq_payload*) payload_in;
 	controller_variables* controller_vars = (controller_variables*) vars;
-	spi_data* spi = (spidata*) spi_;
+	spi* spi = (spi*) spi_;
 
 	char read_angle_cmd[]= {0b00000000, 0b00000000};
 	char set_zero_angle_cmd[2];
