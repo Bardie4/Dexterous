@@ -265,6 +265,7 @@ void cartesian_pid_controller(void* payload_in, void* vars, void* pid_){
 }
 void* no_controller(void* a, void* b, void* c){
    //Empty controller. used when nothing happens
+	 printf("Thread without controller\n");
 }
 /*
 void controller_select(void* jointspace_pid_var, void* cartesian_pid_var){
@@ -527,7 +528,7 @@ void calibration(void* payload_in, void* vars,  void* spi_in){
 	torque_cmd[2]=(uint8_t) 0;
 	torque_cmd[3]=(uint8_t) 20;
 
-	printf("Driving to endpoint");
+	printf("Driving to endpoint\n");
 	usleep(10000000);
 
 	//READ ANGLE AT END POINT
@@ -544,7 +545,7 @@ void calibration(void* payload_in, void* vars,  void* spi_in){
 	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
 	controller_vars->js.theta2 = spi_ptr->inBuf[0];
 
-	printf("Before calibration: %d | %d", controller_vars->js.theta1 , 	controller_vars->js.theta2);
+	printf("Before calibration: %d | %d\n", controller_vars->js.theta1 , 	controller_vars->js.theta2);
 	//Setting zero_angle at start position
 	//The measured angle in end position should be zero to avoid crossing from 0->255, as this will mess with the PID.
 	//Any previous zero angle setting is removed before the angle is measured. This measured angle is set as the new zero angle.
