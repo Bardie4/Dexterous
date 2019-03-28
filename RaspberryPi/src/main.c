@@ -65,6 +65,7 @@ typedef struct jointspace_pid_var {
    short u1;
    short u2;
    char run;
+	 int itr_counter;
 }jointspace_pid_var;
 
 //Variables used by cartesian PID function
@@ -231,11 +232,14 @@ void jointspace_pid(void* payload_in, void* vars, void* spi_){
   controller_vars->js.u1 = (short) (controller_vars->js.error1*controller_vars->js.kp1);
   controller_vars->js.error2 = (controller_vars->js.theta2_setpoint - controller_vars->js.theta2);
   controller_vars->js.u2 = (short) (controller_vars->js.error2*controller_vars->js.kp2);
-  printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", controller_vars->js.theta1 , controller_vars->js.theta1_setpoint, controller_vars->js.error1, controller_vars->js.u1);
-  printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", controller_vars->js.theta2 , controller_vars->js.theta2_setpoint, controller_vars->js.error2, controller_vars->js.u2);
-
   //Write to ESP32 through SPI
-  usleep(10000);
+	controller_vars->js.itr_counter++;
+	if ( (controller_vars->js.itr_counter) > 1000){
+		printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", controller_vars->js.theta1 , controller_vars->js.theta1_setpoint, controller_vars->js.error1, controller_vars->js.u1);
+		printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", controller_vars->js.theta2 , controller_vars->js.theta2_setpoint, controller_vars->js.error2, controller_vars->js.u2);
+			controller_vars->js.itr_counter=0;
+	}
+  //usleep(10000);
 }
 
 void cartesian_pid_controller(void* payload_in, void* vars, void* pid_){
