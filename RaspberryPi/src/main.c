@@ -547,9 +547,9 @@ void calibration(void* payload_in, void* vars,  void* spi_in){
 	controller_vars->js.theta1 = spi_ptr->inBuf[0];
 
 	spi_ptr->outBuf[0] = 0b00000000;
-	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_2,0);
 	spi_result = spiXfer(spi_ptr->handle, spi_ptr->outBuf, spi_ptr->inBuf, 1);
-	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
+	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_2,1);
 	controller_vars->js.theta2 = spi_ptr->inBuf[0];
 
 	printf("Before calibration: %d | %d\n", controller_vars->js.theta1 , 	controller_vars->js.theta2);
@@ -591,8 +591,8 @@ void calibration(void* payload_in, void* vars,  void* spi_in){
 	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);									//MEASURE CURRENT ANGLE
 	zero_point = (spi_ptr->inBuf[0] << 8);                               //COMBINE 8 bit values to 16 bit
 	zero_point = zero_point + spi_ptr->inBuf[1];
-	zero_point = (uint16_t) (0b10000000000000000-zero_point);   //CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
-
+	zero_point = (uint16_t) (0b10000000000000000-zero_point+10);   //CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
+																																 //ADDING + 10 to avoid crossing zero because of noise
 	//SET NEW ZERO POINT
 	set_zero_angle_cmd[0]=0b10000001;
 	set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //8 MSB of Compliment of new zero angle
@@ -648,7 +648,7 @@ void calibration(void* payload_in, void* vars,  void* spi_in){
 	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_2,1); // MEASURE ZERO ANGLE
 	zero_point = (spi_ptr->inBuf[0] << 8);
 	zero_point = zero_point + spi_ptr->inBuf[1];
-	zero_point = (uint16_t) (0b10000000000000000-zero_point);   //CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
+	zero_point = (uint16_t) (0b10000000000000000-zero_point+10);   //CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
 	set_zero_angle_cmd[0]=0b10000001;                           //WRITE REG 1 (8 MSB of zero angle)
 	set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //ZERO ANGLE SET TO CURRENT ANGLE
 
