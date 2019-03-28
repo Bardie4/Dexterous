@@ -212,19 +212,22 @@ void jointspace_pid(void* payload_in, void* vars, void* spi_){
   theta2=inBuf[0];
 	*/
 	int spi_result;
+
+	pthread_mutex_lock(&lock);
 	spi_ptr->outBuf[0] = 0b00000000;
 	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
 	spi_result = spiXfer(spi_ptr->handle, spi_ptr->outBuf, spi_ptr->inBuf, 1);
 	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
 	controller_vars->js.theta1 = spi_ptr->inBuf[0];
 
+
 	spi_ptr->outBuf[0] = 0b00000000;
 	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
 	spi_result = spiXfer(spi_ptr->handle, spi_ptr->outBuf, spi_ptr->inBuf, 1);
 	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
 	controller_vars->js.theta2 = spi_ptr->inBuf[0];
-
-  printf("Jointspace\n");
+	pthread_mutex_unlock(&lock);
+  //printf("Jointspace\n");
   controller_vars->js.theta1_setpoint = payload->data1;
   controller_vars->js.theta2_setpoint = payload->data2;
   //Proportional controller
