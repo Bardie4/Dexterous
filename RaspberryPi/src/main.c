@@ -1,4 +1,4 @@
-// gcc -Wall -pthread -o bbSPIx_test bbSPIx_test.c -lpigpio
+printf// gcc -Wall -pthread -o bbSPIx_test bbSPIx_test.c -lpigpio
 // sudo ./bbSPIx_test
 
 //  Hello World client
@@ -214,7 +214,7 @@ void jointspace_pid(void* payload_in, void* vars, void* spi_){
 	gpioWrite(spi->setup.cs_angle_sensor_1,0);
 	spi_result = spiXfer(spi->handle, spi->outBuf, spi->inBuf, 1);
 	gpioWrite(spi->setup.cs_angle_sensor_1,1);
-	controller_vars->js.theta1 = inBuf[0];
+	controller_vars->js.theta1 = spi->inBuf[0];
 
 	spi->outBuf[0] = 0b00000000;
 	gpioWrite(spi->setup.cs_angle_sensor_1,0);
@@ -353,7 +353,7 @@ finger_controllers(zmq_data* shared){
 	int spi_handle = spiOpen(CS0, FREQ, 0);
 	if (spi_handle < 0)
 	{
-		fprintf("SPI OPEN FAILED\n");
+		printf("SPI OPEN FAILED\n");
 			return 1;
 	}
 	f1_data.spi_data.handle = spi_handle;
@@ -411,13 +411,13 @@ int main()
 	//SPI INIT
 	if (gpioInitialise() < 0)
 	{
-		 fprintf(stderr, "pigpio initialisation failed.\n");
+		 printf(stderr, "pigpio initialisation failed.\n");
 		 return 1;
 	}
 	int spi_handle = spiOpen(CS0, FREQ, CS9, 0);
 	if (spi_handle < 0)
 	{
-		fprintf("SPI OPEN FAILED\n");
+		printf("SPI OPEN FAILED\n");
 			return 1;
 	}
 
