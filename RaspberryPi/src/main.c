@@ -323,8 +323,6 @@ finger_controllers(zmq_data* shared){
   default_cntrl_set.js.kp2 = 0.5;                      //joint space controller vaules
   default_cntrl_set.js.read_angle_cmd[0] = 0b00000000; //SPI command
   default_cntrl_set.js.read_angle_cmd[1] = 0b00000000; //SPI command
-	default_cntrl_set.js.theta1_setpoint= 50;
-	default_cntrl_set.js.theta2_setpoint= 50;
   default_cntrl_set.cs.kp1 = 1;                        //cartesian space controller values
   default_cntrl_set.cs.kp2 = 0.5;                      //cartesian space controller values
   default_cntrl_set.cs.read_angle_cmd[0] = 0b00000000; //SPI command
@@ -403,11 +401,11 @@ int main()
   //Assigning controllers to choose from
   zmq_var.controller_ptr[0] = &jointspace_pid;
   zmq_var.controller_ptr[1] = &cartesian_pid_controller;
-  zmq_var.controller_ptr[2] = &calibration;;
+  zmq_var.controller_ptr[2] = &calibration;
   zmq_var.controller_ptr[3] = no_controller;
   //Default controller at startup for each finger
-  zmq_var.instr_finger1.controller = &jointspace_pid;
-  zmq_var.instr_finger2.controller =  no_controller;
+  zmq_var.instr_finger1.controller = &calibration;;
+  zmq_var.instr_finger2.controller = no_controller;
   zmq_var.instr_finger3.controller = no_controller;
   zmq_var.instr_finger4.controller = no_controller;
   zmq_var.instr_finger5.controller = no_controller;
