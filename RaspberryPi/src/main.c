@@ -47,7 +47,7 @@ typedef struct spi{
 	spi_setup setup;
 	char outBuf[4];
 	char inBuf[4];
-}
+}spi;
 
 
 //Variables used by joint space PID function
