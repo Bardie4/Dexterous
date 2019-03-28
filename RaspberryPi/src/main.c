@@ -190,7 +190,7 @@ void* read_zmq_server(void* zmq_read_input){
 }
 
 
-void calibration(void* payload, void* vars, void* pid_);
+void calibration(void* payload, void* vars, void* spi_);
 
 void jointspace_pid(void* payload_in, void* vars, void* spi_){
   //Casting input
@@ -213,14 +213,14 @@ void jointspace_pid(void* payload_in, void* vars, void* spi_){
 	spi->outBuf[0] = 0b00000000;
 	gpioWrite(spi->setup.cs_angle_sensor_1,0);
 	spi_result = spiXfer(spi->handle, spi->outBuf, spi->inBuf, 1);
-	gpioWrite(spi->setup.cs_angle_sensor_1,1):
+	gpioWrite(spi->setup.cs_angle_sensor_1,1);
 	controller_vars->js.theta1 = inBuf[0];
 
 	spi->outBuf[0] = 0b00000000;
 	gpioWrite(spi->setup.cs_angle_sensor_1,0);
 	spi_result = spiXfer(spi->handle, spi->outBuf, spi->inBuf, 1);
 	gpioWrite(spi->setup.cs_angle_sensor_1,1);
-	controller_vars->js.theta2 = inBuf[0];
+	controller_vars->js.theta2 = spi->inBuf[0];
 
   printf("Jointspace\n");
   controller_vars->js.theta1_setpoint = payload->data1;
