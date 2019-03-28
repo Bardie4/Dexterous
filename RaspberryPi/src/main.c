@@ -667,12 +667,12 @@ void calibration(void* payload_in, void* vars,  void* spi_in){
 	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
 	spi_result = spiXfer(spi_ptr->handle, read_angle_cmd, spi_ptr->inBuf, 1);
 	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
-	controller_vars->js.theta1=inBuf[0];
+	controller_vars->js.theta1=spi_ptr->inBuf[0];
 
 	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,0);
 	spi_result = spiXfer(spi_ptr->handle, read_angle_cmd, spi_ptr->inBuf, 1);
 	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,1);
-	controller_vars->js.theta2=inBuf[0];
+	controller_vars->js.theta2=spi_ptr->inBuf[0];
 
 	printf("After calibration: %d | %d \n",	controller_vars->js.theta1, controller_vars->js.theta2 );
 }
