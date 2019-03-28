@@ -11,9 +11,9 @@
 //#include <bitset>
 #include "pthread.h"
 
-#define FREQ 15000000
-#define SCLK 11
-#define MOSI 10
+#define FREQ (15000000)
+#define SCLK (11)
+#define MOSI (10)
 #define MISO 9
 #define CS0 8
 
