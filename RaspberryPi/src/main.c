@@ -532,14 +532,14 @@ void calibration(void* payload_in, void* vars,  void* spi_in){
 	spi_ptr->outBuf[0] = 0b00000000;
 	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
 	spi_result = spiXfer(spi_ptr->handle, spi_ptr->outBuf, spi_ptr->inBuf, 1);
-	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1):
-	controller_vars->js.theta1 = inBuf[0];
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
+	controller_vars->js.theta1 = spi_ptr->inBuf[0];
 
 	spi_ptr->outBuf[0] = 0b00000000;
 	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
 	spi_result = spiXfer(spi_ptr->handle, spi_ptr->outBuf, spi_ptr->inBuf, 1);
 	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
-	controller_vars->js.theta2 = inBuf[0];
+	controller_vars->js.theta2 = spi_ptr->inBuf[0];
 
 	printf("Before calibration: %d | %d", controller_vars->js.theta1 , 	controller_vars->js.theta2);
 	//Setting zero_angle at start position
