@@ -196,7 +196,7 @@ void jointspace_pid(void* payload_in, void* vars, void* spi_){
   //Casting input
   zmq_payload* payload = (zmq_payload*) payload_in;
   controller_variables* controller_vars = (controller_variables*) vars;
-	spi* spi = (spi*) spi_;
+	spi* spi_ptr = (spi*) spi_;
   //Run controller
   //Read SPI SENSORS
 	/*
@@ -210,17 +210,17 @@ void jointspace_pid(void* payload_in, void* vars, void* spi_){
   theta2=inBuf[0];
 	*/
 	int spi_result;
-	spi->outBuf[0] = 0b00000000;
-	gpioWrite(spi->setup.cs_angle_sensor_1,0);
-	spi_result = spiXfer(spi->handle, spi->outBuf, spi->inBuf, 1);
-	gpioWrite(spi->setup.cs_angle_sensor_1,1);
-	controller_vars->js.theta1 = spi->inBuf[0];
+	spi_ptr->outBuf[0] = 0b00000000;
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi_ptr->handle, spi_ptr->outBuf, spi_ptr->inBuf, 1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
+	controller_vars->js.theta1 = spi_ptr->inBuf[0];
 
-	spi->outBuf[0] = 0b00000000;
-	gpioWrite(spi->setup.cs_angle_sensor_1,0);
-	spi_result = spiXfer(spi->handle, spi->outBuf, spi->inBuf, 1);
-	gpioWrite(spi->setup.cs_angle_sensor_1,1);
-	controller_vars->js.theta2 = spi->inBuf[0];
+	spi_ptr->outBuf[0] = 0b00000000;
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi_ptr->handle, spi_ptr->outBuf, spi_ptr->inBuf, 1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
+	controller_vars->js.theta2 = spi_ptr->inBuf[0];
 
   printf("Jointspace\n");
   controller_vars->js.theta1_setpoint = payload->data1;
@@ -414,7 +414,7 @@ int main()
 		 printf(stderr, "pigpio initialisation failed.\n");
 		 return 1;
 	}
-	int spi_handle = spiOpen(CS0, FREQ, CS9, 0);
+	int spi_handle = spiOpen(CS0, FREQ, 0);
 	if (spi_handle < 0)
 	{
 		printf("SPI OPEN FAILED\n");
@@ -505,12 +505,11 @@ int main()
 }
 
 
-
-void calibration(void* payload, void* vars,  void* spi_){
+void calibration(void* payload_in, void* vars,  void* spi_in){
 	//Casting input
 	zmq_payload* payload = (zmq_payload*) payload_in;
 	controller_variables* controller_vars = (controller_variables*) vars;
-	spi* spi = (spi*) spi_;
+	spi* spi_ptr = (spi*) spi_in;
 
 	char read_angle_cmd[]= {0b00000000, 0b00000000};
 	char set_zero_angle_cmd[2];
@@ -530,16 +529,16 @@ void calibration(void* payload, void* vars,  void* spi_){
 
 	//READ ANGLE AT END POINT
 	int spi_result;
-	spi->outBuf[0] = 0b00000000;
-	gpioWrite(spi->setup.cs_angle_sensor_1,0);
-	spi_result = spiXfer(spi->handle, spi->outBuf, spi->inBuf, 1);
-	gpioWrite(spi->setup.cs_angle_sensor_1,1):
+	spi_ptr->outBuf[0] = 0b00000000;
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi_ptr->handle, spi_ptr->outBuf, spi_ptr->inBuf, 1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1):
 	controller_vars->js.theta1 = inBuf[0];
 
-	spi->outBuf[0] = 0b00000000;
-	gpioWrite(spi->setup.cs_angle_sensor_1,0);
-	spi_result = spiXfer(spi->handle, spi->outBuf, spi->inBuf, 1);
-	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	spi_ptr->outBuf[0] = 0b00000000;
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi_ptr->handle, spi_ptr->outBuf, spi_ptr->inBuf, 1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
 	controller_vars->js.theta2 = inBuf[0];
 
 	printf("Before calibration: %d | %d", controller_vars->js.theta1 , 	controller_vars->js.theta2);
@@ -556,29 +555,29 @@ void calibration(void* payload, void* vars,  void* spi_){
 	//RESET OLD ZERO POINT
 	set_zero_angle_cmd[0]=0b10000001; //WRITE REG 1 (8 MSB of zero angle)
 	set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
-	gpioWrite(spi->setup.cs_angle_sensor_1,0);
-	spi_result = spiXfer(spi->handle, set_zero_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi_ptr->handle, set_zero_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
 	usleep(10000);
-	gpioWrite(spi->setup.cs_angle_sensor_1,0);
-	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi_ptr->handle, read_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
 	usleep(10000);
 	set_zero_angle_cmd[0]=0b10000000; //WRITE REG 0 (8 LSB of zero angle)
 	set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
-	gpioWrite(spi->setup.cs_angle_sensor_1,0);
-	spi_result = spiXfer(spi->handle, set_zero_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi_ptr->handle, set_zero_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
 	usleep(10000);
-	gpioWrite(spi->setup.cs_angle_sensor_1,0);
-	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi_ptr->handle, read_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
 	usleep(10000);
 
 	//MEASURE ANGLE AFTER RESET AND CALCULATE REGISTER INPUT
-	gpioWrite(spi->setup.cs_angle_sensor_1,0);
-	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_1,1);									//MEASURE CURRENT ANGLE
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi_ptr->handle, read_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);									//MEASURE CURRENT ANGLE
 	zero_point = (inBuf[0] << 8);                               //COMBINE 8 bit values to 16 bit
 	zero_point = zero_point + inBuf[1];
 	zero_point = (uint16_t) (0b10000000000000000-zero_point);   //CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
@@ -586,23 +585,23 @@ void calibration(void* payload, void* vars,  void* spi_){
 	//SET NEW ZERO POINT
 	set_zero_angle_cmd[0]=0b10000001;
 	set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //8 MSB of Compliment of new zero angle
-	gpioWrite(spi->setup.cs_angle_sensor_1,0);
-	spi_result = spiXfer(spi->handle, set_zero_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi_ptr->handle, set_zero_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
 	usleep(50000);
-	gpioWrite(spi->setup.cs_angle_sensor_1,0);
-	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi_ptr->handle, read_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
 	usleep(50000);
 	set_zero_angle_cmd[0]=0b10000000;
 	set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //8 LSB of Compliment of new zero angle
-	gpioWrite(spi->setup.cs_angle_sensor_1,0);
-	spi_result = spiXfer(spi->handle, set_zero_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi_ptr->handle, set_zero_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
 	usleep(50000);
-	gpioWrite(spi->setup.cs_angle_sensor_1,0);
-	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi_ptr->handle, read_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
 	usleep(50000);
 
 
@@ -613,29 +612,29 @@ void calibration(void* payload, void* vars,  void* spi_){
 	//RESET OLD ZERO POINT
 	set_zero_angle_cmd[0]=0b10000001;   //WRITE REG 1 (8 MSB of zero angle)
 	set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
-	gpioWrite(spi->setup.cs_angle_sensor_2,0);
-	spi_result = spiXfer(spi->handle, set_zero_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi_ptr->handle, set_zero_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,1);
 	usleep(50000);
-	gpioWrite(spi->setup.cs_angle_sensor_2,0);
-	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi_ptr->handle, read_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,1);
 	usleep(50000);
 	set_zero_angle_cmd[0]=0b10000000;   //WRITE REG 0 (8 LSB of zero angle)
 	set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
-	gpioWrite(spi->setup.cs_angle_sensor_2,0);
-	spi_result = spiXfer(spi->handle, set_zero_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi_ptr->handle, set_zero_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,1);
 	usleep(50000);
-	gpioWrite(spi->setup.cs_angle_sensor_2,0);
-	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi_ptr->handle, read_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,1);
 	usleep(50000);
 
 	//MEASURE ANGLE AFTER RESET AND CALCULATE REGISTER INPUT
-	gpioWrite(spi->setup.cs_angle_sensor_2,0);
-	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_2,1); // MEASURE ZERO ANGLE
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi_ptr->handle, read_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,1); // MEASURE ZERO ANGLE
 	zero_point = (inBuf[0] << 8);
 	zero_point = zero_point + inBuf[1];
 	zero_point = (uint16_t) (0b10000000000000000-zero_point);   //CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
@@ -643,36 +642,36 @@ void calibration(void* payload, void* vars,  void* spi_){
 	set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //ZERO ANGLE SET TO CURRENT ANGLE
 
 	//SET NEW ZERO POINT
-	gpioWrite(spi->setup.cs_angle_sensor_2,0);
-	spi_result = spiXfer(spi->handle, set_zero_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi_ptr->handle, set_zero_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,1);
 	usleep(50000);
-	gpioWrite(spi->setup.cs_angle_sensor_2,0);
-	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi_ptr->handle, read_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,1);
 	usleep(50000);
 	set_zero_angle_cmd[0]=0b10000000;                           //WRITE REG 0 (8 LSB of zero angle)
 	set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //ZERO ANGLE SET TO CURRENT ANGLE
-	gpioWrite(spi->setup.cs_angle_sensor_2,0);
-	spi_result = spiXfer(spi->handle, set_zero_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi_ptr->handle, set_zero_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,1);
 	usleep(50000);
-	gpioWrite(spi->setup.cs_angle_sensor_2,0);
-	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
-	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi_ptr->handle, read_angle_cmd, spi_ptr->inBuf, 2);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,1);
 	usleep(50000);
 
 
 	//*********PRINT RESULT****************
 	//*************************************
-	gpioWrite(spi->setup.cs_angle_sensor_1,0);
-	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 1);
-	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi_ptr->handle, read_angle_cmd, spi_ptr->inBuf, 1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
 	controller_vars->js.theta1=inBuf[0];
 
-	gpioWrite(spi->setup.cs_angle_sensor_2,0);
-	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 1);
-	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi_ptr->handle, read_angle_cmd, spi_ptr->inBuf, 1);
+	gpioWrite(spi_ptr->setup.cs_angle_sensor_2,1);
 	controller_vars->js.theta2=inBuf[0];
 
 	printf("After calibration: %d | %d \n",	controller_vars->js.theta1, controller_vars->js.theta2 );
