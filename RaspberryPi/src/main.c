@@ -6,25 +6,25 @@
 
 #include "zhelpers.h"
 #include <stdio.h>
-//#include <pigpio.h>
+#include <pigpio.h>
 #include <unistd.h>
 //#include <bitset>
 #include "pthread.h"
 
-#define FREQ 1000000
+#define FREQ 15000000
 #define SCLK 11
 #define MOSI 10
 #define MISO 9
-#
+#define CS0 8
 
-typedef struct spi{
+typedef struct spi_setup{
 	int clk;
 	int mosi;
 	int miso;
 	int cs_angle_sensor_1;     //GPIO pins for manual chip select
 	int cs_angle_sensor_2;     //GPIO pins for manual chip select
 	int cs_esp32;              //GPIO pins for manual chip select
-}spi;
+}spi_setup;
 
 const struct spi SPI_F1 = {FREQ ,SCLK, MOSI, MISO, 2, 3, 4};
 const struct spi SPI_F2 = {FREQ ,SCLK, MOSI, MISO, 5, 6, 7};
@@ -39,6 +39,15 @@ const struct spi SPI_F5 = {FREQ ,SCLK, MOSI, MISO, 18, 19, 20};
 pthread_t tid[6];
 
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+
+
+typedef struct spi{
+	unsigned handle;
+	spi_setup setup;
+	char outBuf[4];
+	char inBuf[4];
+}
+
 
 //Variables used by joint space PID function
 typedef struct jointspace_pid_var {
@@ -180,12 +189,16 @@ void* read_zmq_server(void* zmq_read_input){
 }
 
 
-void jointspace_pid(void* payload_in, void* vars){
+void calibration(void* payload, void* vars, void* pid_);
+
+void jointspace_pid(void* payload_in, void* vars, void* spi_){
   //Casting input
   zmq_payload* payload = (zmq_payload*) payload_in;
   controller_variables* controller_vars = (controller_variables*) vars;
+	spi_data* spi = (spidata*) spi_;
   //Run controller
   //Read SPI SENSORS
+	/*
   controller_vars->js.theta1 = 50;        //For thesting without sensor (Remove this) CAST TO SHORT ON REAL IMPLEMENTATION
   controller_vars->js.theta2 = 50;        //For thesting without sensor (Remove this)
   /*
@@ -194,20 +207,20 @@ void jointspace_pid(void* payload_in, void* vars){
   error1= (int short)( ((uint8_t) zmq_read->link1_angle)-inBuf[0]);
   bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
   theta2=inBuf[0];
-  */
+	*/
+	int spi_result;
+	spi->outBuf[0] = 0b00000000;
+	gpioWrite(spi->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi->handle, spi->outBuf, spi->inBuf, 1);
+	gpioWrite(spi->setup.cs_angle_sensor_1,1):
+	controller_vars->js.theta1 = inBuf[0];
 
-  //Read input, check if controller is still selected (Shared resources)
-  /*
-  pthread_mutex_lock(&lock);
-  pid_var->theta1_setpoint = pid_var->zmq_bundle->link1_angle;
-  pid_var->theta2_setpoint = pid_var->zmq_bundle->link2_angle;
-  pid_var->run = (pid_var->zmq_bundle->function_flag == 0b00000001);
-  controller_vars->js
-  pthread_mutex_unlock(&lock);
+	spi->outBuf[0] = 0b00000000;
+	gpioWrite(spi->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi->handle, spi->outBuf, spi->inBuf, 1);
+	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	controller_vars->js.theta2 = inBuf[0];
 
-  if (!pid_var->run){ //Input data not relevant for this controller
-    break;            //Try next controller
-  }*/
   printf("Jointspace\n");
   controller_vars->js.theta1_setpoint = payload->data1;
   controller_vars->js.theta2_setpoint = payload->data2;
@@ -223,7 +236,7 @@ void jointspace_pid(void* payload_in, void* vars){
   usleep(1000);
 }
 
-void cartesian_pid_controller(void* payload_in, void* vars){
+void cartesian_pid_controller(void* payload_in, void* vars, void* pid_){
   //Casting input
   zmq_payload* payload = (zmq_payload*) payload_in;
   controller_variables* controller_vars = (controller_variables*) vars;
@@ -248,7 +261,7 @@ void cartesian_pid_controller(void* payload_in, void* vars){
     usleep(1000);
 
 }
-void* no_controller(void* a,void* b){
+void* no_controller(void* a, void* b, void* c){
    //Empty controller. used when nothing happens
 }
 /*
@@ -268,7 +281,7 @@ void* run_controller_once(finger_data* finger){
   pthread_mutex_unlock(&lock);
 
 	//Execute instructions
-	(*finger->zmq_local.controller)(&finger->zmq_local.payload, &finger->controller_var); //Runninng a pointer to a controller function
+	(*finger->zmq_local.controller)(&finger->zmq_local.payload, &finger->controller_var, &finger->spi_data); //Runninng a pointer to a controller function
 }
 
 finger_controllers(zmq_data* shared){
@@ -281,11 +294,11 @@ finger_controllers(zmq_data* shared){
 	finger_data f5_data;
 
 	//Set SPI options
-	f1_data.spi_data = SPI_F1;
-	f2_data.spi_data = SPI_F2;
-	f3_data.spi_data = SPI_F3;
-	f4_data.spi_data = SPI_F4;
-	f5_data.spi_data = SPI_F5;
+	f1_data.spi_data.setup = SPI_F1;
+	f2_data.spi_data.setup = SPI_F2;
+	f3_data.spi_data.setup = SPI_F3;
+	f4_data.spi_data.setup = SPI_F4;
+	f5_data.spi_data.setup = SPI_F5;
 
 	//Add pointers to the relevant input data from zmq
 	f1_data.zmq = &(shared->instr_finger1);
@@ -318,6 +331,36 @@ finger_controllers(zmq_data* shared){
   f4_data.zmq_local.controller = no_controller;
   f5_data.zmq_local.controller = no_controller;
 
+	//Set SPI chip selects high by default (No chip selected)
+	gpioWrite(f1_data.spi_data.setup.cs_angle_sensor_1, 1);
+	gpioWrite(f1_data.spi_data.setup.cs_angle_sensor_2, 1);
+	gpioWrite(f1_data.spi_data.setup.cs_esp32, 1);
+	gpioWrite(f2_data.spi_data.setup.cs_angle_sensor_1, 1);
+	gpioWrite(f2_data.spi_data.setup.cs_angle_sensor_2, 1);
+	gpioWrite(f2_data.spi_data.setup.cs_esp32, 1);
+	gpioWrite(f3_data.spi_data.setup.cs_angle_sensor_1, 1);
+	gpioWrite(f3_data.spi_data.setup.cs_angle_sensor_2, 1);
+	gpioWrite(f3_data.spi_data.setup.cs_esp32, 1);
+	gpioWrite(f4_data.spi_data.setup.cs_angle_sensor_1, 1);
+	gpioWrite(f4_data.spi_data.setup.cs_angle_sensor_2, 1);
+	gpioWrite(f4_data.spi_data.setup.cs_esp32, 1);
+	gpioWrite(f5_data.spi_data.setup.cs_angle_sensor_1, 1);
+	gpioWrite(f5_data.spi_data.setup.cs_angle_sensor_2, 1);
+	gpioWrite(f5_data.spi_data.setup.cs_esp32, 1);
+
+	//SPI handle
+	int spi_handle = spiOpen(CS0, FREQ, 0);
+	if (spi_handle < 0)
+	{
+		fprintf("SPI OPEN FAILED\n");
+			return 1;
+	}
+	f1_data.spi_data.handle = spi_handle;
+	f2_data.spi_data.handle = spi_handle;
+	f3_data.spi_data.handle = spi_handle;
+	f4_data.spi_data.handle = spi_handle;
+	f5_data.spi_data.handle = spi_handle;
+
 	//Separate into 5 threads that runs the controller once. The controllers are synched up by joining the threads.
 	while(1){
 
@@ -338,6 +381,7 @@ finger_controllers(zmq_data* shared){
 
 int main()
 {
+
   //VARIABLES USED IN FUNCTIONS
   zmq_data zmq_var;
   //  Prepare our context and subscriber
@@ -362,6 +406,20 @@ int main()
   printf("%p\n",(void*) zmq_var.controller_ptr[1]);
   printf("%p\n",(void*) zmq_var.controller_ptr[2]);
   printf("%p\n",(void*) zmq_var.controller_ptr[3]);
+
+	//SPI INIT
+	if (gpioInitialise() < 0)
+	{
+		 fprintf(stderr, "pigpio initialisation failed.\n");
+		 return 1;
+	}
+	int spi_handle = spiOpen(CS0, FREQ, CS9, 0);
+	if (spi_handle < 0)
+	{
+		fprintf("SPI OPEN FAILED\n");
+			return 1;
+	}
+
  /*
   jointspace_pid_var j_pid_var;
   //j_pid_var.zmq_bundle = &zmq_var;
@@ -438,203 +496,183 @@ int main()
       return 1;
    }
 
-   //SPI INITATION
-   SPI_init1 = bbSPIOpen(link1, MISO, MOSI, SCLK, 250000, 3);
-   SPI_init2 = bbSPIOpen(link2, MISO, MOSI, SCLK, 250000, 3);
-   SPI_init3 = bbSPIOpen(esp, MISO, MOSI, SCLK, 250000, 3);
-   //cout << "Initiation of spi1: " << SPI_init1 << endl;
-   //cout << "Initiation of spi2: " << SPI_init2 << endl;
-   //cout << "Initiation of spi3: " << SPI_init3 << endl;
-
-
-   //Report start angle
-   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1);
-   theta1=inBuf[0];
-   count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1);
-   theta2=inBuf[0];
-   //cout  << "link1 angle: " << unsigned(theta1) <<"  link2 angle: " << unsigned(theta2) << endl;
-
-   //Start by focing motors to start position
-   torque_cmd[0]=(uint8_t) 0;
-   torque_cmd[1]=(uint8_t) 20;
-   torque_cmd[2]=(uint8_t) 0;
-   torque_cmd[3]=(uint8_t) 20;
-
-   sleep(3);
-
-   //Setting zero_angle at start position
-   //The measured angle in end position should be zero to avoid crossing from 0->255, as this will mess with the PID.
-   //Any previous zero angle setting is removed before the angle is measured. This measured angle is set as the new zero angle.
-   //A delay followed by 16 zeros is required after each write to sensor register.
-   //The register value should be the compliment of the wanted zero-angle
-   //SENSOR 1
-   set_zero_angle_cmd[0]=0b10000001; //WRITE REG 1 (8 MSB of zero angle)
-   set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
-   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2);
-   usleep(50000);
-   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
-  // cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-   usleep(50000);
-   set_zero_angle_cmd[0]=0b10000000; //WRITE REG 0 (8 LSB of zero angle)
-   set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
-   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2);
-   usleep(50000);
-   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
-   //cout  << "Register value: " <<  bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-   usleep(50000);
-
-   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2); //MEASURE CURRENT ANGLE
-   zero_point = (inBuf[0] << 8);                               //COMBINE 8 bit values to 16 bit
-   zero_point = zero_point + inBuf[1];
-   //cout << "zero_point_16: " << zero_point <<endl;
-   //cout << "zero_point_8: " << unsigned((zero_point >> 8)) << endl;
-   zero_point = (uint16_t) (0b10000000000000000-zero_point);   //CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
-
-   //cout << "zero_point_compliment_16: " << zero_point << endl;
-  // cout << "zero_point__compliment_bit: "<< bitset<16>(zero_point) << endl;
-   set_zero_angle_cmd[0]=0b10000001;
-   set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //8 MSB of Compliment of new zero angle
-   //cout << bitset<8>(set_zero_angle_cmd[1]) << endl;
-   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2);
-   usleep(50000);
-   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
-  // cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-   usleep(50000);
-   set_zero_angle_cmd[0]=0b10000000;
-   set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //8 LSB of Compliment of new zero angle
-   count = bbSPIXfer(link1, set_zero_angle_cmd, (char *)inBuf, 2);
-   usleep(50000);
-   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 2);
-//   cout  << "Register value: " <<  bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-   usleep(50000);
-
-   //SENSOR 2
-   set_zero_angle_cmd[0]=0b10000001;   //WRITE REG 1 (8 MSB of zero angle)
-   set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
-   count = bbSPIXfer(link2, set_zero_angle_cmd, (char *)inBuf, 2);
-   usleep(50000);
-   count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 2);
-  // cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-   usleep(50000);
-   set_zero_angle_cmd[0]=0b10000000;   //WRITE REG 0 (8 LSB of zero angle)
-   set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
-   count = bbSPIXfer(link2, set_zero_angle_cmd, (char *)inBuf, 2);
-   usleep(50000);
-   count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 2);
-  // cout  << "Register value: " <<  bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-   usleep(50000);
-
-   count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 2); // MEASURE ZERO ANGLE
-   zero_point = (inBuf[0] << 8);
-   zero_point = zero_point + inBuf[1];
-  // cout << "zero_point_16: " << zero_point <<endl;
-  // cout << "zero_point_8: " << unsigned((zero_point >> 8)) << endl;
-   zero_point = (uint16_t) (0b10000000000000000-zero_point);
-  // cout << "zero_point_compliment_16: " << zero_point << endl;
-  // cout << "zero_point__compliment_bit: "<< bitset<16>(zero_point) << endl;
-   set_zero_angle_cmd[0]=0b10000001;                           //WRITE REG 1 (8 MSB of zero angle)
-   set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //ZERO ANGLE SET TO CURRENT ANGLE
-   //cout << bitset<8>(set_zero_angle_cmd[1]) << endl;
-   count = bbSPIXfer(link2, set_zero_angle_cmd, (char *)inBuf, 2);
-   usleep(50000);
-   count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 2);
-//   cout  << "Register value: " << bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-   usleep(50000);
-   set_zero_angle_cmd[0]=0b10000000;                           //WRITE REG 0 (8 LSB of zero angle)
-   set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //ZERO ANGLE SET TO CURRENT ANGLE
-   count = bbSPIXfer(link2, set_zero_angle_cmd, (char *)inBuf, 2);
-   usleep(50000);
-   count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 2);
-  // cout  << "Register value: " <<  bitset<8>(inBuf[0]) <<"| zeros " << bitset<8>(inBuf[1]) << endl;
-   usleep(50000);
-
-
-   //Report new angle with modified zero angle:
-   count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1);
-   theta1=inBuf[0];
-   count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1);
-   theta2=inBuf[0];
-//   cout  << "New link1 angle: " << unsigned(theta1) <<"New link2 angle " << unsigned(theta2) << endl;
-
-   usleep(50000);
-   pthread_create(&(tid[0]), NULL, &read_reference_angle, &zmq_read);
-   usleep(1000000);
-   pthread_create(&(tid[1]), NULL, &pid_, &zmq_read);
-   if (pthread_mutex_init(&lock, NULL) != 0)
-   {
-       printf("\n mutex init failed\n");
-       return 1;
-   }*//*
-   while (1)
-   {
-      //Read angle
-      count = bbSPIXfer(link1, read_angle_cmd, (char *)inBuf, 1); // > DAC
-      theta1=inBuf[0];
-      //count = bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
-      //theta2=inBuf[0];
-
-      //PID
-      error1= (int short) zmq_read.link1_angle-theta1;
-      error2= (int short) zmq_read.link2_angle-theta2;
-
-      u1=kp1*error1;
-      u2=kp2*error2;
-
-
-      printf("I am now reading from memory modified on another thread: %d | %d \n",zmq_read.link1_angle, zmq_read.link2_angle);
-
-	 //Report angle (For testing)
-	  cout_itr++;
-	  if (cout_itr > 1000)
-	  {
-	//	  cout << "link1 angle: " << unsigned(theta1) << " link1 error: " << error1 << " u1: " << u1 << "| link2 angle: " << unsigned(theta2) << " link2 error: " << error2 << " u2: " << u2 << endl;
-	//	  cout << "u1 bit string: "<< bitset<16>(u1) << "  " << bitset<8>(torque_cmd[0]) << bitset<8>(torque_cmd[1]) << " | u1 bit string: " << bitset<16>(u1) << "  " << bitset<8>(torque_cmd[2]) << bitset<8>(torque_cmd[3]) << endl;
-		  cout_itr = 0;
-	  }
-
-	  //Output
-
-	 // count = bbSPIXfer(esp, torque_cmd, (char *)inBuf, 4);
-//   cout << "ZMQ: "<<endl;
-   //  Read envelope with address
-
-//   cout << "[" << address << "] " << contents << std::endl;
-}*/
-   //mq_close (zmq_read.subscriber);
-   //zmq_ctx_destroy (zmq_read.context);
-   //return 0;
-
-   /*
-   for (i=0; i<256; i++)
-   {
-      cmd1[1] = i;
-
-      count = bbSPIXfer(CE0, cmd1, (char *)inBuf, 2); // > DAC
-
-      if (count == 2)
-      {
-         count = bbSPIXfer(CE0, cmd2, (char *)inBuf, 2); // < DAC
-
-         if (count == 2)
-         {
-            set_val = inBuf[1];
-            count = bbSPIXfer(CE1, cmd3, (char *)inBuf, 3); // < ADC
-
-            if (count == 3)
-            {
-               read_val = ((inBuf[1]&3)<<8) | inBuf[2];
-               printf("%d %d\n", set_val, read_val);
-            }
-         }
-      }
-   }
-   *//*
-   bbSPIClose(link1);
-   bbSPIClose(link2);
-   bbSPIClose(esp);
-
-   gpioTerminate();
-
-   return 0;
    */
+	 if (spiClose(spi_handle) < 0){
+		 printf("Bad handle");
+	 }
+	 gpioTerminate();
+}
+
+
+
+void calibration(void* payload, void* vars,  void* spi_){
+	//Casting input
+	zmq_payload* payload = (zmq_payload*) payload_in;
+	controller_variables* controller_vars = (controller_variables*) vars;
+	spi_data* spi = (spidata*) spi_;
+
+	char read_angle_cmd[]= {0b00000000, 0b00000000};
+	char set_zero_angle_cmd[2];
+	char torque_cmd[4];
+	uint16_t zero_point;
+
+	//******DRIVE MOTORS TO END POSITION*******
+	//*****************************************
+	//NOT DONE
+	torque_cmd[0]=(uint8_t) 0;
+	torque_cmd[1]=(uint8_t) 20;
+	torque_cmd[2]=(uint8_t) 0;
+	torque_cmd[3]=(uint8_t) 20;
+
+	printf("Driving to endpoint");
+	usleep(10000000);
+
+	//READ ANGLE AT END POINT
+	int spi_result;
+	spi->outBuf[0] = 0b00000000;
+	gpioWrite(spi->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi->handle, spi->outBuf, spi->inBuf, 1);
+	gpioWrite(spi->setup.cs_angle_sensor_1,1):
+	controller_vars->js.theta1 = inBuf[0];
+
+	spi->outBuf[0] = 0b00000000;
+	gpioWrite(spi->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi->handle, spi->outBuf, spi->inBuf, 1);
+	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	controller_vars->js.theta2 = inBuf[0];
+
+	printf("Before calibration: %d | %d", controller_vars->js.theta1 , 	controller_vars->js.theta2);
+	//Setting zero_angle at start position
+	//The measured angle in end position should be zero to avoid crossing from 0->255, as this will mess with the PID.
+	//Any previous zero angle setting is removed before the angle is measured. This measured angle is set as the new zero angle.
+	//A delay followed by 16 zeros is required after each write to sensor register.
+	//The register value should be the compliment of the wanted zero-angle
+
+
+	//*********CALIBRATE SENSOR 1**********
+	//*************************************
+
+	//RESET OLD ZERO POINT
+	set_zero_angle_cmd[0]=0b10000001; //WRITE REG 1 (8 MSB of zero angle)
+	set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
+	gpioWrite(spi->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi->handle, set_zero_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	usleep(10000);
+	gpioWrite(spi->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	usleep(10000);
+	set_zero_angle_cmd[0]=0b10000000; //WRITE REG 0 (8 LSB of zero angle)
+	set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
+	gpioWrite(spi->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi->handle, set_zero_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	usleep(10000);
+	gpioWrite(spi->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	usleep(10000);
+
+	//MEASURE ANGLE AFTER RESET AND CALCULATE REGISTER INPUT
+	gpioWrite(spi->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_1,1);									//MEASURE CURRENT ANGLE
+	zero_point = (inBuf[0] << 8);                               //COMBINE 8 bit values to 16 bit
+	zero_point = zero_point + inBuf[1];
+	zero_point = (uint16_t) (0b10000000000000000-zero_point);   //CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
+
+	//SET NEW ZERO POINT
+	set_zero_angle_cmd[0]=0b10000001;
+	set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //8 MSB of Compliment of new zero angle
+	gpioWrite(spi->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi->handle, set_zero_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	usleep(50000);
+	gpioWrite(spi->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	usleep(50000);
+	set_zero_angle_cmd[0]=0b10000000;
+	set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //8 LSB of Compliment of new zero angle
+	gpioWrite(spi->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi->handle, set_zero_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	usleep(50000);
+	gpioWrite(spi->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	usleep(50000);
+
+
+
+	//*********CALIBRATE SENSOR 2**********
+	//*************************************
+
+	//RESET OLD ZERO POINT
+	set_zero_angle_cmd[0]=0b10000001;   //WRITE REG 1 (8 MSB of zero angle)
+	set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
+	gpioWrite(spi->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi->handle, set_zero_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	usleep(50000);
+	gpioWrite(spi->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	usleep(50000);
+	set_zero_angle_cmd[0]=0b10000000;   //WRITE REG 0 (8 LSB of zero angle)
+	set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
+	gpioWrite(spi->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi->handle, set_zero_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	usleep(50000);
+	gpioWrite(spi->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	usleep(50000);
+
+	//MEASURE ANGLE AFTER RESET AND CALCULATE REGISTER INPUT
+	gpioWrite(spi->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_2,1); // MEASURE ZERO ANGLE
+	zero_point = (inBuf[0] << 8);
+	zero_point = zero_point + inBuf[1];
+	zero_point = (uint16_t) (0b10000000000000000-zero_point);   //CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
+	set_zero_angle_cmd[0]=0b10000001;                           //WRITE REG 1 (8 MSB of zero angle)
+	set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //ZERO ANGLE SET TO CURRENT ANGLE
+
+	//SET NEW ZERO POINT
+	gpioWrite(spi->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi->handle, set_zero_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	usleep(50000);
+	gpioWrite(spi->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	usleep(50000);
+	set_zero_angle_cmd[0]=0b10000000;                           //WRITE REG 0 (8 LSB of zero angle)
+	set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //ZERO ANGLE SET TO CURRENT ANGLE
+	gpioWrite(spi->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi->handle, set_zero_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	usleep(50000);
+	gpioWrite(spi->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 2);
+	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	usleep(50000);
+
+
+	//*********PRINT RESULT****************
+	//*************************************
+	gpioWrite(spi->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 1);
+	gpioWrite(spi->setup.cs_angle_sensor_1,1);
+	controller_vars->js.theta1=inBuf[0];
+
+	gpioWrite(spi->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi->handle, read_angle_cmd, spi->inBuf, 1);
+	gpioWrite(spi->setup.cs_angle_sensor_2,1);
+	controller_vars->js.theta2=inBuf[0];
+
+	printf("After calibration: %d | %d \n",	controller_vars->js.theta1, controller_vars->js.theta2 );
 }
