@@ -1,5 +1,5 @@
 
 # Makefile for compiling raspberry compatible
 spi_test : main.c
-		gcc -Wall -lpthread -o spitest main.c -lpigpio -lzmq
-		#gcc -Wall -g main.c -lzmq -o spitest -lpigpio -lpthread -pthread
+		gcc -Wall -lpthread -o spi_test main.c -lpigpio -lzmq -lrt
+		#gcc -Wall -g main.c -lzmq -o spi_test -lpigpio -lpthread -pthread
