@@ -26,11 +26,11 @@ typedef struct spi_setup{
 	int cs_esp32;              //GPIO pins for manual chip select
 }spi_setup;
 
-const struct spi SPI_F1 = {FREQ ,SCLK, MOSI, MISO, 2, 3, 4};
-const struct spi SPI_F2 = {FREQ ,SCLK, MOSI, MISO, 5, 6, 7};
-const struct spi SPI_F3 = {FREQ ,SCLK, MOSI, MISO, 12, 13, 14};
-const struct spi SPI_F4 = {FREQ ,SCLK, MOSI, MISO, 15, 16, 17};
-const struct spi SPI_F5 = {FREQ ,SCLK, MOSI, MISO, 18, 19, 20};
+const struct spi_setup SPI_F1 = {FREQ ,SCLK, MOSI, MISO, 2, 3, 4};
+const struct spi_setup SPI_F2 = {FREQ ,SCLK, MOSI, MISO, 5, 6, 7};
+const struct spi_setup SPI_F3 = {FREQ ,SCLK, MOSI, MISO, 12, 13, 14};
+const struct spi_setup SPI_F4 = {FREQ ,SCLK, MOSI, MISO, 15, 16, 17};
+const struct spi_setup SPI_F5 = {FREQ ,SCLK, MOSI, MISO, 18, 19, 20};
 //There is enough GPIO pins for a total of 7 fingers.
 //Anything above two fingers will not be tested.
 //Only cartesian and joint space controllers have support for more than 2 fingers.
