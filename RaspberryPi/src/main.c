@@ -648,7 +648,7 @@ void calibration(void* payload_in, void* vars,  void* spi_in){
 	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_2,1); // MEASURE ZERO ANGLE
 	zero_point = (spi_ptr->inBuf[0] << 8);
 	zero_point = zero_point + spi_ptr->inBuf[1];
-	zero_point = (uint16_t) (0b10000000000000000-zero_point--0b0000000000001000);   //CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
+	zero_point = (uint16_t) (0b10000000000000000-zero_point-0b0000000000001000);   //CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
 	set_zero_angle_cmd[0]=0b10000001;                           //WRITE REG 1 (8 MSB of zero angle)
 	set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //ZERO ANGLE SET TO CURRENT ANGLE
 
