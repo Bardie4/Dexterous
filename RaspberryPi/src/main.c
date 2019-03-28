@@ -98,7 +98,7 @@ typedef struct zmq_payload{
 }zmq_payload;
 
 typedef struct zmq_instructions{
-	void (*controller)(void*, void*);
+	void (*controller)(void*, void*, void*);
 	zmq_payload payload;
 }zmq_instructions;
 
