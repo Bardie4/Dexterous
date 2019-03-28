@@ -272,7 +272,7 @@ void cartesian_pid_controller(void* payload_in, void* vars, void* pid_){
 }
 void* no_controller(void* a, void* b, void* c){
    //Empty controller. used when nothing happens
-	 printf("Thread without controller\n");
+	 //printf("Thread without controller\n");
 }
 /*
 void controller_select(void* jointspace_pid_var, void* cartesian_pid_var){
