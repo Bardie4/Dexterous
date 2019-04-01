@@ -89,8 +89,8 @@ typedef struct cartesian_pid_var {
 	 double gamma;
 	 double l1;
 	 double l2;
-	 double x1;
-	 double x2;
+	 double x;
+	 double y;
 	 int itr_counter;
 }cartesian_pid_var;
 
