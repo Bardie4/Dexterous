@@ -83,6 +83,11 @@ typedef struct cartesian_pid_var {
    short u1;
    short u2;
    char run;
+	 double temp;
+	 double k1;
+	 double k2;
+	 double gamma;
+	 int itr_counter;
 }cartesian_pid_var;
 
 typedef struct controller_variables{
@@ -198,7 +203,6 @@ void jointspace_pid(void* payload_in, void* vars, void* spi_){
   zmq_payload* payload = (zmq_payload*) payload_in;
   controller_variables* controller_vars = (controller_variables*) vars;
 	spi* spi_ptr = (spi*) spi_;
-	int gpio_result;
   //Run controller
   //Read SPI SENSORS
 	/*
@@ -211,6 +215,7 @@ void jointspace_pid(void* payload_in, void* vars, void* spi_){
   bbSPIXfer(link2, read_angle_cmd, (char *)inBuf, 1); // > DAC
   theta2=inBuf[0];
 	*/
+	int gpio_result;
 	int spi_result;
 
 	pthread_mutex_lock(&lock);
@@ -245,12 +250,56 @@ void jointspace_pid(void* payload_in, void* vars, void* spi_){
   //usleep(10000);
 }
 
-void cartesian_pid_controller(void* payload_in, void* vars, void* pid_){
+void cartesian_pid_controller(void* payload_in, void* vars, void* spi_){
   //Casting input
   zmq_payload* payload = (zmq_payload*) payload_in;
   controller_variables* controller_vars = (controller_variables*) vars;
+	spi* spi_ptr = (spi*) spi_;
+	cartesian_pid_var* contrl = &controller_vars->cs;
 
+
+
+	//Inverse kinematics. Source: http://www.hessmer.org/uploads/RobotArm/Inverse%2520Kinematics%2520for%2520Robot%2520Arm.pdf
+	contrl->temp = (pow(contrl->x,2)+pow(contrl->y,2)-pow(contrl->l1,2)-pow(contrl->2,2))/(2*contrl->l1*contrl->l2);
+	contrl->theta2=atan2(sqrt(1-contrl->temp), contrl->temp);
+	contrl->k1=contrl->l1+contrl->l2*cos(contrl->theta2);
+	contrl->k2=contrl->l2*sin(contrl->theta2);
+	contrl->gamma=atan2(contrl->k2,contrl->k1);
+	contrl->theta1=atan2(contrl->y,contrl->x)-contrl->gamma;
   //Run controller
+
+	int spi_result;
+	int gpio_result;
+
+	pthread_mutex_lock(&lock);
+	spi_ptr->outBuf[0] = 0b00000000;
+	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_1,0);
+	spi_result = spiXfer(spi_ptr->handle, spi_ptr->outBuf, spi_ptr->inBuf, 1);
+	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_1,1);
+	controller_vars->js.theta1 = spi_ptr->inBuf[0];
+
+
+	spi_ptr->outBuf[0] = 0b00000000;
+	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_2,0);
+	spi_result = spiXfer(spi_ptr->handle, spi_ptr->outBuf, spi_ptr->inBuf, 1);
+	gpio_result = gpioWrite(spi_ptr->setup.cs_angle_sensor_2,1);
+	controller_vars->js.theta2 = spi_ptr->inBuf[0];
+	pthread_mutex_unlock(&lock);
+
+	contrl->theta1_setpoint = payload->data1;
+	contrl->theta2_setpoint = payload->data2;
+	//Proportional controller
+	contrl->error1 = (contrl->theta1_setpoint - contrl->theta1);
+	contrl->u1 = (short) (contrl->error1*contrl->kp1);
+	contrl->error2 = (contrl->theta2_setpoint - contrl->theta2);
+	contrl->u2 = (short) (contrl->error2*contrl->kp2);
+	//Write to ESP32 through SPI
+	contrl->itr_counter++;
+	if ( (contrl->itr_counter) > 1000){
+		printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", contrl->theta1 , contrl->theta1_setpoint, contrl->error1, contrl->u1);
+		printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", contrl->theta2 , contrl->theta2_setpoint, contrl->error2, contrl->u2);
+			ccontrl->itr_counter=0;
+	}
     /*
 
     //Read input, check if controller is still selected (Shared resources)
@@ -605,8 +654,8 @@ void calibration(void* payload_in, void* vars,  void* spi_in){
 	pthread_mutex_unlock(&lock);
 	zero_point = (spi_ptr->inBuf[0] << 8);                               //COMBINE 8 bit values to 16 bit
 	zero_point = zero_point + spi_ptr->inBuf[1];
-	zero_point = (uint16_t) (0b10000000000000000-zero_point+0b0000100000000000);   //CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
-																																 //ADDING -10 to avoid crossing zero because of noise
+	zero_point = (uint16_t) (0b10000000000000000-zero_point+0b0000100000000000);   	//CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
+																																 									//ADDING 8 (in 16bit) to avoid crossing zero because of noise
 	//SET NEW ZERO POINT
 	set_zero_angle_cmd[0]=0b10000001;
 	set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //8 MSB of Compliment of new zero angle
