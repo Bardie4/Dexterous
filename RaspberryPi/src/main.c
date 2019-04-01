@@ -3,7 +3,7 @@
 
 //  Hello World client
 
-
+#include <math.h>
 #include "zhelpers.h"
 #include <stdio.h>
 #include <pigpio.h>
@@ -87,6 +87,10 @@ typedef struct cartesian_pid_var {
 	 double k1;
 	 double k2;
 	 double gamma;
+	 double l1;
+	 double l2;
+	 double x1;
+	 double x2;
 	 int itr_counter;
 }cartesian_pid_var;
 
@@ -376,6 +380,8 @@ finger_controllers(zmq_data* shared){
   default_cntrl_set.cs.kp2 = 0.5;                      //cartesian space controller values
   default_cntrl_set.cs.read_angle_cmd[0] = 0b00000000; //SPI command
   default_cntrl_set.cs.read_angle_cmd[1] = 0b00000000; //SPI command
+	default_cntrl_set.cs.l1 = 5.3;
+	default_cntrl_set.cs.l2 = 4.8;
 
   f1_data.controller_var = default_cntrl_set;
   f2_data.controller_var = default_cntrl_set;
