@@ -264,7 +264,7 @@ void cartesian_pid_controller(void* payload_in, void* vars, void* spi_){
 
 
 	//Inverse kinematics. Source: http://www.hessmer.org/uploads/RobotArm/Inverse%2520Kinematics%2520for%2520Robot%2520Arm.pdf
-	contrl->temp = (pow(contrl->x,2)+pow(contrl->y,2)-pow(contrl->l1,2)-pow(contrl->2,2))/(2*contrl->l1*contrl->l2);
+	contrl->temp = (pow(contrl->x,2)+pow(contrl->y,2)-pow(contrl->l1,2)-pow(contrl->l2,2))/(2*contrl->l1*contrl->l2);
 	contrl->theta2=atan2(sqrt(1-contrl->temp), contrl->temp);
 	contrl->k1=contrl->l1+contrl->l2*cos(contrl->theta2);
 	contrl->k2=contrl->l2*sin(contrl->theta2);
@@ -302,7 +302,7 @@ void cartesian_pid_controller(void* payload_in, void* vars, void* spi_){
 	if ( (contrl->itr_counter) > 1000){
 		printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", contrl->theta1 , contrl->theta1_setpoint, contrl->error1, contrl->u1);
 		printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", contrl->theta2 , contrl->theta2_setpoint, contrl->error2, contrl->u2);
-			ccontrl->itr_counter=0;
+			contrl->itr_counter=0;
 	}
     /*
 
