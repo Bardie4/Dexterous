@@ -28,16 +28,22 @@
 #define H_CLK   14
 #define H_CS    15
 
-#define V_MOSI  23
+#define V_MOSI  21
 #define V_MISO  19
 #define V_CLK   18
 #define V_CS    5
 
-#define M1_PWM1 0
-#define M1_PWM2 2
-#define M1_PWM3 4
+#define M1_PWM1 2
+#define M1_PWM2 4
+#define M1_PWM3 21
+#define M1_nRst 26
 #define M1_EN   16
-#define PWM_FRQ 200000
+#define M1_CH1  0
+#define M1_CH2  1
+#define M1_CH3  2
+
+#define PWM_FRQ 250000
+#define PWM_RES 8
 
 xQueueHandle mot1_queue;
 xQueueHandle mot2_queue;
@@ -95,14 +101,6 @@ void setup() {
   pinMode(V_CS, OUTPUT); //VSPI SS
   pinMode(H_CS, OUTPUT); //HSPI SS
 
-  // PWM
-  sigmaDeltaSetup(0, PWM_FRQ);
-  sigmaDeltaSetup(1, PWM_FRQ);
-  sigmaDeltaSetup(2, PWM_FRQ);
-
-  sigmaDeltaAttachPin(M1_PWM1, 0);
-  sigmaDeltaAttachPin(M1_PWM2, 1);
-  sigmaDeltaAttachPin(M1_PWM3, 2);
 
   // Angle read -> motor write
   qMotorAngle = xQueueCreate( 1, sizeof( double ) );
@@ -132,6 +130,8 @@ void setup() {
   xTaskCreatePinnedToCore(printer, "printer", 4096, (void *)1, 1, NULL, 1);
 
   Serial.begin(115200);
+
+
 }
 
 // the loop function runs over and over again until power down or reset
@@ -228,7 +228,8 @@ void vspiCommand8(void *pvParameters) {
     theta = (uiAngle*360.0)/65536.0;
     vspi->endTransaction();
 
-    //xQueueOverwrite(qMotorAngle, &uiAngle);
+    xQueueOverwrite(qMotorAngle, &uiAngle);
+    xQueueOverwrite(qPrintVTheta, &uiAngle);
 
     vTaskDelay(1 / portTICK_RATE_MS);
   }
@@ -246,8 +247,8 @@ void hspiCommand8(void *pvParameters) {
     theta = (uiAngle*360.0)/65536.0;
     hspi->endTransaction();
 
-    xQueueOverwrite(qMotorAngle, &uiAngle);
-    // xQueueOverwrite( qPrintHTheta, &uiAngle);
+    //xQueueOverwrite(qMotorAngle, &uiAngle);
+    xQueueOverwrite( qPrintHTheta, &uiAngle);
 
     vTaskDelay(1 / portTICK_RATE_MS);
   }
@@ -284,33 +285,73 @@ void M1_ctrl(void *pvParameters) {
   //pwm
   uint8_t pwmA, pwmB, pwmC;
 
-    pwmA = (pwmSin[currentStepA]);
-    pwmB = (pwmSin[currentStepB]);
-    pwmC = (pwmSin[currentStepC]);
-    sigmaDeltaWrite(0, pwmA);
-    sigmaDeltaWrite(1, pwmB);
-    sigmaDeltaWrite(2, pwmC);
-    
-for(int i = 0; i < 10000; i++)
-{
-  Serial.print("A: ");
-  Serial.print((pwmSin[currentStepA]));
-  Serial.print(" | B: ");
-  Serial.print((pwmSin[currentStepB]));
-  Serial.print(" | C: ");
-  Serial.println((pwmSin[currentStepC]));
-}
+  pinMode(M1_EN, OUTPUT);
+  pinMode(M1_nRst, OUTPUT);
 
+  digitalWrite(M1_EN, HIGH);
+  digitalWrite(M1_nRst, HIGH);
 
+    // PWM
+  // sigmaDeltaSetup(M1_CH1, PWM_FRQ);
+  // sigmaDeltaSetup(M1_CH2, PWM_FRQ);
+  // sigmaDeltaSetup(M1_CH3, PWM_FRQ);
+  ledcSetup(M1_CH1, PWM_FRQ, PWM_RES);
+  ledcSetup(M1_CH2, PWM_FRQ, PWM_RES);
+  ledcSetup(M1_CH3, PWM_FRQ, PWM_RES);
 
+  // sigmaDeltaAttachPin(M1_PWM1, M1_CH1);
+  // sigmaDeltaAttachPin(M1_PWM2, M1_CH2);
+  // sigmaDeltaAttachPin(M1_PWM3, M1_CH3);
+
+  ledcAttachPin(M1_PWM1, M1_CH1);
+  ledcAttachPin(M1_PWM2, M1_CH2);
+  ledcAttachPin(M1_PWM3, M1_CH3);
+
+  pwmA = (pwmSin[currentStepA]);
+  pwmB = (pwmSin[currentStepB]);
+  pwmC = (pwmSin[currentStepC]);
   
-Serial.println("Synchronizing");
+  // sigmaDeltaWrite(M1_CH1, 0);
+  // sigmaDeltaWrite(M1_CH2, 85);
+  // sigmaDeltaWrite(M1_CH3, 170);
+
+  ledcWrite(M1_CH1, 0);
+  ledcWrite(M1_CH2, 85);
+  ledcWrite(M1_CH3, 170);
+
+  vTaskDelay(5000 / portTICK_RATE_MS);
+  
+  Serial.println("Synchronizing");
   Serial.println("start");
   
 
   xQueuePeek(qMotorAngle, &theta_0_mek, 0);
   theta_0 = theta_0_mek << 2;
   Serial.println(theta_0);
+
+  while(1){
+    for(uint8_t i = 0; i < 256; i++)
+    {
+      
+      pwmA = i;
+      pwmB = i + 85;
+      pwmC = pwmB + 85;
+      ledcWrite(M1_CH1, pwmSin[pwmA]);  
+      ledcWrite(M1_CH2, pwmSin[pwmB]);
+      ledcWrite(M1_CH3, pwmSin[pwmC]); 
+
+      Serial.print(" A :");
+      Serial.print(pwmSin[pwmA]);
+      Serial.print(" | B : ");
+      Serial.print(pwmSin[pwmB]);
+      Serial.print(" | C : ");
+      Serial.println(pwmSin[pwmC]); 
+      vTaskDelay(15 / portTICK_RATE_MS);
+    }
+    
+    
+  }
+
 
   while(1){
     //Leading or lagging electrical field
@@ -342,13 +383,16 @@ Serial.println("Synchronizing");
     outputScale = fabs(u);
 
     //Output
-    pwmA = (pwmSin[currentStepA]);
-    pwmB = (pwmSin[currentStepB]);
-    pwmC = (pwmSin[currentStepC]);
-    sigmaDeltaWrite(0, pwmA);
-    sigmaDeltaWrite(1, pwmB);
-    sigmaDeltaWrite(2, pwmC);
-
+    pwmA = (int)(pwmSin[currentStepA]);
+    pwmB = (int)(pwmSin[currentStepB]);
+    pwmC = (int)(pwmSin[currentStepC]);
+    // sigmaDeltaWrite(M1_CH1, pwmA);
+    // sigmaDeltaWrite(M1_CH2, pwmB);
+    // sigmaDeltaWrite(M1_CH3, pwmC);
+    ledcWrite(M1_CH1, pwmA);
+    ledcWrite(M1_CH2, pwmB);
+    ledcWrite(M1_CH3, pwmC);
+    
     xQueueOverwrite(qPrintPWMA, &pwmA);
     xQueueOverwrite(qPrintPWMB, &pwmB);
     xQueueOverwrite(qPrintPWMC, &pwmC);
@@ -383,25 +427,22 @@ void printer(void *pvParameters) {
     // Serial.print(output);
     // Serial.print(" | Set: ");
     // Serial.print(Setpoint);
-    // Serial.print(" | vTheta: ");
-    // Serial.print(vTheta);
-    // Serial.print(" | vSumTheta: ");
-    // Serial.print(vSumTheta);
-    // Serial.print(" | hTheta: ");
-    // Serial.print(hTheta);
-    // Serial.println(" | hSumTheta: ");
-    // Serial.print(hSumTheta);
-    // Serial.print(" | mTheta: ");
-    // Serial.print(moTheta);
-    // Serial.print(" | Theta mult: ");
-    // Serial.print(vTheta);
-
-    Serial.print(" | PWM : ");
-    Serial.print(pwmA);
-    Serial.print(" | ");
-    Serial.print(pwmB);
-    Serial.print(" | ");
-    Serial.println(pwmC);
+    Serial.print(" | vTheta: ");
+    Serial.print(vTheta);
+    Serial.print(" | vSumTheta: ");
+    Serial.print(vSumTheta);
+    Serial.print(" | hTheta: ");
+    Serial.print(hTheta);
+    Serial.print(" | hSumTheta: ");
+    Serial.print(hSumTheta);
+    Serial.print(" | mTheta: ");
+    Serial.println(moTheta);
+    // Serial.print(" | PWM : ");
+    // Serial.print(pwmA);
+    // Serial.print(" | ");
+    // Serial.print(pwmB);
+    // Serial.print(" | ");
+    // Serial.println(pwmC);
 
     vTaskDelay(100 / portTICK_RATE_MS);
   }
