@@ -2,7 +2,7 @@
     "programmer": "AVRISP mkII",
     "board": "esp32:esp32:esp32doit-devkit-v1",
     "output": "../build",
-    "port": "/dev/ttyUSB0",
-    "sketch": "esp_MagsPwm/main.ino",
-    "configuration": "FlashFreq=80,UploadSpeed=115200,DebugLevel=none"
+    "port": "/dev/ttyACM0",
+    "sketch": "drv_test/drv_test.ino",
+    "configuration": "FlashFreq=80,UploadSpeed=921600,DebugLevel=none"
 }

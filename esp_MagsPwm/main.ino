@@ -15,6 +15,9 @@
 #include <SPI.h>
 #include "freertos/event_groups.h"
 #include "freertos/queue.h"
+#include "esp_task_wdt.h"
+
+#define TASK_RESET_PERIOD_S     10
 //#include <PID_v1.h>
 
 #if CONFIG_FREERTOS_UNICORE
@@ -33,16 +36,27 @@
 #define V_CLK   18
 #define V_CS    5
 
-#define M1_PWM1 2
-#define M1_PWM2 4
-#define M1_PWM3 21
+#define M1_PWM1 25 //2
+#define M1_PWM2 33 //4
+#define M1_PWM3 32 //21
 #define M1_nRst 26
+#define M1_nSlp 27
 #define M1_EN   16
 #define M1_CH1  0
 #define M1_CH2  1
 #define M1_CH3  2
 
-#define PWM_FRQ 250000
+#define M2_PWM1 2 //2
+#define M2_PWM2 4 //4
+#define M2_PWM3 21 //21
+#define M2_nRst 26
+#define M2_nSlp 27
+#define M2_EN   16
+#define M2_CH1  3
+#define M2_CH2  4
+#define M2_CH3  5
+
+#define PWM_FRQ 30000
 #define PWM_RES 8
 
 xQueueHandle mot1_queue;
@@ -88,6 +102,7 @@ QueueHandle_t qPrintHSumTheta;
 
 
 void setup() {
+
   //initialise two instances of the SPIClass attached to VSPI and HSPI respectively
   vspi = new SPIClass(VSPI);
   hspi = new SPIClass(HSPI);
@@ -121,13 +136,15 @@ void setup() {
 
   // xTaskCreatePinnedToCore(vspiCommand16, "vspi", 4096, (void *)1, 1, NULL, 0);
   // xTaskCreatePinnedToCore(hspiCommand16, "hspi", 4096, (void *)2, 1, NULL, 1);
-  xTaskCreatePinnedToCore(vspiCommand8, "vspi", 4096, (void *)1, 1, NULL, 0);
+  // xTaskCreatePinnedToCore(vspiCommand8, "vspi", 4096, (void *)1, 1, NULL, 0);
 
-  xTaskCreatePinnedToCore(hspiCommand8, "hspi", 4096, (void *)2, 1, NULL, 1);
+  // xTaskCreatePinnedToCore(hspiCommand8, "hspi", 4096, (void *)2, 1, NULL, 1);
 
-  xTaskCreatePinnedToCore(M1_ctrl, "M1_ctrl", 4096, (void *)1, 1, NULL, 0);
+  xTaskCreatePinnedToCore(M1_ctrl, "M1_ctrl", 4096, (void *)1, 1, NULL, 1);
 
-  xTaskCreatePinnedToCore(printer, "printer", 4096, (void *)1, 1, NULL, 1);
+  xTaskCreatePinnedToCore(M2_ctrl, "M1_ctrl", 4096, (void *)1, 1, NULL, 1);
+
+  // xTaskCreatePinnedToCore(printer, "printer", 4096, (void *)1, 1, NULL, 1);
 
   Serial.begin(115200);
 
@@ -136,7 +153,7 @@ void setup() {
 
 // the loop function runs over and over again until power down or reset
 void loop() {
-
+  vTaskDelay(1 / portTICK_RATE_MS);
 }
 
 void vspiCommand16(void *pvParameters) {
@@ -285,11 +302,17 @@ void M1_ctrl(void *pvParameters) {
   //pwm
   uint8_t pwmA, pwmB, pwmC;
 
+  pinMode(M1_PWM1, OUTPUT);
+  pinMode(M1_PWM2, OUTPUT);
+  pinMode(M1_PWM3, OUTPUT);
+
   pinMode(M1_EN, OUTPUT);
   pinMode(M1_nRst, OUTPUT);
+  pinMode(M1_nSlp, OUTPUT);
 
   digitalWrite(M1_EN, HIGH);
   digitalWrite(M1_nRst, HIGH);
+  digitalWrite(M1_nSlp, HIGH);
 
     // PWM
   // sigmaDeltaSetup(M1_CH1, PWM_FRQ);
@@ -330,23 +353,24 @@ void M1_ctrl(void *pvParameters) {
   Serial.println(theta_0);
 
   while(1){
-    for(uint8_t i = 0; i < 256; i++)
+    for(uint8_t i = 0; i < 256; i+=2)
     {
       
       pwmA = i;
-      pwmB = i + 85;
+      pwmB = pwmA + 85;
       pwmC = pwmB + 85;
       ledcWrite(M1_CH1, pwmSin[pwmA]);  
       ledcWrite(M1_CH2, pwmSin[pwmB]);
       ledcWrite(M1_CH3, pwmSin[pwmC]); 
 
-      Serial.print(" A :");
-      Serial.print(pwmSin[pwmA]);
-      Serial.print(" | B : ");
-      Serial.print(pwmSin[pwmB]);
-      Serial.print(" | C : ");
-      Serial.println(pwmSin[pwmC]); 
-      vTaskDelay(15 / portTICK_RATE_MS);
+      // Serial.print(" A :");
+      // Serial.print(pwmSin[pwmA]);
+      // Serial.print(" | B : ");
+      // Serial.print(pwmSin[pwmB]);
+      // Serial.print(" | C : ");
+      // Serial.println(pwmSin[pwmC]); 
+      usleep(10);
+      esp_task_wdt_reset();
     }
     
     
@@ -403,6 +427,63 @@ void M1_ctrl(void *pvParameters) {
 
     vTaskDelay(1 / portTICK_RATE_MS);
     }
+}
+
+void M2_ctrl(void *pvParameters) {
+  uint8_t pwmA, pwmB, pwmC;
+
+  pinMode(M2_PWM1, OUTPUT);
+  pinMode(M2_PWM2, OUTPUT);
+  pinMode(M2_PWM3, OUTPUT);
+
+  pinMode(M2_EN, OUTPUT);
+  pinMode(M2_nRst, OUTPUT);
+  pinMode(M2_nSlp, OUTPUT);
+
+  digitalWrite(M2_EN, HIGH);
+  digitalWrite(M2_nRst, HIGH);
+  digitalWrite(M2_nSlp, HIGH);
+
+  //PWM
+  ledcSetup(M2_CH1, PWM_FRQ, PWM_RES);
+  ledcSetup(M2_CH2, PWM_FRQ, PWM_RES);
+  ledcSetup(M2_CH3, PWM_FRQ, PWM_RES);
+
+  ledcAttachPin(M2_PWM1, M2_CH1);
+  ledcAttachPin(M2_PWM2, M2_CH2);
+  ledcAttachPin(M2_PWM3, M2_CH3);
+
+  ledcWrite(M2_CH1, 0);
+  ledcWrite(M2_CH2, 85);
+  ledcWrite(M2_CH3, 170);
+
+  vTaskDelay(5000 / portTICK_RATE_MS);
+  
+  Serial.println("Synchronizing");
+  Serial.println("start");
+
+  while(1){
+    for(uint8_t i = 0; i < 256; i+=2)
+    {
+      
+      pwmA = i;
+      pwmB = pwmA + 85;
+      pwmC = pwmB + 85;
+      ledcWrite(M2_CH1, pwmSin[pwmA]);  
+      ledcWrite(M2_CH2, pwmSin[pwmB]);
+      ledcWrite(M2_CH3, pwmSin[pwmC]); 
+
+      // Serial.print(" A :");
+      // Serial.print(pwmSin[pwmA]);
+      // Serial.print(" | B : ");
+      // Serial.print(pwmSin[pwmB]);
+      // Serial.print(" | C : ");
+      // Serial.println(pwmSin[pwmC]); 
+      usleep(10);
+      esp_task_wdt_reset();
+    }
+}
+
 }
 
 void printer(void *pvParameters) {

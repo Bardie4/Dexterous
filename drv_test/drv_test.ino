@@ -71,9 +71,9 @@ void loop() {
   analogWrite(IN2, pwmSin[currentStepB]);
   analogWrite(IN3, pwmSin[currentStepC]);  
 
-  Serial.println(pwmSin[currentStepA]);
-  Serial.println(pwmSin[currentStepB]);
-  Serial.println(pwmSin[currentStepC]);
+//  Serial.println(pwmSin[currentStepA]);
+//  Serial.println(pwmSin[currentStepB]);
+//  Serial.println(pwmSin[currentStepC]);
   
   if (direct==true) increment = 1;
   else increment = -1;     
@@ -92,13 +92,13 @@ void loop() {
   if(currentStepC > sineArraySize)  currentStepC = 0;
   if(currentStepC < 0) currentStepC = sineArraySize; 
   
-  if (digitalRead(13) == LOW) {
-    Serial.println("error");
-  }
+//  if (digitalRead(13) == LOW) {
+//    Serial.println("error");
+//  }
   
 
   /// Control speed by this delay
-  delay(100);
+  delayMicroseconds(100);
 
 }
 
