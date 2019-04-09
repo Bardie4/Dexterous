@@ -31,7 +31,7 @@
 #define H_CLK   14
 #define H_CS    15
 
-#define V_MOSI  21
+#define V_MOSI  23
 #define V_MISO  19
 #define V_CLK   18
 #define V_CS    5
@@ -136,15 +136,15 @@ void setup() {
 
   // xTaskCreatePinnedToCore(vspiCommand16, "vspi", 4096, (void *)1, 1, NULL, 0);
   // xTaskCreatePinnedToCore(hspiCommand16, "hspi", 4096, (void *)2, 1, NULL, 1);
-  // xTaskCreatePinnedToCore(vspiCommand8, "vspi", 4096, (void *)1, 1, NULL, 0);
+  xTaskCreatePinnedToCore(vspiCommand8, "vspi", 4096, (void *)1, 1, NULL, 0);
 
-  // xTaskCreatePinnedToCore(hspiCommand8, "hspi", 4096, (void *)2, 1, NULL, 1);
+  xTaskCreatePinnedToCore(hspiCommand8, "hspi", 4096, (void *)2, 1, NULL, 1);
 
   xTaskCreatePinnedToCore(M1_ctrl, "M1_ctrl", 4096, (void *)1, 1, NULL, 1);
 
   xTaskCreatePinnedToCore(M2_ctrl, "M1_ctrl", 4096, (void *)1, 1, NULL, 1);
 
-  // xTaskCreatePinnedToCore(printer, "printer", 4096, (void *)1, 1, NULL, 1);
+  xTaskCreatePinnedToCore(printer, "printer", 4096, (void *)1, 1, NULL, 1);
 
   Serial.begin(115200);
 
