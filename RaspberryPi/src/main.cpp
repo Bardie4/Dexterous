@@ -549,7 +549,7 @@ class finger{
 			}
 		}
 
-    void run(void * pv){
+    void run(){
 			calibration();
 			//While finger is instructed to be active
       while( !(controller_select == 0) ){
@@ -560,6 +560,12 @@ class finger{
 			//Tell spi and zmq thread we are finished
 			shutdown();
     }
+
+			//A static function is needed to create a separate thread.
+			//This function starts the run() function.
+		static void *init_finger(void *finger_object){
+			return ((finger*)finger_object)->run();
+		}
 };
 
 class zmq_client{
@@ -582,13 +588,13 @@ class zmq_client{
   double (*commands)[6];
 
   //An array of pointers to the functions that starts each finger
-  void* (* finger_run [7])(void *);
-
+  //void* (* finger_run [7])(void *);
+  finger* finger_ptrs[7];
   //Amount of fingers in use
   int finger_count;
   public:
 
-    zmq_client(double shared_zmq_memory[7][6], void* (* finger_run_fct_ptr [])(void *)){
+    zmq_client(double shared_zmq_memory[7][6], finger* fingers[7]){
 			commands = shared_zmq_memory;
       //ZMQ setup
       context = zmq_ctx_new ();
@@ -602,7 +608,7 @@ class zmq_client{
 
       //Load pointers to start functions
       for (int i = 0; i < 7; i++){
-        finger_run[0] = finger_run_fct_ptr[0];
+        finger_ptrs[0] = fingers[0];
       }
     }
 
@@ -630,7 +636,7 @@ class zmq_client{
             //Set a flag in shared memory showing that the finger thread is running
             commands[finger_select][0] = 1;
             //Start a the finger on a new thread.
-            pthread_create(&(tid[2+finger_select]), NULL, finger_run[finger_select], NULL);
+            pthread_create(&(tid[2+finger_select]), NULL, &finger::init_finger, finger_ptrs[finger_select]);
             //Note that the finger thread will terminate on its own
             //and set the run_flag low when controller_select = 0.
           }
@@ -887,12 +893,13 @@ main(){
 	finger finger6(&shared_zmq_memory[5][0], &shared_spi_memory[5][0], &cs_arr[5][0]);
 	finger finger7(&shared_zmq_memory[6][0], &shared_spi_memory[6][0], &cs_arr[5][0]);
 
-  pthread_create(&(tid[0]), NULL, spi_controller.run, NULL);
+  pthread_create(&(tid[0]), NULL, (spi_controller.run), NULL);
 
   //Create an array of function pointers
   //Fill the array with the address of the function that starts each finger
   //Create a ZMQ client. With number of fingers and the function pointer array as argument
   //Run the ZMQ client on separate thread.
+/*
   void* (* finger_run_fct_ptr [7])(void *);
   finger_run_fct_ptr[0] = finger1.run;
   finger_run_fct_ptr[1] = finger2.run;
@@ -901,8 +908,17 @@ main(){
 	finger_run_fct_ptr[4] = finger5.run;
 	finger_run_fct_ptr[5] = finger6.run;
 	finger_run_fct_ptr[6] = finger7.run;
+	*/
+	finger* finger_ptr[7];
+	finger_ptr[0] = &finger1;
+	finger_ptr[1] = &finger2;
+	finger_ptr[2] = &finger3;
+	finger_ptr[3] = &finger4;
+	finger_ptr[4] = &finger5;
+	finger_ptr[5] = &finger6;
+	finger_ptr[6] = &finger7;
 
-  zmq_client zmq(shared_zmq_memory, finger_run_fct_ptr);
+  zmq_client zmq(shared_zmq_memory, finger_ptr);
   pthread_create(&(tid[1]), NULL, zmq.run, NULL);
 
 
