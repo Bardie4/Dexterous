@@ -641,7 +641,7 @@ class zmq_client{
 					std::cout << "it worked :O" << std::endl;
 
           //If the finger is not running, and the new command is not to stop
-          if ( (commands[finger_select][0] == 0) && !(controller_select == 0) ){
+          if ( (commands[finger_select][0] == 0) && !(controller_select == 0b00000000) ){
             //Set a flag in shared memory showing that the finger thread is running
             commands[finger_select][0] = 1;
             //Start a the finger on a new thread.
