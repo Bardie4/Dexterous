@@ -537,16 +537,17 @@ void motor1PID(void *pvParameters)  {
 
 void passMasterCommand(void *pvParameters){
   while(1){
-    for(double i = 0.0; i < 1.0; i+=0.01)
-    {
-      xQueueOverwrite(qM1Setpoint, &i);
-      vTaskDelay(100 / portTICK_RATE_MS);
-    }
-    for(double i = 1.0; i > 0.0; i-=0.01)
-    {
-      xQueueOverwrite(qM1Setpoint, &i);
-      vTaskDelay(100 / portTICK_RATE_MS);
-    }
+
+    // Read SPI
+    hspi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
+    digitalWrite(H_CS, LOW);
+    uiAngle = hspi->transfer(0x00);
+    digitalWrite(H_CS, HIGH);
+    theta = (uiAngle*360.0)/65536.0;
+    hspi->endTransaction();
+
+    vTaskDelay(100 / portTICK_RATE_MS);
+  
   }  
 }
 
