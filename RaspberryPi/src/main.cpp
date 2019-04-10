@@ -828,35 +828,35 @@ main(){
   //Initiate finger objects. The arguments is the identity of the finger.
   //The identity corresponds to specific SPI pins. Choose a value between 0-6.
   //Additional fingers can be added (max 7 with the amount of GPIO pins on a RaspberryPi).
-	cs_f1_sens1 = 2;
-	cs_f1_sens2 = 3;
-	cs_f1_esp32 = 4;
-	cs_f2_sens1 = 5;
-	cs_f2_sens2 = 6;
-	cs_f2_esp32 = 7;
-	cs_f3_sens1 = 12;
-	cs_f3_sens2 = 13;
-	cs_f3_esp32 = 14;
-	cs_f4_sens1 = 15;
-	cs_f4_sens2 = 16;
-	cs_f4_esp32 = 17;
-	cs_f5_sens1 = 18;
-	cs_f5_sens2 = 19;
-	cs_f5_esp32 = 20;
-	cs_f6_sens1 = 21;
-	cs_f6_sens2 = 22;
-	cs_f6_esp32 = 23;
-	cs_f7_sens1 = 24;
-	cs_f7_sens2 = 25;
-	cs_f7_esp32 = 26;
+	int cs_f1_sens1 = 2;
+	int cs_f1_sens2 = 3;
+	int cs_f1_esp32 = 4;
+	int cs_f2_sens1 = 5;
+	int cs_f2_sens2 = 6;
+	int cs_f2_esp32 = 7;
+	int cs_f3_sens1 = 12;
+	int cs_f3_sens2 = 13;
+	int cs_f3_esp32 = 14;
+	int cs_f4_sens1 = 15;
+	int cs_f4_sens2 = 16;
+	int cs_f4_esp32 = 17;
+	int cs_f5_sens1 = 18;
+	int cs_f5_sens2 = 19;
+	int cs_f5_esp32 = 20;
+	int cs_f6_sens1 = 21;
+	int cs_f6_sens2 = 22;
+	int cs_f6_esp32 = 23;
+	int cs_f7_sens1 = 24;
+	int cs_f7_sens2 = 25;
+	int cs_f7_esp32 = 26;
 	//Cs is packed into array so that it can be accessed by ID
-	cs_arr[7][3] = {	{cs_f1_sens1, cs_f1_sens2, cs_f1_esp32}
-								 	 ,{cs_f2_sens1, cs_f2_sens2, cs_f2_esp32}
-									 ,{cs_f3_sens1, cs_f3_sens2, cs_f3_esp32}
-									 ,{cs_f4_sens1, cs_f4_sens2, cs_f4_esp32}
-									 ,{cs_f5_sens1, cs_f5_sens2, cs_f5_esp32}
-									 ,{cs_f6_sens1, cs_f6_sens2, cs_f6_esp32}
-									 ,{cs_f7_sens1, cs_f7_sens2, cs_f7_esp32}};
+	int cs_arr[7][3] = 	{	 {cs_f1_sens1, cs_f1_sens2, cs_f1_esp32}
+								 	 			,{cs_f2_sens1, cs_f2_sens2, cs_f2_esp32}
+									 			,{cs_f3_sens1, cs_f3_sens2, cs_f3_esp32}
+									 			,{cs_f4_sens1, cs_f4_sens2, cs_f4_esp32}
+									 			,{cs_f5_sens1, cs_f5_sens2, cs_f5_esp32}
+									 			,{cs_f6_sens1, cs_f6_sens2, cs_f6_esp32}
+									 			,{cs_f7_sens1, cs_f7_sens2, cs_f7_esp32}};
 
 	//SPI and ZMQ threads share memory with fingers.
 	double shared_spi_memory[7][7];
