@@ -645,8 +645,8 @@ class zmq_client{
       }
     };
 
-		void* init_zmq(void* zmq_object){
-			return ((*zmq_cient) zmq_object)->run();
+		static void* init_zmq(void* zmq_object){
+			return ((*zmq_client)zmq_object)->run();
 		}
 };
 
@@ -927,7 +927,7 @@ main(){
 	finger_ptr[6] = &finger7;
 
   zmq_client zmq(shared_zmq_memory, finger_ptr);
-  pthread_create(&(tid[1]), NULL, &zmq::init_zmq, &zmq);
+  pthread_create(&(tid[1]), NULL, &zmq_client::init_zmq, &zmq);
 
 
   pthread_join(tid[0], NULL);
