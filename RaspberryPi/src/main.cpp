@@ -44,8 +44,8 @@ typedef struct cartesian_pid_var {
 	 double gamma;
 	 double l1;
 	 double l2;
-	 double x*;
-	 double y*;
+	 double* x;
+	 double* y;
 }cartesian_pid_var;
 
 typedef struct controller_variables{
@@ -113,7 +113,7 @@ class finger{
 		cartesian_pid_var pid_ijc_cs;
 		//Define a set of variables used by the PID idependant joint controller
 		//with joint angle set point as input
-		jointspace_pid_var pid_ijc_cs;
+		jointspace_pid_var pid_ijc_js;
 
  		//MEMORY SHARED WITH ZMQ Thread
 		double zmq_mem_shared[6];
@@ -144,7 +144,7 @@ class finger{
 		int cs_angle_sensor_1;
 		int cs_angle_sensor_2;
 		int cs_output;
-		int handle
+		int handle;
 		int frequency;
 		int spi_channel;
 		int sclk;
@@ -200,7 +200,7 @@ class finger{
 			handle = spi_var[3];
     }
 
-		shutdown(){
+		void shutdown(){
 			//Tell zmq client that the thread is no longer active
 			phread_mutex_lock(&lock);
 			spi_mem_shared[0] = 0;
@@ -211,7 +211,7 @@ class finger{
 			phread_mutex_unlock(&lock);
 			}
 
-		update_local_zmq_mem(){
+		void update_local_zmq_mem(){
 			phread_mutex_lock(&lock);
 			controller_select = zmq_mem_shared[1];
 			data1 = zmq_mem_shared[2];
@@ -221,7 +221,7 @@ class finger{
 			phread_mutex_unlock(&lock);
 		}
 
-		update_local_spi_mem(){
+		void update_local_spi_mem(){
 			phread_mutex_lock(&lock);
 			angle1 = spi_mem_shared[1];
 			angle2 = spi_mem_shared[2];
@@ -230,14 +230,14 @@ class finger{
 			phread_mutex_unlock(&lock);
 		}
 
-		update_shared_spi_mem(){
+		void update_shared_spi_mem(){
 			phread_mutex_lock(&lock);
 			spi_mem_shared[5]=torque1;
 			spi_mem_shared[6]=torque2;
 			phread_mutex_unlock(&lock);
 		}
 
-		void calibration(){
+		void void calibration(){
 
 			char read_angle_cmd[]= {0b00000000, 0b00000000};
 			char set_zero_angle_cmd[2];
@@ -478,7 +478,7 @@ class finger{
 		}
 
 
-		jointspace_ijc_pid(){
+		void jointspace_ijc_pid(){
 			while(1){
 				//Check instructions
 				update_local_zmq_mem();
@@ -510,7 +510,7 @@ class finger{
 			}
 		}
 
-		cartesian_ijc_pid(){
+		void cartesian_ijc_pid(){
 			while(1){
 				//Check instructions
 				update_local_zmq_mem();
