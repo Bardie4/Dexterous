@@ -696,7 +696,6 @@ class spi{
 			if (gpioInitialise() < 0)
 			{
 				 printf(stderr, "pigpio initialisation failed.\n");
-				 return 1;
 			}
 
       //SPI frequency
@@ -784,7 +783,7 @@ class spi{
 		}
 
 
-		void get_cs_and_handle(){
+		int get_cs_and_handle(){
 			return spi_handle;
 		}
 
