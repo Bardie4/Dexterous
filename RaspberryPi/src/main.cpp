@@ -86,25 +86,6 @@ typedef struct zmq_data{
   void* controller_ptr[4];
 }zmq_data;
 
-typedef struct shared_spi_memory{
-	double finger1[7];
-	double finger2[7];
-	double finger3[7];
-	double finger4[7];
-	double finger5[7];
-	double finger6[7];
-	double finger7[7];
-}
-
-typedef struct shared_zmq_memory{
-	double finger1[7];
-	double finger2[7];
-	double finger3[7];
-	double finger4[7];
-	double finger5[7];
-	double finger6[7];
-	double finger7[7];
-}
 
 class finger{
   public:
@@ -606,7 +587,7 @@ class zmq_client{
   public:
 
     zmq_client(double shared_zmq_memory[7][6], void (* finger_run_fct_ptr [])()){
-			commands = &shared_zmq_memory;
+			commands = shared_zmq_memory;
       //ZMQ setup
       context = zmq_ctx_new ();
       subscriber = zmq_socket (context, ZMQ_SUB);
