@@ -893,7 +893,7 @@ main(){
 
 	std::fill( shared_spi_memory[0], shared_spi_memory[0] + 7*7, 0);
 	std::fill( shared_zmq_memory[0], shared_zmq_memory[0] + 7*6, 0);
-
+	shared_spi_memory[0][0]=1;
   spi spi_controller(shared_spi_memory,cs_arr);
 
 	//Creating finger objects and hooking them up to shared memory shared by zmq and spi threads
