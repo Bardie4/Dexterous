@@ -63,8 +63,7 @@ typedef struct zmq_instructions{
 typedef struct finger_data{
 	zmq_instructions*  zmq;		             //ptr to shared memory
 	zmq_instructions   zmq_local;	   		   //work memory
-	controller_variables controller_var;	 //variables used by controllers
-  spi spi_data;                          //Constants used for SPI
+	controller_variables controller_var;	 //variables used by controllers                        //Constants used for SPI
 }finger_data;
 
 typedef struct zmq_data{
@@ -100,7 +99,7 @@ class finger{
 	//	void jointspace_ijc_pid();						 //Independant joint controller with joint_angle input
 
 		//Main loop
-		void run();
+	//	void run();
 
 		//Define a set of variables used by the PID idependant joint controller
 		//with cartesian coordinates as input
@@ -146,7 +145,7 @@ class finger{
 		int miso;
 
 		//Constructor
-    finger(double shared_spi_memory[7], double shared_zmq_memory[5], int spi_var[4]){
+    finger(double shared_spi_memory[7], double shared_zmq_memory[6], int spi_var[4]){
 
 			//Get pointers to shared memory
 			spi_mem_shared = shared_spi_memory;
@@ -155,11 +154,11 @@ class finger{
       //Set default settings for controllers
 			//joint space controller vaules
       pid_ijc_js.kp1 = 1;
-		  pid_ijc_js.Ki1 = 0;
-			pid_ijc_js.Kd1 = 0;
+		  pid_ijc_js.ki1 = 0;
+			pid_ijc_js.kd1 = 0;
 			pid_ijc_js.kp2 = 0.5;
-			pid_ijc_js.Ki2 = 0;
-			pid_ijc_js.Kd2 = 0;
+			pid_ijc_js.ki2 = 0;
+			pid_ijc_js.kd2 = 0;
 			//cartesian space controller values
       pid_ijc_cs.kp1 = 1;
       pid_ijc_cs.ki1 = 0;
@@ -497,8 +496,8 @@ class finger{
 				//Print status every 1000 cycles
 				itr_counter++;
 				if ( itr_counter > 1000){
-					printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", pid_ijc_js.theta1 , (pid_ijc_js.theta1_setpoint)*, pid_ijc_js.error1, torque1);
-					printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", pid_ijc_js.theta2 , (pid_ijc_js.theta2_setpoint)*, pid_ijc_js.error2, torque2);
+					printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", theta1 , (pid_ijc_js.theta1_setpoint)*, pid_ijc_js.error1, torque1);
+					printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", theta2 , (pid_ijc_js.theta2_setpoint)*, pid_ijc_js.error2, torque2);
 					itr_counter=0;
 				}
 			}
@@ -519,12 +518,12 @@ class finger{
 				//Read sensors
 				update_local_spi_mem();
 				//Inverse kinematics. Source: http://www.hessmer.org/uploads/RobotArm/Inverse%2520Kinematics%2520for%2520Robot%2520Arm.pdf
-				pid_ijc_cs.temp = (pow( (pid_ijc_cs.x)* ,2) + pow( (pid_ijc_cs.y)* ,2) - pow(pid_ijc_cs.l1,2)-pow(pid_ijc_cs.l2,2))/(2*pid_ijc_cs.l1*pid_ijc_cs.l2);
+				pid_ijc_cs.temp = (pow( *(pid_ijc_cs.x) ,2) + pow( *(pid_ijc_cs.y) ,2) - pow(pid_ijc_cs.l1,2)-pow(pid_ijc_cs.l2,2))/(2*pid_ijc_cs.l1*pid_ijc_cs.l2);
 				pid_ijc_cs.theta2_setpoint = atan2( sqrt( 1-pid_ijc_cs.temp ), pid_ijc_cs.temp );
 				pid_ijc_cs.k1 = pid_ijc_cs.l1 + pid_ijc_cs.l2*cos(pid_ijc_cs.theta2);
 				pid_ijc_cs.k2 = pid_ijc_cs.l2*sin(pid_ijc_cs.theta2);
 				pid_ijc_cs.gamma = atan2(pid_ijc_cs.k2,pid_ijc_cs.k1);
-				pid_ijc_cs.theta1_setpoint = atan2( (pid_ijc_cs.y)*, (pid_ijc_cs.x)* ) - pid_ijc_cs.gamma;
+				pid_ijc_cs.theta1_setpoint = atan2( *(pid_ijc_cs.y), *(pid_ijc_cs.x) ) - pid_ijc_cs.gamma;
 				//Run controller
 				pid_ijc_cs.error1 = pid_ijc_cs.theta1_setpoint - theta1;
 				torque1 = pid_ijc_cs.error1*pid_ijc_cs.kp1;
