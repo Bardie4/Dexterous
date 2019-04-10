@@ -137,7 +137,7 @@ class finger{
 
 		//count controller cycles
 		int itr_counter;
-
+		int id;
 
 		//SPI variables(Used only for calibration)
 		int cs_angle_sensor_1;
@@ -153,11 +153,12 @@ class finger{
 		char outBuf[4];
 
 		//Constructor
-    finger(double shared_spi_memory[7], double shared_zmq_memory[6], int spi_var[4]){
-
+    finger(int identity ,double shared_spi_memory[7], double shared_zmq_memory[6], int spi_var[4]){
+			id= identity;
 			//Get pointers to shared memory
 			spi_mem_shared = shared_spi_memory;
 			zmq_mem_shared = shared_zmq_memory;
+
 
       //Set default settings for controllers
 			//joint space controller vaules
@@ -504,6 +505,7 @@ class finger{
 				//Print status every 1000 cycles
 				itr_counter++;
 				if ( itr_counter > 1000){
+					printf("This is finger %d\n", id);
 					printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", theta1 , *(pid_ijc_js.theta1_setpoint), pid_ijc_js.error1, torque1);
 					printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", theta2 , *(pid_ijc_js.theta2_setpoint), pid_ijc_js.error2, torque2);
 					itr_counter=0;
@@ -543,6 +545,8 @@ class finger{
 				//Print status every 1000 cycles
 				itr_counter++;
 				if ( itr_counter > 1000){
+
+					printf("This is finger %d\n", id);
 					printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", theta1 , pid_ijc_cs.theta1_setpoint, pid_ijc_cs.error1, torque1);
 					printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", theta2 , pid_ijc_cs.theta2_setpoint, pid_ijc_cs.error2, torque2);
 					itr_counter = 0;
@@ -600,7 +604,7 @@ class zmq_client{
       //ZMQ setup
       context = zmq_ctx_new ();
       subscriber = zmq_socket (context, ZMQ_SUB);
-      zmq_connect (subscriber, "tcp://localhost:5563");
+      zmq_connect (subscriber, "tcp://169.254.27.157:5563");
       zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "B", 1);
 
 
@@ -895,17 +899,17 @@ main(){
 
 	std::fill( shared_spi_memory[0], shared_spi_memory[0] + 7*7, 0);
 	std::fill( shared_zmq_memory[0], shared_zmq_memory[0] + 7*6, 0);
-	shared_spi_memory[0][0]=1;
+
   spi spi_controller(shared_spi_memory,cs_arr);
 
 	//Creating finger objects and hooking them up to shared memory shared by zmq and spi threads
-  finger finger1(&shared_zmq_memory[0][0], &shared_spi_memory[0][0], &cs_arr[0][0]);
-  finger finger2(&shared_zmq_memory[1][0], &shared_spi_memory[1][0], &cs_arr[1][0]);
-  finger finger3(&shared_zmq_memory[2][0], &shared_spi_memory[2][0], &cs_arr[2][0]);
-	finger finger4(&shared_zmq_memory[3][0], &shared_spi_memory[3][0], &cs_arr[3][0]);
-	finger finger5(&shared_zmq_memory[4][0], &shared_spi_memory[4][0], &cs_arr[4][0]);
-	finger finger6(&shared_zmq_memory[5][0], &shared_spi_memory[5][0], &cs_arr[5][0]);
-	finger finger7(&shared_zmq_memory[6][0], &shared_spi_memory[6][0], &cs_arr[5][0]);
+  finger finger1(1,&shared_zmq_memory[0][0], &shared_spi_memory[0][0], &cs_arr[0][0]);
+  finger finger2(2,&shared_zmq_memory[1][0], &shared_spi_memory[1][0], &cs_arr[1][0]);
+  finger finger3(3,&shared_zmq_memory[2][0], &shared_spi_memory[2][0], &cs_arr[2][0]);
+	finger finger4(4,&shared_zmq_memory[3][0], &shared_spi_memory[3][0], &cs_arr[3][0]);
+	finger finger5(5,&shared_zmq_memory[4][0], &shared_spi_memory[4][0], &cs_arr[4][0]);
+	finger finger6(6,&shared_zmq_memory[5][0], &shared_spi_memory[5][0], &cs_arr[5][0]);
+	finger finger7(7,&shared_zmq_memory[6][0], &shared_spi_memory[6][0], &cs_arr[5][0]);
 
   pthread_create(&(tid[0]), NULL, &spi::init_spi, &spi_controller);
 
