@@ -752,7 +752,7 @@ class spi{
       gpio_result = gpioWrite(cs,0);
       spi_result = spiXfer(spi_handle, outBuf, inBuf, 1);
       gpio_result = gpioWrite(cs,1);
-			pthread_mutex_lock(&lock);
+			pthread_mutex_unlock(&lock);
       return inBuf[0];
     }
     uint16_t read_angle_16(int &cs){
@@ -762,7 +762,7 @@ class spi{
       gpio_result = gpioWrite(cs,0);
       spi_result = spiXfer(spi_handle, outBuf, inBuf, 2);
       gpio_result = gpioWrite(cs,1);
-			pthread_mutex_lock(&lock);
+			pthread_mutex_ynlock(&lock);
       temp = inBuf[0] << 8;
       temp = temp + inBuf[1];
       return temp;
@@ -785,14 +785,14 @@ class spi{
 			}
 			outBuf[1] =  (uint8_t) output1;
 			outBuf[2] =  (uint8_t) output2;
-		}
-		pthread_mutex_lock(&lock);
-		gpio_result = gpioWrite(cs,0);
-		spi_result = spiXfer(spi_handle, outBuf, inBuf, 3);
-		gpio_result = gpioWrite(cs,1);
-		pthread_mutex_lock(&lock);
 
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs,0);
+			spi_result = spiXfer(spi_handle, outBuf, inBuf, 3);
+			gpio_result = gpioWrite(cs,1);
+			pthread_mutex_unlock(&lock);
 		}
+
 
 		void get_cs_and_handle(int id){
 			int cs_and_handle[4] = {cs_arr[id],spi_handle};
