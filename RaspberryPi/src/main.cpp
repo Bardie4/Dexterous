@@ -762,7 +762,7 @@ class spi{
       gpio_result = gpioWrite(cs,0);
       spi_result = spiXfer(spi_handle, outBuf, inBuf, 2);
       gpio_result = gpioWrite(cs,1);
-			pthread_mutex_ynlock(&lock);
+			pthread_mutex_unlock(&lock);
       temp = inBuf[0] << 8;
       temp = temp + inBuf[1];
       return temp;
