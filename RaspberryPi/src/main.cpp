@@ -240,8 +240,8 @@ class finger{
 		}
 
 		void calibration(){
-			std::cout << "Hold on, im calibrating finger "" << id <<std::endl;
-			char read_angle_cmd[]= {0b00000000, 0b00000000};
+			std::cout << "Hold on, im calibrating finger " << id << std::endl;
+			char read_angle_cmd[]= {0b00000000, 0b00000000, 0b00000000};
 			char set_zero_angle_cmd[2];
 			char torque_cmd[3];
 			uint16_t zero_point;
