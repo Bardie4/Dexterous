@@ -577,7 +577,7 @@ class zmq_client{
   //Memory shared by controllers and ZMQ_cleint.
   //Rows:     Finger 1-7  (There is only enough GPIO pins for 7 fingers)
   //Coloums:  run_flag, controller_select, data1, data2, data3, data4
-  double (*commands)[7][6];
+  double (*commands)[6];
 
   //An array of pointers to the functions that starts each finger
   void (* finger_run [7])();
@@ -587,7 +587,7 @@ class zmq_client{
   public:
 
     zmq_client(double shared_zmq_memory[7][6], void (* finger_run_fct_ptr [])()){
-			commands = shared_zmq_memory;
+			commands = &shared_zmq_memory;
       //ZMQ setup
       context = zmq_ctx_new ();
       subscriber = zmq_socket (context, ZMQ_SUB);
@@ -597,7 +597,7 @@ class zmq_client{
 
 
       //Clear the shared memory that will be used
-      std::fill((*commands)[0], (*commands)[0] + 7*6, 0);
+      std::fill( commands[0], commands[0] + 7*6, 0);
 
       //Load pointers to start functions
       for (int i = 0; i < 7; i++){
@@ -618,16 +618,16 @@ class zmq_client{
           //Read and unload data to shared memory
           sscanf(contents, "%*c %*c %d %d %d %d %d", &data1, &data2, &data3, &data4);
           pthread_mutex_lock(&lock);
-          (*commands)[finger_select][1] = controller_select;
-          (*commands)[finger_select][2] = data1;
-          (*commands)[finger_select][3] = data2;
-          (*commands)[finger_select][4] = data3;
-          (*commands)[finger_select][5] = data4;
+          commands[finger_select][1] = controller_select;
+          commands[finger_select][2] = data1;
+          commands[finger_select][3] = data2;
+          commands[finger_select][4] = data3;
+          commands[finger_select][5] = data4;
 
           //If the finger is not running, and the new command is not to stop
-          if ( ((*commands)[finger_select][0] == 0) && !(controller_select == 0) ){
+          if ( (commands[finger_select][0] == 0) && !(controller_select == 0) ){
             //Set a flag in shared memory showing that the finger thread is running
-            (*commands)[finger_select][0] = 1;
+            commands[finger_select][0] = 1;
             //Start a the finger on a new thread.
             pthread_create(&(tid[2+finger_select]), NULL, finger_run[finger_select], NULL);
             //Note that the finger thread will terminate on its own
