@@ -646,7 +646,7 @@ class zmq_client{
     };
 
 		static void* init_zmq(void* zmq_object){
-			return ((*zmq_client)zmq_object)->run();
+			return ((zmq_client*)zmq_object)->run();
 		}
 };
 
