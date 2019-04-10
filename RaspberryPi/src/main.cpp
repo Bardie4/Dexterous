@@ -8,12 +8,6 @@
 #include "pthread.h"
 pthread_t tid[6];
 
-typedef struct spi{
-	unsigned handle;
-	spi_setup setup;
-	char outBuf[4];
-	char inBuf[4];
-}spi;
 
 
 //Variables used by joint space PID function
@@ -93,17 +87,17 @@ typedef struct zmq_data{
 
 class finger{
   public:
-		void update_local_zmq_mem();					//updates controller_select and data1-4
-		void update_local_spi_mem();					//updates theta1/2 and angular_vel1/2
-		void update_shared_spi_mem();					//updates torque1/2 on shared spi memory
-		void shutdown();											//sets runflag to zero for both spi and zmq on shared memory
+		//void update_local_zmq_mem();					//updates controller_select and data1-4
+	//	void update_local_spi_mem();					//updates theta1/2 and angular_vel1/2
+	//	void update_shared_spi_mem();					//updates torque1/2 on shared spi memory
+	//	void shutdown();											//sets runflag to zero for both spi and zmq on shared memory
 
 		//Runs on startup. Sets zero angle on sensors.
-		void calibration();
+		//void calibration();
 
 		//Controllers
-		void cartesian_ijc_pid();							 //Independant joint controller with cartesian input
-		void jointspace_ijc_pid();						 //Independant joint controller with joint_angle input
+	//	void cartesian_ijc_pid();							 //Independant joint controller with cartesian input
+	//	void jointspace_ijc_pid();						 //Independant joint controller with joint_angle input
 
 		//Main loop
 		void run();
