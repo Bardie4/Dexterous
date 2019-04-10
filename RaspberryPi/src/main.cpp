@@ -109,7 +109,7 @@ class finger{
 		jointspace_pid_var pid_ijc_js;
 
  		//MEMORY SHARED WITH ZMQ Thread
-		double zmq_mem_shared[6];
+		double* zmq_mem_shared;
 		//LOCAL BUFFER OF SHARED ZMQ Memory
 		double runflag_zmq;
 		double controller_select;
@@ -119,7 +119,7 @@ class finger{
 		double data4;
 
 		//Memory shared with spi thread
-		double spi_mem_shared[7];
+		double* spi_mem_shared;
 		//Local buffer of shared spi memory
 		double runflag_spi;
 		double theta1;
@@ -230,7 +230,7 @@ class finger{
 			phread_mutex_unlock(&lock);
 		}
 
-		void void calibration(){
+		void calibration(){
 
 			char read_angle_cmd[]= {0b00000000, 0b00000000};
 			char set_zero_angle_cmd[2];
@@ -572,7 +572,7 @@ class zmq_client{
   //Memory shared by controllers and ZMQ_cleint.
   //Rows:     Finger 1-7  (There is only enough GPIO pins for 7 fingers)
   //Coloums:  run_flag, controller_select, data1, data2, data3, data4
-  double commands[7][6];
+  double* commands;
 
   //An array of pointers to the functions that starts each finger
   void (* finger_run [7])()
@@ -581,7 +581,8 @@ class zmq_client{
   int finger_count;
   public:
 
-    zmq_client(int num, void (* finger_run_fct_ptr [])()){
+    zmq_client(double shared_zmq_memory, void (* finger_run_fct_ptr [])()){
+			commands = shared_zmq_memory;
       //ZMQ setup
       context = zmq_ctx_new ();
       subscriber = zmq_socket (zmq_var.context, ZMQ_SUB);
@@ -591,8 +592,7 @@ class zmq_client{
 
 
       //Clear the shared memory that will be used
-      finger_count = num;
-      std::fill(commands[0], commands[0] + finger_count*6, 0);
+      std::fill(commands[0], commands[0] + 7*6, 0);
 
       //Load pointers to start functions
       for (int i = 0; i < finger_count; i++){
@@ -636,7 +636,7 @@ class zmq_client{
 
 class spi{
   private:
-		double shared_mem[7][7];
+		double* shared_mem;
 		double local_mem[7][7];
 
     int frequency;
@@ -863,8 +863,6 @@ main(){
 	finger finger6(&shared_zmq_memory[5][0], &shared_spi_memory[5][0], spi_controller.get_cs_and_handle(5) );
 	finger finger7(&shared_zmq_memory[6][0], &shared_spi_memory[6][0], spi_controller.get_cs_and_handle(6) );
 
-  //Create an spi object and starting the spi thread
-  spi spi_controller(shared_spi_memory);
   pthread_create(&(tid[0]), NULL, &spi_controller.run(), NULL);
 
   //Create an array of function pointers
