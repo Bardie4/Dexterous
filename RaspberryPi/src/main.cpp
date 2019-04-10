@@ -587,7 +587,7 @@ class zmq_client{
   int finger_count;
   public:
 
-    zmq_client(double shared_zmq_memory[7][6], void (* finger_run_fct_ptr [])()){
+    zmq_client(double shared_zmq_memory[7][6], void (* finger_run_fct_ptr [])(void *)){
 			commands = shared_zmq_memory;
       //ZMQ setup
       context = zmq_ctx_new ();
