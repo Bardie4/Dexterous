@@ -624,12 +624,12 @@ class zmq_client{
         contents = s_recv (subscriber); //  Read message contents
 
         finger_select = (uint8_t) contents[0];
-        controller_select = (uint8_t) contents[1];
-				std::cout << (int)finger_select << " " << (int)controller_select << std::endl;
 				        //If a viable finger is selected (finger 0-4)
         if ( ( 0 < finger_select) && (finger_select <= 7) ){
           //Read and unload data to shared memory
-          sscanf(contents, "%*c %*c %d %d %d %d %d", &data1, &data2, &data3, &data4);
+          sscanf(contents, "%*c %c %d %d %d %d %d", &controller_select , &data1, &data2, &data3, &data4);
+
+					std::cout << (int)finger_select << " " << (int)controller_select << std::endl;
 					std::cout << "Putting commands in shared memory" << std::endl;
           pthread_mutex_lock(&lock);
           commands[finger_select][1] = controller_select;
