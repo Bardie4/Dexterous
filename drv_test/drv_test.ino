@@ -5,13 +5,16 @@
 //
  
 
-const int EN1 = 5;
-const int EN2 = 6;
-const int EN3 = 7;
+const int EN1 = 7;
+const int EN2 = 8;
+const int EN3 = 3;
 
 const int IN1 = 9;
-const int IN2 = 10;
-const int IN3 = 11;
+const int IN2 = 5;
+const int IN3 = 6;
+
+const int fault = 2;
+const int nreset = 4;
 
 
 // SPWM (Sine Wave)
@@ -45,11 +48,13 @@ void setup() {
   pinMode(EN2, OUTPUT); 
   pinMode(EN3, OUTPUT); 
 
-  pinMode(13, INPUT);
+    pinMode(fault, INPUT);
+  pinMode(nreset, OUTPUT);
 
   digitalWrite(EN1, HIGH);
   digitalWrite(EN2, HIGH);
   digitalWrite(EN3, HIGH);
+    digitalWrite(nreset, HIGH);
   
 
   sineArraySize = sizeof(pwmSin)/sizeof(int); // Find lookup table size

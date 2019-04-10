@@ -4,5 +4,5 @@
     "output": "../build",
     "port": "/dev/ttyUSB0",
     "sketch": "esp_MagsPwm/main.ino",
-    "configuration": "FlashFreq=80,UploadSpeed=115200,DebugLevel=none"
+    "configuration": "FlashFreq=40,UploadSpeed=115200,DebugLevel=none"
 }
