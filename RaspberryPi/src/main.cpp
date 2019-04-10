@@ -612,7 +612,7 @@ class zmq_client{
       }
     }
 
-    void* run(){
+    void run(){
       while(1){
         address = s_recv (subscriber);  //  Read envelope with address
         contents = s_recv (subscriber); //  Read message contents
@@ -644,6 +644,10 @@ class zmq_client{
         }
       }
     };
+
+		void* init_zmq(void* zmq_object){
+			return ((*zmq_cient) zmq_object)->run();
+		}
 };
 
 class spi{
@@ -795,7 +799,7 @@ class spi{
 			return spi_handle;
 		}
 
-    void* run(){
+    void run(){
 			while(1){
 				time0=micros();
 				//Load info about active fingers
@@ -841,6 +845,10 @@ class spi{
 					std::cout << "we waited" << std::endl;
 				}
 			}
+		}
+
+		static void* init_spi(void *spi_object){
+			return ((spi* )spi_object)->run();
 		}
 };
 
@@ -893,7 +901,7 @@ main(){
 	finger finger6(&shared_zmq_memory[5][0], &shared_spi_memory[5][0], &cs_arr[5][0]);
 	finger finger7(&shared_zmq_memory[6][0], &shared_spi_memory[6][0], &cs_arr[5][0]);
 
-  pthread_create(&(tid[0]), NULL, (spi_controller.run), NULL);
+  pthread_create(&(tid[0]), NULL, &spi::init_spi, &spi_controller);
 
   //Create an array of function pointers
   //Fill the array with the address of the function that starts each finger
@@ -919,7 +927,7 @@ main(){
 	finger_ptr[6] = &finger7;
 
   zmq_client zmq(shared_zmq_memory, finger_ptr);
-  pthread_create(&(tid[1]), NULL, zmq.run, NULL);
+  pthread_create(&(tid[1]), NULL, &zmq::init_zmq, &zmq);
 
 
   pthread_join(tid[0], NULL);
