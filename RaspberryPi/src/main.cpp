@@ -7,6 +7,7 @@
 #include <algorithm>
 //#include <bitset>
 #include "pthread.h"
+#include <iostream>
 pthread_t tid[6];
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -605,7 +606,7 @@ class zmq_client{
       }
     }
 
-    void run(){
+    void* run(){
       while(1){
         address = s_recv (subscriber);  //  Read envelope with address
         contents = s_recv (subscriber); //  Read message contents
@@ -701,7 +702,7 @@ class spi{
 
       //SPI frequency
       frequency = 15000000;
-			int spi_handle = spiOpen(spi_channel, FREQ, 0);
+			int spi_handle = spiOpen(spi_channel, frequency, 0);
       //SPI channel. Using this channel means that GPIO 8 is used as chip select.
       //It will however not be connected to anything, and only used because the
       //SPI driver requires a channel to be chosen. Since there are only two channels,
@@ -831,7 +832,7 @@ class spi{
 					time1=micros();
 					step=time1-time0;
 					usleep(250);
-					cout << "we waited" <<endl;
+					std::cout << "we waited" << std::endl;
 				}
 			}
 		}
@@ -886,23 +887,23 @@ main(){
 	finger finger6(&shared_zmq_memory[5][0], &shared_spi_memory[5][0], &cs_arr[5][0]);
 	finger finger7(&shared_zmq_memory[6][0], &shared_spi_memory[6][0], &cs_arr[5][0]);
 
-  pthread_create(&(tid[0]), NULL, &(spi_controller.run()), NULL);
+  pthread_create(&(tid[0]), NULL, spi_controller.run, NULL);
 
   //Create an array of function pointers
   //Fill the array with the address of the function that starts each finger
   //Create a ZMQ client. With number of fingers and the function pointer array as argument
   //Run the ZMQ client on separate thread.
   void* (* finger_run_fct_ptr [7])(void *);
-  finger_run_fct_ptr[0] = finger1.run();
-  finger_run_fct_ptr[1] = finger2.run();
-	finger_run_fct_ptr[2] = finger3.run();
-	finger_run_fct_ptr[3] = finger4.run();
-	finger_run_fct_ptr[4] = finger5.run();
-	finger_run_fct_ptr[5] = finger6.run();
-	finger_run_fct_ptr[6] = finger7.run();
+  finger_run_fct_ptr[0] = finger1.run;
+  finger_run_fct_ptr[1] = finger2.run;
+	finger_run_fct_ptr[2] = finger3.run;
+	finger_run_fct_ptr[3] = finger4.run;
+	finger_run_fct_ptr[4] = finger5.run;
+	finger_run_fct_ptr[5] = finger6.run;
+	finger_run_fct_ptr[6] = finger7.run;
 
   zmq_client zmq(shared_zmq_memory, finger_run_fct_ptr);
-  pthread_create(&(tid[1]), NULL, &(zmq.run()), NULL);
+  pthread_create(&(tid[1]), NULL, zmq.run, NULL);
 
 
   pthread_join(tid[0], NULL);
