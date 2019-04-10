@@ -9,7 +9,7 @@
 #include "pthread.h"
 #include <iostream>
 #include <wiringPi.h>
-pthread_t tid[6];
+pthread_t tid[10];
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 
@@ -240,7 +240,7 @@ class finger{
 		}
 
 		void calibration(){
-
+			std::cout << "Hold on, im calibrating finger "" << id <<std::endl;
 			char read_angle_cmd[]= {0b00000000, 0b00000000};
 			char set_zero_angle_cmd[2];
 			char torque_cmd[3];
