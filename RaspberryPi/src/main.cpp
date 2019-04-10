@@ -683,6 +683,10 @@ class spi{
 		int time1;
 		int step;
 
+		int gpio_result;
+		int spi_result;
+		int spi_handle;
+
   public:
     spi(double shared_spi_memory[7][7]){
 
