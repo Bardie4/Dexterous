@@ -555,6 +555,7 @@ class finger{
 		}
 
     void* run(){
+			std::cout << "i am thread >:)" << std::endl;
 			calibration();
 			//While finger is instructed to be active
       while( !(controller_select == 0) ){
@@ -569,6 +570,7 @@ class finger{
 			//A static function is needed to create a separate thread.
 			//This function starts the run() function.
 		static void *init_finger(void *finger_object){
+			std::cout << "i am static bootstrap of thread" << std::endl;
 			return ((finger*)finger_object)->run();
 		}
 };
@@ -636,16 +638,20 @@ class zmq_client{
           commands[finger_select][4] = data3;
           commands[finger_select][5] = data4;
 
+					std::cout << "it worked :O" << std::endl;
+
           //If the finger is not running, and the new command is not to stop
           if ( (commands[finger_select][0] == 0) && !(controller_select == 0) ){
             //Set a flag in shared memory showing that the finger thread is running
             commands[finger_select][0] = 1;
             //Start a the finger on a new thread.
+											std::cout << "Attempting to create thread"<< std::endl;
             pthread_create(&(tid[2+finger_select]), NULL, &finger::init_finger, finger_ptrs[finger_select]);
             //Note that the finger thread will terminate on its own
             //and set the run_flag low when controller_select = 0.
           }
           pthread_mutex_unlock(&lock);
+						std::cout << "after creating thread" << std::endl;
         }
       }
     };
