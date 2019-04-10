@@ -625,7 +625,7 @@ class zmq_client{
 
         finger_select = (uint8_t) contents[0];
         controller_select = (uint8_t) contents[1];
-				std::cout << unsigned(finger_select) << " " << unsgined(controller_select) << std::endl;
+				std::cout << (int)finger_select << " " << (int)controller_select << std::endl;
 				        //If a viable finger is selected (finger 0-4)
         if ( ( 0 < finger_select) && (finger_select <= 7) ){
           //Read and unload data to shared memory
