@@ -657,7 +657,7 @@ class spi{
     int cs_f5_sens1, cs_f5_sens2, cs_f5_esp32;
     int cs_f6_sens1, cs_f6_sens2, cs_f6_esp32;
     int cs_f7_sens1, cs_f7_sens2, cs_f7_esp32;
-    int (cs_arr)*[3];
+    int (*cs_arr)[3];
 
     //SHARED MEMORY
 		//Rows: finger 0-6
