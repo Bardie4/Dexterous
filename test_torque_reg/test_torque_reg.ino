@@ -111,7 +111,7 @@ void loop() {
   analogWrite(IN1, pwmSin[currentStepA]);
   analogWrite(IN2, pwmSin[currentStepB]);
   analogWrite(IN3, pwmSin[currentStepC]);
-  delay(10000);   //Waiting for motor to settle in position 0
+  delay(100000);   //Waiting for motor to settle in position 0
   
   while(1){
     time_loop=millis();
@@ -150,10 +150,11 @@ void loop() {
     u =  abs(u); // 
     analogWrite(IN1, pwmSin[currentStepA]*u);
     analogWrite(IN2, pwmSin[currentStepB]*u);
-    analogWrite(IN3, pwmSin[currentStepC]*u);  
-    
-    time_loop=millis()-time_loop;
-    Serial.println(time_loop);
+    analogWrite(IN3, pwmSin[currentStepC]*u);
+    delay(100);
+    Serial.println(theta_multiplied);
+    //time_loop=millis()-time_loop;
+    //Serial.println(theta_raw);
 
 //   probe= pwmSin[currentStepA]*u;
 //   Serial.print("R: ");
