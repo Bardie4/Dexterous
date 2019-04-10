@@ -669,7 +669,7 @@ class spi{
     char inBuf[2];
     char outBuf[2];
     char read_command_8;
-    char read_command_16;
+    char read_command_16[2];
     uint16_t temp;
 
     uint16_t temp_angle1;
@@ -803,7 +803,7 @@ class spi{
 			return cs_and_handle;
 		}
 
-    void run(){
+    void* run(){
 			while(1){
 				time0=micros();
 				//Load info about active fingers
