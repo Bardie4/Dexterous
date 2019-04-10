@@ -7,15 +7,15 @@
 //#include <bitset>
 #include "pthread.h"
 pthread_t tid[6];
-
+static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
 
 //Variables used by joint space PID function
 typedef struct jointspace_pid_var {
    double error1;
    double error2;
-   double theta1_setpoint;
-   double theta2_setpoint;
+   double* theta1_setpoint;
+   double* theta2_setpoint;
    double kp1;
 	 double ki1;
 	 double kd1;
@@ -30,8 +30,12 @@ typedef struct cartesian_pid_var {
    double error2;
    double theta1_setpoint;
    double theta2_setpoint;
-   double kp1;
+	 double kp1;
+	 double ki1;
+	 double kd1;
    double kp2;
+	 double ki2;
+	 double kd2;
 	 double temp;
 	 double k1;
 	 double k2;
@@ -143,6 +147,8 @@ class finger{
 		int sclk;
 		int mosi;
 		int miso;
+		char inBuf[4];
+		char outBuf[4];
 
 		//Constructor
     finger(double shared_spi_memory[7], double shared_zmq_memory[6], int spi_var[4]){
@@ -177,7 +183,7 @@ class finger{
 			pid_ijc_cs.x = &data1;
 			pid_ijc_cs.y = &data2;
 
-			itr_conter=0;
+			itr_counter=0;
 
 			//SPI:
 			//During normal operation, only the dedicated spi-thread talks to the sensors,
@@ -216,8 +222,8 @@ class finger{
 
 		void update_local_spi_mem(){
 			phread_mutex_lock(&lock);
-			angle1 = spi_mem_shared[1];
-			angle2 = spi_mem_shared[2];
+			theta1 = spi_mem_shared[1];
+			theta2 = spi_mem_shared[2];
 			angular_vel1 = spi_mem_shared[3];
 			angular_vel2 = spi_mem_shared[4];
 			phread_mutex_unlock(&lock);
@@ -408,7 +414,7 @@ class finger{
 			usleep(100000);
 			pthread_mutex_lock(&lock);
 			gpio_result = gpioWrite(cs_angle_sensor_2,0);
-			spi_result = spiXfer(handle, read_angle_cmd, sinBuf, 2);
+			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_2,1);
 			pthread_mutex_unlock(&lock);
 			usleep(100000);
