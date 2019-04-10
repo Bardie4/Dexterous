@@ -655,8 +655,8 @@ class spi{
 		double (*shared_mem)[7];
 		double local_mem[7][7];
 
-    int frequency;
-    int spi_channel;
+    unsigned frequency;
+    unsigned spi_channel;
     int sclk;
     int mosi;
     int miso;
@@ -790,6 +790,7 @@ class spi{
 
 		~spi(){
 			if (spiClose(spi_handle) < 0){
+				printf("spi destroctor\n");
 				printf("Bad handle");
 			}
 			gpioTerminate();
