@@ -7,6 +7,8 @@
 #include <algorithm>
 //#include <bitset>
 #include "pthread.h"
+#include <iostream>
+#include <wiringPi.h>
 pthread_t tid[6];
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -548,7 +550,7 @@ class finger{
 			}
 		}
 
-    void run(void * pv){
+    void* run(){
 			calibration();
 			//While finger is instructed to be active
       while( !(controller_select == 0) ){
@@ -559,6 +561,12 @@ class finger{
 			//Tell spi and zmq thread we are finished
 			shutdown();
     }
+
+			//A static function is needed to create a separate thread.
+			//This function starts the run() function.
+		static void *init_finger(void *finger_object){
+			return ((finger*)finger_object)->run();
+		}
 };
 
 class zmq_client{
@@ -581,13 +589,13 @@ class zmq_client{
   double (*commands)[6];
 
   //An array of pointers to the functions that starts each finger
-  void* (* finger_run [7])(void *);
-
+  //void* (* finger_run [7])(void *);
+  finger* finger_ptrs[7];
   //Amount of fingers in use
   int finger_count;
   public:
 
-    zmq_client(double shared_zmq_memory[7][6], void* (* finger_run_fct_ptr [])(void *)){
+    zmq_client(double shared_zmq_memory[7][6], finger* fingers[7]){
 			commands = shared_zmq_memory;
       //ZMQ setup
       context = zmq_ctx_new ();
@@ -597,15 +605,14 @@ class zmq_client{
 
 
       //Clear the shared memory that will be used
-      std::fill( commands[0], commands[0] + 7*6, 0);
 
       //Load pointers to start functions
       for (int i = 0; i < 7; i++){
-        finger_run[0] = finger_run_fct_ptr[0];
+        finger_ptrs[0] = fingers[0];
       }
     }
 
-    void run(){
+    void* run(){
       while(1){
         address = s_recv (subscriber);  //  Read envelope with address
         contents = s_recv (subscriber); //  Read message contents
@@ -629,7 +636,7 @@ class zmq_client{
             //Set a flag in shared memory showing that the finger thread is running
             commands[finger_select][0] = 1;
             //Start a the finger on a new thread.
-            pthread_create(&(tid[2+finger_select]), NULL, finger_run[finger_select], NULL);
+            pthread_create(&(tid[2+finger_select]), NULL, &finger::init_finger, finger_ptrs[finger_select]);
             //Note that the finger thread will terminate on its own
             //and set the run_flag low when controller_select = 0.
           }
@@ -637,6 +644,10 @@ class zmq_client{
         }
       }
     };
+
+		static void* init_zmq(void* zmq_object){
+			return ((zmq_client*)zmq_object)->run();
+		}
 };
 
 class spi{
@@ -644,8 +655,8 @@ class spi{
 		double (*shared_mem)[7];
 		double local_mem[7][7];
 
-    int frequency;
-    int spi_channel;
+    unsigned frequency;
+    unsigned spi_channel;
     int sclk;
     int mosi;
     int miso;
@@ -657,7 +668,7 @@ class spi{
     int cs_f5_sens1, cs_f5_sens2, cs_f5_esp32;
     int cs_f6_sens1, cs_f6_sens2, cs_f6_esp32;
     int cs_f7_sens1, cs_f7_sens2, cs_f7_esp32;
-    int cs_arr[7][3];
+    int (*cs_arr)[3];
 
     //SHARED MEMORY
 		//Rows: finger 0-6
@@ -669,7 +680,7 @@ class spi{
     char inBuf[2];
     char outBuf[2];
     char read_command_8;
-    char read_command_16;
+    char read_command_16[2];
     uint16_t temp;
 
     uint16_t temp_angle1;
@@ -688,18 +699,26 @@ class spi{
 		int spi_handle;
 
   public:
-    spi(double shared_spi_memory[7][7]){
+    spi(double shared_spi_memory[7][7], int chip_selects[7][3]){
 
 			shared_mem = shared_spi_memory;
+			cs_arr = chip_selects;
+
+			if (gpioInitialise() < 0)
+			{
+				 //printf(stderr, "pigpio initialisation failed.\n");
+				 std::cout << "pigpio initialisation failed" << std::endl;
+			}
 
       //SPI frequency
       frequency = 15000000;
-
+			spi_channel = 0;
+			spi_handle = spiOpen(spi_channel, frequency, 0);
+			std::cout << "THIS IS MY MF HANDLE BOIIIS" << spi_handle << std::endl;
       //SPI channel. Using this channel means that GPIO 8 is used as chip select.
       //It will however not be connected to anything, and only used because the
       //SPI driver requires a channel to be chosen. Since there are only two channels,
       //and we need more, we manualy activate other GPIO pins
-      spi_channel = 0;
 
       //Common pins. All SPI devies are connected to these.
       sclk = 11;
@@ -708,35 +727,7 @@ class spi{
 
       //The chip select that is actually connected to devices
       //Note that this is GPIO number and not pin number
-      cs_f1_sens1 = 2;
-      cs_f1_sens2 = 3;
-      cs_f1_esp32 = 4;
-      cs_f2_sens1 = 5;
-      cs_f2_sens2 = 6;
-      cs_f2_esp32 = 7;
-      cs_f3_sens1 = 12;
-      cs_f3_sens2 = 13;
-      cs_f3_esp32 = 14;
-      cs_f4_sens1 = 15;
-      cs_f4_sens2 = 16;
-      cs_f4_esp32 = 17;
-      cs_f5_sens1 = 18;
-      cs_f5_sens2 = 19;
-      cs_f5_esp32 = 20;
-      cs_f6_sens1 = 21;
-      cs_f6_sens2 = 22;
-      cs_f6_esp32 = 23;
-      cs_f7_sens1 = 24;
-      cs_f7_sens2 = 25;
-      cs_f7_esp32 = 26;
-      //Cs is packed into array so that it can be accessed by ID
-      cs_arr[0][] = {cs_f1_sens1, cs_f1_sens2, cs_f1_esp32};
-      cs_arr[1][] = {cs_f2_sens1, cs_f2_sens2, cs_f2_esp32};
-      cs_arr[2][] = {cs_f3_sens1, cs_f3_sens2, cs_f3_esp32};
-      cs_arr[3][] = {cs_f4_sens1, cs_f4_sens2, cs_f4_esp32};
-      cs_arr[4][] = {cs_f5_sens1, cs_f5_sens2, cs_f5_esp32};
-      cs_arr[5][] = {cs_f6_sens1, cs_f6_sens2, cs_f6_esp32};
-      cs_arr[6][] = {cs_f7_sens1, cs_f7_sens2, cs_f7_esp32};
+
       //Data is not transmitted when cs is high. Therefore; set all to high
       for (int i=0; i <= 6; i++){
         for (int j=0; j <=3; j++){
@@ -795,15 +786,23 @@ class spi{
 			spi_result = spiXfer(spi_handle, outBuf, inBuf, 3);
 			gpio_result = gpioWrite(cs,1);
 			pthread_mutex_unlock(&lock);
+			printf("sup");
+		}
+
+		~spi(){
+			if (spiClose(spi_handle) < 0){
+				printf("spi destroctor\n");
+				printf("Bad handle");
+			}
+			gpioTerminate();
 		}
 
 
-		void get_cs_and_handle(int id){
-			int cs_and_handle[4] = {cs_arr[id],spi_handle};
-			return cs_and_handle;
+		int get_cs_and_handle(){
+			return spi_handle;
 		}
 
-    void run(){
+    void* run(){
 			while(1){
 				time0=micros();
 				//Load info about active fingers
@@ -846,9 +845,13 @@ class spi{
 					time1=micros();
 					step=time1-time0;
 					usleep(250);
-					cout << "we waited" <<endl;
+					std::cout << "we waited" << std::endl;
 				}
 			}
+		}
+
+		static void* init_spi(void *spi_object){
+			return ((spi* )spi_object)->run();
 		}
 };
 
@@ -856,39 +859,81 @@ main(){
   //Initiate finger objects. The arguments is the identity of the finger.
   //The identity corresponds to specific SPI pins. Choose a value between 0-6.
   //Additional fingers can be added (max 7 with the amount of GPIO pins on a RaspberryPi).
+	int cs_f1_sens1 = 2;
+	int cs_f1_sens2 = 3;
+	int cs_f1_esp32 = 4;
+	int cs_f2_sens1 = 5;
+	int cs_f2_sens2 = 6;
+	int cs_f2_esp32 = 7;
+	int cs_f3_sens1 = 12;
+	int cs_f3_sens2 = 13;
+	int cs_f3_esp32 = 14;
+	int cs_f4_sens1 = 15;
+	int cs_f4_sens2 = 16;
+	int cs_f4_esp32 = 17;
+	int cs_f5_sens1 = 18;
+	int cs_f5_sens2 = 19;
+	int cs_f5_esp32 = 20;
+	int cs_f6_sens1 = 21;
+	int cs_f6_sens2 = 22;
+	int cs_f6_esp32 = 23;
+	int cs_f7_sens1 = 24;
+	int cs_f7_sens2 = 25;
+	int cs_f7_esp32 = 26;
+	//Cs is packed into array so that it can be accessed by ID
+	int cs_arr[7][3] = 	{	 {cs_f1_sens1, cs_f1_sens2, cs_f1_esp32}
+								 	 			,{cs_f2_sens1, cs_f2_sens2, cs_f2_esp32}
+									 			,{cs_f3_sens1, cs_f3_sens2, cs_f3_esp32}
+									 			,{cs_f4_sens1, cs_f4_sens2, cs_f4_esp32}
+									 			,{cs_f5_sens1, cs_f5_sens2, cs_f5_esp32}
+									 			,{cs_f6_sens1, cs_f6_sens2, cs_f6_esp32}
+									 			,{cs_f7_sens1, cs_f7_sens2, cs_f7_esp32}};
 
 	//SPI and ZMQ threads share memory with fingers.
 	double shared_spi_memory[7][7];
 	double shared_zmq_memory[7][6];
 
-  spi spi_controller(shared_spi_memory);
+	std::fill( shared_spi_memory[0], shared_spi_memory[0] + 7*7, 0);
+	std::fill( shared_zmq_memory[0], shared_zmq_memory[0] + 7*6, 0);
+	shared_spi_memory[0][0]=1;
+  spi spi_controller(shared_spi_memory,cs_arr);
 
 	//Creating finger objects and hooking them up to shared memory shared by zmq and spi threads
-  finger finger1(&shared_zmq_memory[0][0], &shared_spi_memory[0][0], spi_controller.get_cs_and_handle(0) );
-  finger finger2(&shared_zmq_memory[1][0], &shared_spi_memory[1][0], spi_controller.get_cs_and_handle(1) );
-  finger finger3(&shared_zmq_memory[2][0], &shared_spi_memory[2][0], spi_controller.get_cs_and_handle(2) );
-	finger finger4(&shared_zmq_memory[3][0], &shared_spi_memory[3][0], spi_controller.get_cs_and_handle(3) );
-	finger finger5(&shared_zmq_memory[4][0], &shared_spi_memory[4][0], spi_controller.get_cs_and_handle(4) );
-	finger finger6(&shared_zmq_memory[5][0], &shared_spi_memory[5][0], spi_controller.get_cs_and_handle(5) );
-	finger finger7(&shared_zmq_memory[6][0], &shared_spi_memory[6][0], spi_controller.get_cs_and_handle(6) );
+  finger finger1(&shared_zmq_memory[0][0], &shared_spi_memory[0][0], &cs_arr[0][0]);
+  finger finger2(&shared_zmq_memory[1][0], &shared_spi_memory[1][0], &cs_arr[1][0]);
+  finger finger3(&shared_zmq_memory[2][0], &shared_spi_memory[2][0], &cs_arr[2][0]);
+	finger finger4(&shared_zmq_memory[3][0], &shared_spi_memory[3][0], &cs_arr[3][0]);
+	finger finger5(&shared_zmq_memory[4][0], &shared_spi_memory[4][0], &cs_arr[4][0]);
+	finger finger6(&shared_zmq_memory[5][0], &shared_spi_memory[5][0], &cs_arr[5][0]);
+	finger finger7(&shared_zmq_memory[6][0], &shared_spi_memory[6][0], &cs_arr[5][0]);
 
-  pthread_create(&(tid[0]), NULL, &(spi_controller.run()), NULL);
+  pthread_create(&(tid[0]), NULL, &spi::init_spi, &spi_controller);
 
   //Create an array of function pointers
   //Fill the array with the address of the function that starts each finger
   //Create a ZMQ client. With number of fingers and the function pointer array as argument
   //Run the ZMQ client on separate thread.
+/*
   void* (* finger_run_fct_ptr [7])(void *);
-  finger_run_fct_ptr[0] = &finger1.run();
-  finger_run_fct_ptr[1] = &finger2.run();
-	finger_run_fct_ptr[2] = &finger3.run();
-	finger_run_fct_ptr[3] = &finger4.run();
-	finger_run_fct_ptr[4] = &finger5.run();
-	finger_run_fct_ptr[5] = &finger6.run();
-	finger_run_fct_ptr[6] = &finger7.run();
+  finger_run_fct_ptr[0] = finger1.run;
+  finger_run_fct_ptr[1] = finger2.run;
+	finger_run_fct_ptr[2] = finger3.run;
+	finger_run_fct_ptr[3] = finger4.run;
+	finger_run_fct_ptr[4] = finger5.run;
+	finger_run_fct_ptr[5] = finger6.run;
+	finger_run_fct_ptr[6] = finger7.run;
+	*/
+	finger* finger_ptr[7];
+	finger_ptr[0] = &finger1;
+	finger_ptr[1] = &finger2;
+	finger_ptr[2] = &finger3;
+	finger_ptr[3] = &finger4;
+	finger_ptr[4] = &finger5;
+	finger_ptr[5] = &finger6;
+	finger_ptr[6] = &finger7;
 
-  zmq_client zmq(shared_zmq_memory, finger_run_fct_ptr);
-  pthread_create(&(tid[1]), NULL, &(zmq.run()), NULL);
+  zmq_client zmq(shared_zmq_memory, finger_ptr);
+  pthread_create(&(tid[1]), NULL, &zmq_client::init_zmq, &zmq);
 
 
   pthread_join(tid[0], NULL);
