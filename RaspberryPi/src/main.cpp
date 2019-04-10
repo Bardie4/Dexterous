@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <pigpio.h>
 #include <unistd.h>
+#include <algorithm>
 //#include <bitset>
 #include "pthread.h"
 pthread_t tid[6];
@@ -593,7 +594,8 @@ class zmq_client{
       subscriber = zmq_socket (context, ZMQ_SUB);
       zmq_connect (subscriber, "tcp://localhost:5563");
       zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "B", 1);
-
+			
+			pthread_create(&(tid[2+finger_select]), NULL, finger_run_fct_ptr[1], NULL);
 
 
       //Clear the shared memory that will be used
@@ -746,7 +748,7 @@ class spi{
 
     }
 
-    unit8_t read_angle_8(int &cs){
+    uint8_t read_angle_8(int &cs){
       outBuf[0] = read_command_8;
 			pthread_muted_locl(&lock);
       gpio_result = gpioWrite(cs,0);
