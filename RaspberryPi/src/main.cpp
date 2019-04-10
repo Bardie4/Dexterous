@@ -726,13 +726,13 @@ class spi{
       cs_f7_sens2 = 25;
       cs_f7_esp32 = 26;
       //Cs is packed into array so that it can be accessed by ID
-      cs_arr[0] = {cs_f1_sens1, cs_f1_sens2, cs_f1_esp32};
-      cs_arr[1] = {cs_f2_sens1, cs_f2_sens2, cs_f2_esp32};
-      cs_arr[2] = {cs_f3_sens1, cs_f3_sens2, cs_f3_esp32};
-      cs_arr[3] = {cs_f4_sens1, cs_f4_sens2, cs_f4_esp32};
-      cs_arr[4] = {cs_f5_sens1, cs_f5_sens2, cs_f5_esp32};
-      cs_arr[5] = {cs_f6_sens1, cs_f6_sens2, cs_f6_esp32};
-      cs_arr[6] = {cs_f7_sens1, cs_f7_sens2, cs_f7_esp32};
+      cs_arr[0][] = {cs_f1_sens1, cs_f1_sens2, cs_f1_esp32};
+      cs_arr[1][] = {cs_f2_sens1, cs_f2_sens2, cs_f2_esp32};
+      cs_arr[2][] = {cs_f3_sens1, cs_f3_sens2, cs_f3_esp32};
+      cs_arr[3][] = {cs_f4_sens1, cs_f4_sens2, cs_f4_esp32};
+      cs_arr[4][] = {cs_f5_sens1, cs_f5_sens2, cs_f5_esp32};
+      cs_arr[5][] = {cs_f6_sens1, cs_f6_sens2, cs_f6_esp32};
+      cs_arr[6][] = {cs_f7_sens1, cs_f7_sens2, cs_f7_esp32};
       //Data is not transmitted when cs is high. Therefore; set all to high
       for (int i=0; i <= 6; i++){
         for (int j=0; j <=3; j++){
