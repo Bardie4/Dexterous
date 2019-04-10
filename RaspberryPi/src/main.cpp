@@ -12,46 +12,34 @@ typedef struct spi{
 
 //Variables used by joint space PID function
 typedef struct jointspace_pid_var {
-   char read_angle_cmd[2];
-   unsigned char inBuf[2];
-   short theta1;
-   short theta2;
-   short error1;
-   short error2;
-   short theta1_setpoint;
-   short theta2_setpoint;
+   double error1;
+   double error2;
+   double theta1_setpoint;
+   double theta2_setpoint;
    double kp1;
+	 double ki1;
+	 double kd1;
    double kp2;
-   short u1;
-   short u2;
-   char run;
-	 int itr_counter;
+	 double ki2;
+	 double kd2;
 }jointspace_pid_var;
 
 //Variables used by cartesian PID function
 typedef struct cartesian_pid_var {
-   char read_angle_cmd[2];
-   unsigned char inBuf[2];
-   short theta1;
-   short theta2;
-   short error1;
-   short error2;
-   short theta1_setpoint;
-   short theta2_setpoint;
+   double error1;
+   double error2;
+   double theta1_setpoint;
+   double theta2_setpoint;
    double kp1;
    double kp2;
-   short u1;
-   short u2;
-   char run;
 	 double temp;
 	 double k1;
 	 double k2;
 	 double gamma;
 	 double l1;
 	 double l2;
-	 double x;
-	 double y;
-	 int itr_counter;
+	 double x*;
+	 double y*;
 }cartesian_pid_var;
 
 typedef struct controller_variables{
@@ -99,44 +87,473 @@ typedef struct zmq_data{
 
 class finger{
   public:
-    zmq_instructions*  zmq;		             //ptr to shared memory
-    zmq_instructions   zmq_local;	   		   //work memory
-    controller_variables controller_var;	 //variables used by controllers
-    spi spi_data;                          //Constants used for SPI
+		void update_local_zmq_mem();					//updates controller_select and data1-4
+		void update_local_spi_mem();					//updates theta1/2 and angular_vel1/2
+		void update_shared_spi_mem();					//updates torque1/2 on shared spi memory
+		void shutdown();											//sets runflag to zero for both spi and zmq on shared memory
 
-    void calibration();
-    void cartesian_ijc_pid();
-    void jointspace_ijc_pid();
-    void main_controller_loop();
+		//Runs on startup. Sets zero angle on sensors.
+		void calibration();
 
-    finger(int identity, zmq_data* shared){
+		//Controllers
+		void cartesian_ijc_pid();							 //Independant joint controller with cartesian input
+		void jointspace_ijc_pid();						 //Independant joint controller with joint_angle input
 
-      zmq = &(shared->instr_finger1);        //Add pointers to the relevant input data from zmq
+		//Main loop
+		void run();
+
+		//Define a set of variables used by the PID idependant joint controller
+		//with cartesian coordinates as input
+		cartesian_pid_var pid_ijc_cs;
+		//Define a set of variables used by the PID idependant joint controller
+		//with joint angle set point as input
+		jointspace_pid_var pid_ijc_cs;
+
+ 		//MEMORY SHARED WITH ZMQ Thread
+		double zmq_mem_shared[6];
+		//LOCAL BUFFER OF SHARED ZMQ Memory
+		double runflag_zmq;
+		double controller_select;
+		double data1;
+		double data2;
+		double data3;
+		double data4;
+
+		//Memory shared with spi thread
+		double spi_mem_shared[7];
+		//Local buffer of shared spi memory
+		double runflag_spi;
+		double theta1;
+		double theta2;
+		double angular_vel1;
+		double angular_vel2;
+		double torque1;
+		double torque2;
+
+		//count controller cycles
+		int itr_counter;
+
+
+		//SPI variables(Used only for calibration)
+		int cs_angle_sensor_1;
+		int cs_angle_sensor_2;
+		int cs_output;
+		int handle
+		int frequency;
+		int spi_channel;
+		int sclk;
+		int mosi;
+		int miso;
+
+		//Constructor
+    finger(double shared_spi_memory[7], double shared_zmq_memory[5], int spi_var[4]){
+
+			//Get pointers to shared memory
+			spi_mem_shared = shared_spi_memory;
+			zmq_mem_shared = shared_zmq_memory;
 
       //Set default settings for controllers
-      controller_var.js.kp1 = 1;                        //joint space controller vaules
-      controller_var.js.kp2 = 0.5;                      //joint space controller vaules
-      controller_var.js.read_angle_cmd[0] = 0b00000000; //SPI command
-      controller_var.js.read_angle_cmd[1] = 0b00000000; //SPI command
-      controller_var.cs.kp1 = 1;                        //cartesian space controller values
-      controller_var.cs.kp2 = 0.5;                      //cartesian space controller values
-      controller_var.cs.read_angle_cmd[0] = 0b00000000; //SPI command
-      controller_var.cs.read_angle_cmd[1] = 0b00000000; //SPI command
-      controller_var.cs.l1 = 5.3;
-      controller_var.cs.l2 = 4.8;
+			//joint space controller vaules
+      pid_ijc_js.kp1 = 1;
+		  pid_ijc_js.Ki1 = 0;
+			pid_ijc_js.Kd1 = 0;
+			pid_ijc_js.kp2 = 0.5;
+			pid_ijc_js.Ki2 = 0;
+			pid_ijc_js.Kd2 = 0;
+			//cartesian space controller values
+      pid_ijc_cs.kp1 = 1;
+      pid_ijc_cs.ki1 = 0;
+      pid_ijc_cs.kd1 = 0;
+			pid_ijc_cs.kp2 = 0.5;
+      pid_ijc_cs.ki2 = 0;
+      pid_ijc_cs.kd2 = 0;
+      pid_ijc_cs.l1 = 5.3;
+      pid_ijc_cs.l2 = 4.8;
+
+			//Pointing controller variables to local zmq buffer
+			//(Data1-4 has potentially different meanings to different controllers)
+			pid_ijc_js.theta1_setpoint = &data1;
+			pid_ijc_js.theta2_setpoint = &data2;
+
+			pid_ijc_cs.x = &data1;
+			pid_ijc_cs.y = &data2;
+
+			itr_conter=0;
+
+			//SPI:
+			//During normal operation, only the dedicated spi-thread talks to the sensors,
+			//However, since
+			frequency = 15000000;
+			spi_channel = 0;
+			sclk = 11;
+			mosi = 10;
+			miso = 9;
+			cs_angle_sensor_1 = spi_var[0];
+			cs_angle_sensor_2 = spi_var[1];
+			cs_output = spi_var[2];
+			handle = spi_var[3];
     }
 
+		shutdown(){
+			//Tell zmq client that the thread is no longer active
+			phread_mutex_lock(&lock);
+			spi_mem_shared[0] = 0;
+			phread_mutex_unlock(&lock);
+			//Tell zmq function to no longer measure sesnors for this finger
+			phread_mutex_lock(&lock);
+			zmq_mem_shared[0] = 0;
+			phread_mutex_unlock(&lock);
+			}
+
+		update_local_zmq_mem(){
+			phread_mutex_lock(&lock);
+			controller_select = zmq_mem_shared[1];
+			data1 = zmq_mem_shared[2];
+			data2 = zmq_mem_shared[3];
+			data3 = zmq_mem_shared[4];
+			data4 = zmq_mem_shared[5];
+			phread_mutex_unlock(&lock);
+		}
+
+		update_local_spi_mem(){
+			phread_mutex_lock(&lock);
+			angle1 = spi_mem_shared[1];
+			angle2 = spi_mem_shared[2];
+			angular_vel1 = spi_mem_shared[3];
+			angular_vel2 = spi_mem_shared[4];
+			phread_mutex_unlock(&lock);
+		}
+
+		update_shared_spi_mem(){
+			phread_mutex_lock(&lock);
+			spi_mem_shared[5]=torque1;
+			spi_mem_shared[6]=torque2;
+			phread_mutex_unlock(&lock);
+		}
+
+		void calibration(){
+
+			char read_angle_cmd[]= {0b00000000, 0b00000000};
+			char set_zero_angle_cmd[2];
+			char torque_cmd[3];
+			uint16_t zero_point;
+			int gpio_result;
+			int spi_result;
+
+			//******DRIVE MOTORS TO END POSITION*******
+			//*****************************************
+			//NOT DONE
+			torque_cmd[0]=(uint8_t) 0;
+			torque_cmd[1]=(uint8_t) 20;
+			torque_cmd[2]=(uint8_t) 20;
+
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_output,0);
+			spi_result = spiXfer(inBuf, 3);
+			gpio_result = gpioWrite(cs_output,1);
+			pthread_mutex_unlock(&lock);
+
+			printf("Driving to endpoint\n");
+			usleep(5000000);
+
+			//READ ANGLE AT END POINT
+			outBuf[0] = 0b00000000;
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_1,0);
+			spi_result = spiXfer(handle, outBuf, inBuf, 1);
+			gpio_result = gpioWrite(cs_angle_sensor_1,1);
+			pthread_mutex_unlock(&lock);
+			theta1 = inBuf[0];
+
+			outBuf[0] = 0b00000000;
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_2,0);
+			spi_result = spiXfer(handle, outBuf, inBuf, 1);
+			gpio_result = gpioWrite(cs_angle_sensor_2,1);
+		 	pthread_mutex_unlock(&lock);
+			theta2 = inBuf[0];
+
+			printf("Before calibration: %d | %d\n", theta1 , theta2);
+			//Setting zero_angle at start position
+			//The measured angle in end position should be zero to avoid crossing from 0->255, as this will mess with the PID.
+			//Any previous zero angle setting is removed before the angle is measured. This measured angle is set as the new zero angle.
+			//A delay followed by 16 zeros is required after each write to sensor register.
+			//The register value should be the compliment of the wanted zero-angle
+
+
+			//*********CALIBRATE SENSOR 1**********
+			//*************************************
+
+			//RESET OLD ZERO POINT
+			set_zero_angle_cmd[0]=0b10000001; //WRITE REG 1 (8 MSB of zero angle)
+			set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_1,0);
+			spi_result = spiXfer(handle, set_zero_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_1,1);
+			pthread_mutex_unlock(&lock);
+			usleep(100000);
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_1,0);
+			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_1,1);
+			pthread_mutex_unlock(&lock);
+			usleep(100000);
+			set_zero_angle_cmd[0]=0b10000000; //WRITE REG 0 (8 LSB of zero angle)
+			set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_1,0);
+			spi_result = spiXfer(handle, set_zero_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_1,1);
+			pthread_mutex_unlock(&lock);
+			usleep(100000);
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_1,0);
+			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_1,1);
+			pthread_mutex_unlock(&lock);
+			usleep(100000);
+
+			//MEASURE ANGLE AFTER RESET AND CALCULATE REGISTER INPUT
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_1,0);
+			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_1,1);									//MEASURE CURRENT ANGLE
+			pthread_mutex_unlock(&lock);
+			zero_point = (inBuf[0] << 8);                               //COMBINE 8 bit values to 16 bit
+			zero_point = zero_point + inBuf[1];
+			zero_point = (uint16_t) (0b10000000000000000-zero_point+0b0000100000000000);   	//CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
+																																		 									//ADDING 8 (in 16bit) to avoid crossing zero because of noise
+			//SET NEW ZERO POINT
+			set_zero_angle_cmd[0]=0b10000001;
+			set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //8 MSB of Compliment of new zero angle
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_1,0);
+			spi_result = spiXfer(handle, set_zero_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_1,1);
+			pthread_mutex_unlock(&lock);
+			usleep(100000);
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_1,0);
+			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_1,1);
+			pthread_mutex_unlock(&lock);
+			usleep(100000);
+			set_zero_angle_cmd[0]=0b10000000;
+			set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //8 LSB of Compliment of new zero angle
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_1,0);
+			spi_result = spiXfer(handle, set_zero_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_1,1);
+			pthread_mutex_unlock(&lock);
+			usleep(100000);
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_1,0);
+			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_1,1);
+			pthread_mutex_unlock(&lock);
+			usleep(100000);
+
+
+			//*********CALIBRATE SENSOR 2**********
+			//*************************************
+
+			//RESET OLD ZERO POINT
+			set_zero_angle_cmd[0]=0b10000001;   //WRITE REG 1 (8 MSB of zero angle)
+			set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_2,0);
+			spi_result = spiXfer(handle, set_zero_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_2,1);
+			pthread_mutex_unlock(&lock);
+			usleep(100000);
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_2,0);
+			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_2,1);
+			pthread_mutex_unlock(&lock);
+			usleep(100000);
+			set_zero_angle_cmd[0]=0b10000000;   //WRITE REG 0 (8 LSB of zero angle)
+			set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_2,0);
+			spi_result = spiXfer(handle, set_zero_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_2,1);
+			pthread_mutex_unlock(&lock);
+			usleep(100000);
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_2,0);
+			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_2,1);
+			pthread_mutex_unlock(&lock);
+			usleep(100000);
+
+			//MEASURE ANGLE AFTER RESET AND CALCULATE REGISTER INPUT
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_2,0);
+			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_2,1); // MEASURE ZERO ANGLE
+			pthread_mutex_unlock(&lock);
+			zero_point = (inBuf[0] << 8);
+			zero_point = zero_point + inBuf[1];
+			zero_point = (uint16_t) (0b10000000000000000-zero_point+0b0000100000000000);   //CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
+
+			//SET NEW ZERO POINT
+			set_zero_angle_cmd[0]=0b10000001;                           //WRITE REG 1 (8 MSB of zero angle)
+			set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //ZERO ANGLE SET TO CURRENT ANGLE
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_2,0);
+			spi_result = spiXfer(handle, set_zero_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_2,1);
+			pthread_mutex_unlock(&lock);
+			usleep(100000);
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_2,0);
+			spi_result = spiXfer(handle, read_angle_cmd, sinBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_2,1);
+			pthread_mutex_unlock(&lock);
+			usleep(100000);
+			set_zero_angle_cmd[0]=0b10000000;                           //WRITE REG 0 (8 LSB of zero angle)
+			set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //ZERO ANGLE SET TO CURRENT ANGLE
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_2,0);
+			spi_result = spiXfer(handle, set_zero_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_2,1);
+			pthread_mutex_unlock(&lock);
+			usleep(100000);
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_2,0);
+			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
+			gpio_result = gpioWrite(cs_angle_sensor_2,1);
+			pthread_mutex_unlock(&lock);
+			usleep(100000);
+
+
+			//*********PRINT RESULT****************
+			//*************************************
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_1,0);
+			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 1);
+			gpio_result = gpioWrite(cs_angle_sensor_1,1);
+			pthread_mutex_unlock(&lock);
+			theta1=inBuf[0];
+
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_angle_sensor_2,0);
+			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 1);
+			gpio_result = gpioWrite(cs_angle_sensor_2,1);
+			pthread_mutex_unlock(&lock);
+			theta2=inBuf[0];
+
+			printf("After calibration: %d | %d \n",	theta1, theta2 );
+
+			//Shut of motors
+			torque_cmd[0]=(uint8_t) 0;
+			torque_cmd[1]=(uint8_t) 20;
+			torque_cmd[2]=(uint8_t) 20;
+			pthread_mutex_lock(&lock);
+			gpio_result = gpioWrite(cs_output,0);
+			spi_result = spiXfer(handle, torque_cmd, inBuf, 3);
+			gpio_result = gpioWrite(cs_output,1);
+			pthread_mutex_unlock(&lock);
+
+			//Tell SPI thread to include sensors in measurement loop
+			pthread_mutex_lock(&lock);
+			spi_mem_shared[0] = 1;
+			pthread_mutex_unlock(&lock);
+			//Wait for a controller to be selected
+			while(1){
+				sleep(2);
+				update_local_zmq_mem();
+				if ( !(controller_select==1) ){
+					break;
+				}
+			}
+		}
+
+
+		jointspace_ijc_pid(){
+			while(1){
+				//Check instructions
+				update_local_zmq_mem();
+				//Exit and stop motors if this is not the correct controller
+				if ( !(controller_select == 2) ){
+					torque1 = 0;
+					torque2 = 0;
+					update_shared_spi_mem();
+					break;
+				}
+
+				//Read sensors
+				update_local_spi_mem();
+				//Proportional controller
+				pid_ijc_js.error1 = (pid_ijc_js.theta1_setpoint)* - theta1;
+				torque1 = pid_ijc_js.error1*pid_ijc_js.kp1;
+				pid_ijc_js.error2 = (pid_ijc_js.theta2_setpoint)* - theta2;
+				torque2 = pid_ijc_js.error2*pid_ijc_js.kp2;
+				//Give output to SPI thread
+				update_shared_spi_mem();
+
+				//Print status every 1000 cycles
+				itr_counter++;
+				if ( itr_counter > 1000){
+					printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", pid_ijc_js.theta1 , (pid_ijc_js.theta1_setpoint)*, pid_ijc_js.error1, torque1);
+					printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", pid_ijc_js.theta2 , (pid_ijc_js.theta2_setpoint)*, pid_ijc_js.error2, torque2);
+					itr_counter=0;
+				}
+			}
+		}
+
+		cartesian_ijc_pid(){
+			while(1){
+				//Check instructions
+				update_local_zmq_mem();
+				//Exit and stop motors if this is not the correct controller
+				if ( !(controller_select == 2) ){
+					torque1 = 0;
+					torque2 = 0;
+					update_shared_spi_mem();
+					break;
+				}
+
+				//Read sensors
+				update_local_spi_mem();
+				//Inverse kinematics. Source: http://www.hessmer.org/uploads/RobotArm/Inverse%2520Kinematics%2520for%2520Robot%2520Arm.pdf
+				pid_ijc_cs.temp = (pow( (pid_ijc_cs.x)* ,2) + pow( (pid_ijc_cs.y)* ,2) - pow(pid_ijc_cs.l1,2)-pow(pid_ijc_cs.l2,2))/(2*pid_ijc_cs.l1*pid_ijc_cs.l2);
+				pid_ijc_cs.theta2_setpoint = atan2( sqrt( 1-pid_ijc_cs.temp ), pid_ijc_cs.temp );
+				pid_ijc_cs.k1 = pid_ijc_cs.l1 + pid_ijc_cs.l2*cos(pid_ijc_cs.theta2);
+				pid_ijc_cs.k2 = pid_ijc_cs.l2*sin(pid_ijc_cs.theta2);
+				pid_ijc_cs.gamma = atan2(pid_ijc_cs.k2,pid_ijc_cs.k1);
+				pid_ijc_cs.theta1_setpoint = atan2( (pid_ijc_cs.y)*, (pid_ijc_cs.x)* ) - pid_ijc_cs.gamma;
+				//Run controller
+				pid_ijc_cs.error1 = pid_ijc_cs.theta1_setpoint - theta1;
+				torque1 = pid_ijc_cs.error1*pid_ijc_cs.kp1;
+				pid_ijc_cs.error2 = pid_ijc_cs.theta2_setpoint - theta2;
+				torque2 = pid_ijc_cs.error2*pid_ijc_cs.kp2;
+				//Give output to SPI thread
+				update_shared_spi_mem();
+
+				//Print status every 1000 cycles
+				itr_counter++;
+				if ( itr_counter > 1000){
+					printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", pid_ijc_cs.theta1 , pid_ijc_cs.theta1_setpoint, pid_ijc_cs.error1, torque1);
+					printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", pid_ijc_cs.theta2 , pid_ijc_cs.theta2_setpoint, pid_ijc_cs.error2, torque2);
+					itr_counter = 0;
+				}
+			}
+		}
 
     void run(){
-      run_flag = 1; //Thread safe variable
-      while(run_flag){
-        calibration();
+			calibration();
+			//While finger is instructed to be active
+      while( !(controller_select == 0) ){
+				//Cycle through controllers.
         jointspace_ijc_pid();
         cartesian_ijc_pid();
       }
-      pthread_join(tid[identity+1], NULL);
+			//Tell spi and zmq thread we are finished
+			shutdown();
     }
-
 };
 
 class zmq_client{
@@ -220,8 +637,8 @@ class zmq_client{
 
 class spi{
   private:
-    int finger_count;
-    int id_vec[7];
+		double shared_mem[7][7];
+		double local_mem[7][7];
 
     int frequency;
     int spi_channel;
@@ -239,9 +656,11 @@ class spi{
     int cs_arr[7][3];
 
     //SHARED MEMORY
-    unit16_t angle[7][2];
-    unit16_t speed[7][2];
-    unit16_t output[7][2];
+		//Rows: finger 0-6
+		//Coloums: spi_flag angle1, angle2, velocity1, velocity2, output1, output2
+		//int16_t shared_spi[7][7];
+		//uint16_t local_spi[7][7];
+
 
     char inBuf[2];
     char outBuf[2];
@@ -254,10 +673,17 @@ class spi{
     double temp_output1;
     double temp_output2;
 
+		int run_flag[5];
+
+		int time0;
+		int time1;
+		int step;
+
   public:
-    spi(int num, int id[]){
-      finger_count = num;
-      id_vec = id;
+    spi(double shared_spi_memory[7][7]){
+
+			shared_mem = shared_spi_memory;
+
       //SPI frequency
       frequency = 15000000;
 
@@ -269,8 +695,8 @@ class spi{
 
       //Common pins. All SPI devies are connected to these.
       sclk = 11;
-      int mosi = 10;
-      int miso = 9;
+      mosi = 10;
+      miso = 9;
 
       //The chip select that is actually connected to devices
       //Note that this is GPIO number and not pin number
@@ -313,70 +739,149 @@ class spi{
       read_command_8 = 0b00000000;
       read_command_16[0] = 0b00000000;
       read_command_16[1] = 0b00000000;
+
     }
 
     unit8_t read_angle_8(int &cs){
       outBuf[0] = read_command_8;
+			pthread_muted_locl(&lock);
       gpio_result = gpioWrite(cs,0);
       spi_result = spiXfer(spi_handle, outBuf, inBuf, 1);
       gpio_result = gpioWrite(cs,1);
+			pthread_muted_locl(&lock);
       return inBuf[0];
     }
     uint16_t read_angle_16(int &cs){
       outBuf[0] = read_command_16[0];
       outBuf[1] = read_command_16[1];
+			pthread_muted_locl(&lock);
       gpio_result = gpioWrite(cs,0);
       spi_result = spiXfer(spi_handle, outBuf, inBuf, 2);
       gpio_result = gpioWrite(cs,1);
+			pthread_muted_locl(&lock);
       temp = inBuf[0] << 8;
       temp = temp + inBuf[1];
       return temp;
     }
+		void write_output_8(int &cs, double &output1, double &output2){
+			outBuf[0] = 0;
+			if ( output1 < 0 ){
+				output1 = output1*(-1);
+				outBuf[0] = 0b00000001;
+			}
+			if (output1 > 255){
+				output1 = 255;
+			}
+			if ( output2 < 0 ){
+				output2 = output2*(-1);
+				outBuf[0] += 0b00000010;
+			}
+			if (output2 > 255){
+				output2 = 255;
+			}
+			outBuf[1] =  (uint8_t) output1;
+			outBuf[2] =  (uint8_t) output2;
+		}
+		pthread_muted_locl(&lock);
+		gpio_result = gpioWrite(cs,0);
+		spi_result = spiXfer(spi_handle, outBuf, inBuf, 3);
+		gpio_result = gpioWrite(cs,1);
+		pthread_muted_locl(&lock);
+
+		}
+
+		get_cs_and_handle(int id){
+			int cs_and_handle[4] = {cs_arr[id],spi_handle};
+			return cs_and_handle;
+		}
 
     run(){
-      for (int = 0; i < finger_count; i++){
-        //Read angle via SPI
-        temp_angle1=read_angle_16(cs_arr[id_vec[i]][0]);
-        temp_angle2=read_angle_16(cs_arr[id_vec[i]][1));
+			while(1){
+				time0=micros();
+				//Load info about active fingers
+				pthread_mutex_lock(&lock);
+				for (int i=0; i<7; i++){
+						local_mem[i][0] = shared_mem[i][0];
+					}
+				pthread_mutex_unlock(&lock);
 
-        //Write angle to shared memory. Read output from shared memory
-        pthread_muted_locl(&lock);
-        angle[id[i]][0] = temp_angle1;
-        angle[id[i]][1] = temp_angle2;
-        temp_output1 = output[id_vec[i]][0];
-        temp_output2 = output[id_vec[i]][1];
-        pthread_mutex_unlock(&lock);
+				for (int i=0; i<7; i++){
+					//If fingers are active
+					if (local_mem[i][0]){
+						//Read angle from SPI
+						local_mem[i][1] = read_angle_16(cs_arr[i][1]);
+						local_mem[i][2] = read_angle_16(cs_arr[i][2]);
 
-        //Write output
-        //***************************NOT DONE**********
-      }
-    }
+						//Calculate speed
+						//************** NOT DONE *********************
+
+						pthread_mutex_lock(&lock);
+						//Update shared memory
+						shared_mem[i][1] = local_mem[i][1];
+						shared_mem[i][2] = local_mem[i][2];
+						shared_mem[i][3] = local_mem[i][3];
+						shared_mem[i][4] = local_mem[i][4];
+
+						//Read output from shared memory
+						local_mem[i][5] = shared_mem[i][5];
+						local_mem[i][6] = shared_mem[i][6];
+						pthread_mutex_unlock(&lock);
+
+						//Send output to SPI
+						write_output_8(cs_arr[i][3],local_mem[i][5],local_mem[i][6]);
+					}
+				}
+				//WAIT
+				time1=micros();
+				step=time1-time0;
+				while(step<1000){
+					time1=micros();
+					step=time1-time0;
+					usleep(250);
+					cout << "we waited" <<endl;
+				}
+			}
+		}
 };
 
 main(){
   //Initiate finger objects. The arguments is the identity of the finger.
   //The identity corresponds to specific SPI pins. Choose a value between 0-6.
   //Additional fingers can be added (max 7 with the amount of GPIO pins on a RaspberryPi).
-  int id1 = 0;
-  int id2 = 1;
-  finger finger1(id1);
-  finger finger2(id2);
 
-  //Pack the identities into a vector
-  //Create spi object with number of fingers and ID-vector as arguments
-  //Run the spi controller on a separate thread
-  int identity[2] = [id1, id2];
-  spi spi_controller(2, identity);
-  pthread_create(&(tid[1]), NULL, &spi_controller.run(), NULL);
+	//SPI and ZMQ threads share memory with fingers.
+	double shared_spi_memory[7][7];
+	double shared_zmq_memory[7][6];
+
+  spi spi_controller(shared_spi_memory);
+
+	//Creating finger objects and hooking them up to shared memory shared by zmq and spi threads
+  finger finger1(&shared_zmq_memory[0][0], &shared_spi_memory[0][0], spi_controller.get_cs_and_handle(0) );
+  finger finger2(&shared_zmq_memory[1][0], &shared_spi_memory[1][0], spi_controller.get_cs_and_handle(1) );
+  finger finger3(&shared_zmq_memory[2][0], &shared_spi_memory[2][0], spi_controller.get_cs_and_handle(2) );
+	finger finger4(&shared_zmq_memory[3][0], &shared_spi_memory[3][0], spi_controller.get_cs_and_handle(3) );
+	finger finger5(&shared_zmq_memory[4][0], &shared_spi_memory[4][0], spi_controller.get_cs_and_handle(4) );
+	finger finger6(&shared_zmq_memory[5][0], &shared_spi_memory[5][0], spi_controller.get_cs_and_handle(5) );
+	finger finger7(&shared_zmq_memory[6][0], &shared_spi_memory[6][0], spi_controller.get_cs_and_handle(6) );
+
+  //Create an spi object and starting the spi thread
+  spi spi_controller(shared_spi_memory);
+  pthread_create(&(tid[0]), NULL, &spi_controller.run(), NULL);
 
   //Create an array of function pointers
   //Fill the array with the address of the function that starts each finger
   //Create a ZMQ client. With number of fingers and the function pointer array as argument
   //Run the ZMQ client on separate thread.
-  void (* finger_run_fct_ptr [2])();
+  void (* finger_run_fct_ptr [7])();
   finger_run_fct_ptr[0] = &finger1.run();
   finger_run_fct_ptr[1] = &finger2.run();
-  zmq_client zmq(2, finger_run_fct_ptr):
+	finger_run_fct_ptr[2] = &finger3.run();
+	finger_run_fct_ptr[3] = &finger4.run();
+	finger_run_fct_ptr[4] = &finger5.run();
+	finger_run_fct_ptr[5] = &finger6.run();
+	finger_run_fct_ptr[6] = &finger7.run();
+
+  zmq_client zmq(shared_zmq_memory, finger_run_fct_ptr);
   pthread_create(&(tid[1]), NULL, &zmq.run(), NULL);
 
 
