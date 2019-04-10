@@ -872,7 +872,7 @@ main(){
 	finger finger6(&shared_zmq_memory[5][0], &shared_spi_memory[5][0], spi_controller.get_cs_and_handle(5) );
 	finger finger7(&shared_zmq_memory[6][0], &shared_spi_memory[6][0], spi_controller.get_cs_and_handle(6) );
 
-  pthread_create(&(tid[0]), NULL, &spi_controller.run(), NULL);
+  pthread_create(&(tid[0]), NULL, &(spi_controller.run()), NULL);
 
   //Create an array of function pointers
   //Fill the array with the address of the function that starts each finger
@@ -888,7 +888,7 @@ main(){
 	finger_run_fct_ptr[6] = &finger7.run();
 
   zmq_client zmq(shared_zmq_memory, finger_run_fct_ptr);
-  pthread_create(&(tid[1]), NULL, &zmq.run(), NULL);
+  pthread_create(&(tid[1]), NULL, &(zmq.run()), NULL);
 
 
   pthread_join(tid[0], NULL);
