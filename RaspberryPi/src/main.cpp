@@ -629,7 +629,7 @@ class zmq_client{
           //Read and unload data to shared memory
           sscanf(contents, "%*c %c %d %d %d %d", &controller_select , &data1, &data2, &data3, &data4);
 
-					std::cout << (int)finger_select << " " << (int)controller_select<<" " << data1 << " "<< data2 << " " << data3 <<" "<< data4 <<std::endl;
+					std::cout << (int)finger_select << " " << (int)controller_select<<" " << (int)data1 << " "<< (int)data2 << " " << (int)data3 <<" "<< (int)data4 <<std::endl;
 					std::cout << "Putting commands in shared memory" << std::endl;
           pthread_mutex_lock(&lock);
           commands[finger_select][1] = controller_select;
