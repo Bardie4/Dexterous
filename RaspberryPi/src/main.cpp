@@ -8,6 +8,7 @@
 //#include <bitset>
 #include "pthread.h"
 #include <iostream>
+#include <wiringPi.h>
 pthread_t tid[6];
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -549,7 +550,7 @@ class finger{
 			}
 		}
 
-    void run(){
+    void* run(){
 			calibration();
 			//While finger is instructed to be active
       while( !(controller_select == 0) ){
@@ -612,7 +613,7 @@ class zmq_client{
       }
     }
 
-    void run(){
+    void* run(){
       while(1){
         address = s_recv (subscriber);  //  Read envelope with address
         contents = s_recv (subscriber); //  Read message contents
@@ -799,7 +800,7 @@ class spi{
 			return spi_handle;
 		}
 
-    void run(){
+    void* run(){
 			while(1){
 				time0=micros();
 				//Load info about active fingers
