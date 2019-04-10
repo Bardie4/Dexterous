@@ -605,7 +605,6 @@ class zmq_client{
 
 
       //Clear the shared memory that will be used
-      std::fill( commands[0], commands[0] + 7*6, 0);
 
       //Load pointers to start functions
       for (int i = 0; i < 7; i++){
@@ -786,6 +785,7 @@ class spi{
 			spi_result = spiXfer(spi_handle, outBuf, inBuf, 3);
 			gpio_result = gpioWrite(cs,1);
 			pthread_mutex_unlock(&lock);
+			printf("sup");
 		}
 
 		~spi(){
@@ -890,6 +890,9 @@ main(){
 	//SPI and ZMQ threads share memory with fingers.
 	double shared_spi_memory[7][7];
 	double shared_zmq_memory[7][6];
+
+	std::fill( shared_spi_memory[0], shared_spi_memory[0] + 7*7, 0);
+	std::fill( shared_zmq_memory[0], shared_zmq_memory[0] + 7*6, 0);
 
   spi spi_controller(shared_spi_memory,cs_arr);
 
