@@ -203,11 +203,11 @@ class finger{
 			//Tell zmq client that the thread is no longer active
 			phread_mutex_lock(&lock);
 			spi_mem_shared[0] = 0;
-			phread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&lock);
 			//Tell zmq function to no longer measure sesnors for this finger
 			phread_mutex_lock(&lock);
 			zmq_mem_shared[0] = 0;
-			phread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&lock);
 			}
 
 		void update_local_zmq_mem(){
@@ -217,7 +217,7 @@ class finger{
 			data2 = zmq_mem_shared[3];
 			data3 = zmq_mem_shared[4];
 			data4 = zmq_mem_shared[5];
-			phread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&lock);
 		}
 
 		void update_local_spi_mem(){
@@ -226,14 +226,14 @@ class finger{
 			theta2 = spi_mem_shared[2];
 			angular_vel1 = spi_mem_shared[3];
 			angular_vel2 = spi_mem_shared[4];
-			phread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&lock);
 		}
 
 		void update_shared_spi_mem(){
 			phread_mutex_lock(&lock);
 			spi_mem_shared[5]=torque1;
 			spi_mem_shared[6]=torque2;
-			phread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&lock);
 		}
 
 		void calibration(){
@@ -254,7 +254,7 @@ class finger{
 
 			pthread_mutex_lock(&lock);
 			gpio_result = gpioWrite(cs_output,0);
-			spi_result = spiXfer(inBuf, 3);
+			spi_result = spiXfer(handle, torque_cmd, inBuf, 3);
 			gpio_result = gpioWrite(cs_output,1);
 			pthread_mutex_unlock(&lock);
 
@@ -492,9 +492,9 @@ class finger{
 				//Read sensors
 				update_local_spi_mem();
 				//Proportional controller
-				pid_ijc_js.error1 = (pid_ijc_js.theta1_setpoint)* - theta1;
+				pid_ijc_js.error1 = *(pid_ijc_js.theta1_setpoint) - theta1;
 				torque1 = pid_ijc_js.error1*pid_ijc_js.kp1;
-				pid_ijc_js.error2 = (pid_ijc_js.theta2_setpoint)* - theta2;
+				pid_ijc_js.error2 = *(pid_ijc_js.theta2_setpoint) - theta2;
 				torque2 = pid_ijc_js.error2*pid_ijc_js.kp2;
 				//Give output to SPI thread
 				update_shared_spi_mem();
@@ -634,7 +634,7 @@ class zmq_client{
             //Note that the finger thread will terminate on its own
             //and set the run_flag low when controller_select = 0.
           }
-          phread_mutex_unlock(&lock);
+          pthread_mutex_unlock(&lock);
         }
       }
     };
