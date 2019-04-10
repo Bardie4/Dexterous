@@ -692,9 +692,16 @@ class spi{
 
 			shared_mem = shared_spi_memory;
 			cs_arr = chip_selects;
+
+			if (gpioInitialise() < 0)
+			{
+				 printf(stderr, "pigpio initialisation failed.\n");
+				 return 1;
+			}
+
       //SPI frequency
       frequency = 15000000;
-
+			int spi_handle = spiOpen(spi_channel, FREQ, 0);
       //SPI channel. Using this channel means that GPIO 8 is used as chip select.
       //It will however not be connected to anything, and only used because the
       //SPI driver requires a channel to be chosen. Since there are only two channels,
@@ -769,10 +776,16 @@ class spi{
 			pthread_mutex_unlock(&lock);
 		}
 
+		~spi(){
+			if (spiClose(spi_handle) < 0){
+				printf("Bad handle");
+			}
+			gpioTerminate();
+		}
 
-		void get_cs_and_handle(int id){
-			int cs_and_handle[4] = {cs_arr[id],spi_handle};
-			return cs_and_handle;
+
+		void get_cs_and_handle(){
+			return spi_handle;
 		}
 
     void* run(){
