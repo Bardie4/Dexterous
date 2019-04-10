@@ -639,7 +639,7 @@ class zmq_client{
           commands[finger_select][5] = data4;
 
 					std::cout << "it worked :O" << std::endl;
-
+					std::cout <<" Here is the runflag: "<< commands[finger_select][0] <<std::endl;
           //If the finger is not running, and the new command is not to stop
           if ( (commands[finger_select][0] == 0) && !(controller_select == 0b00000000) ){
             //Set a flag in shared memory showing that the finger thread is running
