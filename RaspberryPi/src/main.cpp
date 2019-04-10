@@ -628,6 +628,7 @@ class zmq_client{
         if ( ( 0 <= finger_select) && (finger_select <= finger_count - 1) ){
           //Read and unload data to shared memory
           sscanf(contents, "%*c %*c %d %d %d %d %d", &data1, &data2, &data3, &data4);
+					std::cout << "Putting commands in shared memory" << std::endl;
           pthread_mutex_lock(&lock);
           commands[finger_select][1] = controller_select;
           commands[finger_select][2] = data1;
@@ -849,7 +850,7 @@ class spi{
 					time1=micros();
 					step=time1-time0;
 					usleep(250);
-					std::cout << "we waited" << std::endl;
+					//std::cout << "we waited" << std::endl;
 				}
 			}
 		}
