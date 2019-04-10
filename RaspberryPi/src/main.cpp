@@ -1,5 +1,11 @@
 
-
+#include <math.h>
+#include "zhelpers.h"
+#include <stdio.h>
+#include <pigpio.h>
+#include <unistd.h>
+//#include <bitset>
+#include "pthread.h"
 pthread_t tid[6];
 
 typedef struct spi{
