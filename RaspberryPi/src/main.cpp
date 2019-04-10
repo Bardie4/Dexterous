@@ -695,7 +695,8 @@ class spi{
 
 			if (gpioInitialise() < 0)
 			{
-				 printf(stderr, "pigpio initialisation failed.\n");
+				 //printf(stderr, "pigpio initialisation failed.\n");
+				 std::cout << "pigpio initialisation failed" << std::endl;
 			}
 
       //SPI frequency
