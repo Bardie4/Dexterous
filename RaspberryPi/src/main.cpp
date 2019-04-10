@@ -586,8 +586,8 @@ class zmq_client{
 
   //Input data (payload)
   int data1, data2, data3, data4;
-  uint8_t finger_select;
-  uint8_t controller_select;
+  char finger_select;
+  char controller_select;
 
   //Memory shared by controllers and ZMQ_cleint.
   //Rows:     Finger 1-7  (There is only enough GPIO pins for 7 fingers)
@@ -622,12 +622,11 @@ class zmq_client{
       while(1){
         address = s_recv (subscriber);  //  Read envelope with address
         contents = s_recv (subscriber); //  Read message contents
-
-        finger_select = (uint8_t) contents[0];
+				sscanf(contents, "%c %c %d %d %d %d",&finger_select , &controller_select , &data1, &data2, &data3, &data4);
+        //finger_select = (uint8_t) contents[0];
 				        //If a viable finger is selected (finger 0-4)
         if ( ( 0 < finger_select) && (finger_select <= 7) ){
           //Read and unload data to shared memory
-          sscanf(contents, "%*c %c %d %d %d %d", &controller_select , &data1, &data2, &data3, &data4);
 
 					std::cout << (int)finger_select << " " << (int)controller_select<<" " << (int)data1 << " "<< (int)data2 << " " << (int)data3 <<" "<< (int)data4 <<std::endl;
 					std::cout << "Putting commands in shared memory" << std::endl;
