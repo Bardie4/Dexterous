@@ -502,8 +502,8 @@ class finger{
 				//Print status every 1000 cycles
 				itr_counter++;
 				if ( itr_counter > 1000){
-					printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", theta1 , (pid_ijc_js.theta1_setpoint)*, pid_ijc_js.error1, torque1);
-					printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", theta2 , (pid_ijc_js.theta2_setpoint)*, pid_ijc_js.error2, torque2);
+					printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", theta1 , *(pid_ijc_js.theta1_setpoint), pid_ijc_js.error1, torque1);
+					printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", theta2 , *(pid_ijc_js.theta2_setpoint), pid_ijc_js.error2, torque2);
 					itr_counter=0;
 				}
 			}
@@ -541,8 +541,8 @@ class finger{
 				//Print status every 1000 cycles
 				itr_counter++;
 				if ( itr_counter > 1000){
-					printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", pid_ijc_cs.theta1 , pid_ijc_cs.theta1_setpoint, pid_ijc_cs.error1, torque1);
-					printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", pid_ijc_cs.theta2 , pid_ijc_cs.theta2_setpoint, pid_ijc_cs.error2, torque2);
+					printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", theta1 , pid_ijc_cs.theta1_setpoint, pid_ijc_cs.error1, torque1);
+					printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", theta2 , pid_ijc_cs.theta2_setpoint, pid_ijc_cs.error2, torque2);
 					itr_counter = 0;
 				}
 			}
@@ -581,7 +581,7 @@ class zmq_client{
   double* commands;
 
   //An array of pointers to the functions that starts each finger
-  void (* finger_run [7])()
+  void (* finger_run [7])();
 
   //Amount of fingers in use
   int finger_count;
@@ -601,12 +601,12 @@ class zmq_client{
       std::fill(commands[0], commands[0] + 7*6, 0);
 
       //Load pointers to start functions
-      for (int i = 0; i < finger_count; i++){
+      for (int i = 0; i < 7; i++){
         finger_run[0] = finger_run_fct_ptr[0];
       }
     }
 
-    run(){
+    void run(){
       while(1){
         address = s_recv (subscriber);  //  Read envelope with address
         contents = s_recv (subscriber); //  Read message contents
@@ -795,12 +795,12 @@ class spi{
 
 		}
 
-		get_cs_and_handle(int id){
+		void get_cs_and_handle(int id){
 			int cs_and_handle[4] = {cs_arr[id],spi_handle};
 			return cs_and_handle;
 		}
 
-    run(){
+    void run(){
 			while(1){
 				time0=micros();
 				//Load info about active fingers
