@@ -712,7 +712,8 @@ class spi{
 
       //SPI frequency
       frequency = 15000000;
-			int spi_handle = spiOpen(spi_channel, frequency, 0);
+			spi_handle = spiOpen(spi_channel, frequency, 0);
+			std::cout << "THIS IS MY MF HANDLE BOIIIS" << spi_handle << std::endl;
       //SPI channel. Using this channel means that GPIO 8 is used as chip select.
       //It will however not be connected to anything, and only used because the
       //SPI driver requires a channel to be chosen. Since there are only two channels,
