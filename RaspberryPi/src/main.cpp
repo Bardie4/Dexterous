@@ -688,8 +688,8 @@ class spi{
 		//uint16_t local_spi[7][7];
 
 
-    char inBuf[2];
-    char outBuf[2];
+    char inBuf[4];
+    char outBuf[4];
     char read_command_8;
     char read_command_16[2];
     uint16_t temp;
