@@ -201,17 +201,17 @@ class finger{
 
 		void shutdown(){
 			//Tell zmq client that the thread is no longer active
-			phread_mutex_lock(&lock);
+			pthread_mutex_lock(&lock);
 			spi_mem_shared[0] = 0;
 			pthread_mutex_unlock(&lock);
 			//Tell zmq function to no longer measure sesnors for this finger
-			phread_mutex_lock(&lock);
+			pthread_mutex_lock(&lock);
 			zmq_mem_shared[0] = 0;
 			pthread_mutex_unlock(&lock);
 			}
 
 		void update_local_zmq_mem(){
-			phread_mutex_lock(&lock);
+			pthread_mutex_lock(&lock);
 			controller_select = zmq_mem_shared[1];
 			data1 = zmq_mem_shared[2];
 			data2 = zmq_mem_shared[3];
@@ -221,7 +221,7 @@ class finger{
 		}
 
 		void update_local_spi_mem(){
-			phread_mutex_lock(&lock);
+			pthread_mutex_lock(&lock);
 			theta1 = spi_mem_shared[1];
 			theta2 = spi_mem_shared[2];
 			angular_vel1 = spi_mem_shared[3];
@@ -230,7 +230,7 @@ class finger{
 		}
 
 		void update_shared_spi_mem(){
-			phread_mutex_lock(&lock);
+			pthread_mutex_lock(&lock);
 			spi_mem_shared[5]=torque1;
 			spi_mem_shared[6]=torque2;
 			pthread_mutex_unlock(&lock);
@@ -587,7 +587,7 @@ class zmq_client{
   int finger_count;
   public:
 
-    zmq_client(double shared_zmq_memory, void (* finger_run_fct_ptr [])()){
+    zmq_client(double shared_zmq_memory[7][6], void (* finger_run_fct_ptr [])()){
 			commands = shared_zmq_memory;
       //ZMQ setup
       context = zmq_ctx_new ();
@@ -618,7 +618,7 @@ class zmq_client{
         if ( ( 0 <= finger_select) && (finger_select <= finger_count - 1) ){
           //Read and unload data to shared memory
           sscanf(contents, "%*c %*c %d %d %d %d %d", &data1, &data2, &data3, &data4);
-          phread_mutex_lock(&lock);
+          pthread_mutex_lock(&lock);
           commands[finger_select][1] = controller_select;
           commands[finger_select][2] = data1;
           commands[finger_select][3] = data2;
