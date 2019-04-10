@@ -581,7 +581,7 @@ class zmq_client{
   double (*commands)[6];
 
   //An array of pointers to the functions that starts each finger
-  void (* finger_run [7])();
+  void* (* finger_run [7])(void *);
 
   //Amount of fingers in use
   int finger_count;
@@ -594,8 +594,6 @@ class zmq_client{
       subscriber = zmq_socket (context, ZMQ_SUB);
       zmq_connect (subscriber, "tcp://localhost:5563");
       zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "B", 1);
-
-			pthread_create(&(tid[2+finger_select]), NULL, finger_run_fct_ptr[1], NULL);
 
 
       //Clear the shared memory that will be used
@@ -643,7 +641,7 @@ class zmq_client{
 
 class spi{
   private:
-		double* shared_mem;
+		double (*shared_mem)[7];
 		double local_mem[7][7];
 
     int frequency;
@@ -750,21 +748,21 @@ class spi{
 
     uint8_t read_angle_8(int &cs){
       outBuf[0] = read_command_8;
-			pthread_muted_locl(&lock);
+			pthread_muted_lock(&lock);
       gpio_result = gpioWrite(cs,0);
       spi_result = spiXfer(spi_handle, outBuf, inBuf, 1);
       gpio_result = gpioWrite(cs,1);
-			pthread_muted_locl(&lock);
+			pthread_muted_lock(&lock);
       return inBuf[0];
     }
     uint16_t read_angle_16(int &cs){
       outBuf[0] = read_command_16[0];
       outBuf[1] = read_command_16[1];
-			pthread_muted_locl(&lock);
+			pthread_muted_lock(&lock);
       gpio_result = gpioWrite(cs,0);
       spi_result = spiXfer(spi_handle, outBuf, inBuf, 2);
       gpio_result = gpioWrite(cs,1);
-			pthread_muted_locl(&lock);
+			pthread_muted_lock(&lock);
       temp = inBuf[0] << 8;
       temp = temp + inBuf[1];
       return temp;
@@ -788,11 +786,11 @@ class spi{
 			outBuf[1] =  (uint8_t) output1;
 			outBuf[2] =  (uint8_t) output2;
 		}
-		pthread_muted_locl(&lock);
+		pthread_muted_lock(&lock);
 		gpio_result = gpioWrite(cs,0);
 		spi_result = spiXfer(spi_handle, outBuf, inBuf, 3);
 		gpio_result = gpioWrite(cs,1);
-		pthread_muted_locl(&lock);
+		pthread_muted_lock(&lock);
 
 		}
 
