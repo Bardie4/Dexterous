@@ -548,7 +548,7 @@ class finger{
 			}
 		}
 
-    void run(){
+    void run(void * pv){
 			calibration();
 			//While finger is instructed to be active
       while( !(controller_select == 0) ){
@@ -594,7 +594,7 @@ class zmq_client{
       subscriber = zmq_socket (context, ZMQ_SUB);
       zmq_connect (subscriber, "tcp://localhost:5563");
       zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "B", 1);
-			
+
 			pthread_create(&(tid[2+finger_select]), NULL, finger_run_fct_ptr[1], NULL);
 
 
@@ -876,7 +876,7 @@ main(){
   //Fill the array with the address of the function that starts each finger
   //Create a ZMQ client. With number of fingers and the function pointer array as argument
   //Run the ZMQ client on separate thread.
-  void (* finger_run_fct_ptr [7])();
+  void (* finger_run_fct_ptr [7])(void *);
   finger_run_fct_ptr[0] = &finger1.run();
   finger_run_fct_ptr[1] = &finger2.run();
 	finger_run_fct_ptr[2] = &finger3.run();
