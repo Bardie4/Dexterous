@@ -587,7 +587,7 @@ class zmq_client{
   int finger_count;
   public:
 
-    zmq_client(double shared_zmq_memory[7][6], void (* finger_run_fct_ptr [])(void *)){
+    zmq_client(double shared_zmq_memory[7][6], void* (* finger_run_fct_ptr [])(void *)){
 			commands = shared_zmq_memory;
       //ZMQ setup
       context = zmq_ctx_new ();
@@ -876,7 +876,7 @@ main(){
   //Fill the array with the address of the function that starts each finger
   //Create a ZMQ client. With number of fingers and the function pointer array as argument
   //Run the ZMQ client on separate thread.
-  void (* finger_run_fct_ptr [7])(void *);
+  void* (* finger_run_fct_ptr [7])(void *);
   finger_run_fct_ptr[0] = &finger1.run();
   finger_run_fct_ptr[1] = &finger2.run();
 	finger_run_fct_ptr[2] = &finger3.run();
