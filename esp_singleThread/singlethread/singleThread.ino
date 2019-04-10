@@ -1,7 +1,7 @@
 
 #include <SPI.h>
 
-#define V_MOSI  21
+#define V_MOSI  23
 #define V_MISO  19
 #define V_CLK   18
 #define V_CS    5
@@ -158,10 +158,10 @@ void loop() {
     // Serial.print(" | theta raw: ");
     // Serial.print(theta_raw);
     // Serial.print(" | PWM : ");
-    // Serial.print(pwmA);
-    // Serial.print(" | ");
-    // Serial.print(pwmB);
-    // Serial.print(" | ");
-    // Serial.println(pwmC);
+    Serial.print(pwmA);
+    Serial.print(" | ");
+    Serial.print(pwmB);
+    Serial.print(" | ");
+    Serial.println(pwmC);
   }
 }
