@@ -459,7 +459,8 @@ class finger{
 			pthread_mutex_unlock(&lock);
 			theta2=inBuf[0];
 
-			printf("After calibration: %d | %d \n",	theta1, theta2 );
+			printf("
+      bration: %d | %d \n",	theta1, theta2 );
 
 			//Shut of motors
 			torque_cmd[0]=(uint8_t) 0;
@@ -479,7 +480,6 @@ class finger{
 			while(1){
 				sleep(2);
 				update_local_zmq_mem();
-        std::cout << "at calibration, the controller select was read as: " << controller_select << std::endl;
 				if ( !(controller_select==1) ){
 					break;
 				}
@@ -817,7 +817,6 @@ class spi{
 			spi_result = spiXfer(spi_handle, outBuf, inBuf, 3);
 			gpio_result = gpioWrite(cs,1);
 			pthread_mutex_unlock(&lock);
-			printf("sup");
 		}
 
 		~spi(){
