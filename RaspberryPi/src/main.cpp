@@ -242,9 +242,7 @@ class finger{
 		}
 
 		void calibration(){
-      if (gpioInitialise()){
-  			std::cout << "GPIO on thread:  " << id << std::endl;
-      }
+
 			std::cout << "Hold on, im calibrating finger " << id << std::endl;
 			char read_angle_cmd[]= {0b00000000, 0b00000000, 0b00000000};
 			char set_zero_angle_cmd[2];
@@ -476,7 +474,6 @@ class finger{
 			spi_mem_shared[0] = 1;
 			pthread_mutex_unlock(&lock);
 			//Wait for a controller to be selected
-      gpioTerminate();
 			while(1){
 				sleep(2);
 				update_local_zmq_mem();
@@ -726,14 +723,15 @@ class spi{
   public:
     spi(double shared_spi_memory[7][7], int chip_selects[7][3]){
 
+      if (gpioInitialise() < 0)
+      {
+         //printf(stderr, "pigpio initialisation failed.\n");
+         std::cout << "pigpio initialisation failed" << std::endl;
+      }
+
 			shared_mem = shared_spi_memory;
 			cs_arr = chip_selects;
 
-			if (gpioInitialise() < 0)
-			{
-				 //printf(stderr, "pigpio initialisation failed.\n");
-				 std::cout << "pigpio initialisation failed" << std::endl;
-			}
 
       //SPI frequency
       frequency = 15000000;
@@ -821,6 +819,7 @@ class spi{
 				printf("Bad handle");
 			}
 			gpioTerminate();
+      printf("we destructed");
 		}
 
 
@@ -885,6 +884,7 @@ main(){
   //Initiate finger objects. The arguments is the identity of the finger.
   //The identity corresponds to specific SPI pins. Choose a value between 0-6.
   //Additional fingers can be added (max 7 with the amount of GPIO pins on a RaspberryPi).
+
 	int cs_f1_sens1 = 2;
 	int cs_f1_sens2 = 3;
 	int cs_f1_esp32 = 4;
