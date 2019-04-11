@@ -155,7 +155,7 @@ class finger{
 		char outBuf[4];
 
 		//Constructor
-    finger(int identity ,double shared_spi_memory[7], double shared_zmq_memory[6], int spi_var[4]){
+    finger(int identity ,double shared_spi_memory[7], double shared_zmq_memory[6], int spi_var[3],int spi_handle){
 			id= identity;
 			//Get pointers to shared memory
 			spi_mem_shared = shared_spi_memory;
@@ -201,11 +201,12 @@ class finger{
 			cs_angle_sensor_1 = spi_var[0];
 			cs_angle_sensor_2 = spi_var[1];
 			cs_output = spi_var[2];
-			handle = spi_var[3];
+			handle = spi_handle;
     }
 
 		void shutdown(){
 			//Tell zmq client that the thread is no longer active
+      std::cout << "shutting down thread: " << id <<std::endl;
 			pthread_mutex_lock(&lock);
 			spi_mem_shared[0] = 0;
 			pthread_mutex_unlock(&lock);
@@ -222,7 +223,7 @@ class finger{
 			data2 = zmq_mem_shared[3];
 			data3 = zmq_mem_shared[4];
 			data4 = zmq_mem_shared[5];
-			pthread_mutex_unlock(&lock);
+      pthread_mutex_unlock(&lock);
 		}
 
 		void update_local_spi_mem(){
@@ -242,9 +243,7 @@ class finger{
 		}
 
 		void calibration(){
-      if (gpioInitialise()){
-  			std::cout << "GPIO on thread:  " << id << std::endl;
-      }
+
 			std::cout << "Hold on, im calibrating finger " << id << std::endl;
 			char read_angle_cmd[]= {0b00000000, 0b00000000, 0b00000000};
 			char set_zero_angle_cmd[2];
@@ -260,7 +259,7 @@ class finger{
 			torque_cmd[1]=(uint8_t) 20;
 			torque_cmd[2]=(uint8_t) 20;
 
-      			std::cout << "about to use spi " << std::endl;
+      std::cout << "about to use spi " << std::endl;
 			pthread_mutex_lock(&lock);
 			gpio_result = gpioWrite(cs_output,0);
 			spi_result = spiXfer(handle, torque_cmd, inBuf, 3);
@@ -476,14 +475,14 @@ class finger{
 			spi_mem_shared[0] = 1;
 			pthread_mutex_unlock(&lock);
 			//Wait for a controller to be selected
-      gpioTerminate();
 			while(1){
 				sleep(2);
 				update_local_zmq_mem();
 				if ( !(controller_select==1) ){
 					break;
-				}
-			}
+        }
+      std::cout << "Finger: "<< id <<" is waiting for controller to be selected. Current selection: " << controller_select <<std::endl;
+      }
 		}
 
 
@@ -497,6 +496,7 @@ class finger{
 					torque2 = 0;
 					update_shared_spi_mem();
 					break;
+          std::cout <<"Exiting js controller" <<std::endl;
 				}
 
 				//Read sensors
@@ -511,10 +511,9 @@ class finger{
 
 				//Print status every 1000 cycles
 				itr_counter++;
-				if ( itr_counter > 1000){
-					printf("This is finger %d\n", id);
-					printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", theta1 , *(pid_ijc_js.theta1_setpoint), pid_ijc_js.error1, torque1);
-					printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", theta2 , *(pid_ijc_js.theta2_setpoint), pid_ijc_js.error2, torque2);
+				if ( itr_counter > 10000){
+					printf("FINGER %d: theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", id, theta1 , *(pid_ijc_js.theta1_setpoint), pid_ijc_js.error1, torque1);
+					printf("FINGER %d: theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", id, theta2 , *(pid_ijc_js.theta2_setpoint), pid_ijc_js.error2, torque2);
 					itr_counter=0;
 				}
 			}
@@ -551,18 +550,17 @@ class finger{
 
 				//Print status every 1000 cycles
 				itr_counter++;
-				if ( itr_counter > 1000){
-
-					printf("This is finger %d\n", id);
-					printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", theta1 , pid_ijc_cs.theta1_setpoint, pid_ijc_cs.error1, torque1);
-					printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", theta2 , pid_ijc_cs.theta2_setpoint, pid_ijc_cs.error2, torque2);
+				if ( itr_counter > 10000){
+					printf("FINGER %d: theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n",id,  theta1 , pid_ijc_cs.theta1_setpoint, pid_ijc_cs.error1, torque1);
+					printf("FINGER %d: theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n",id,  theta2 , pid_ijc_cs.theta2_setpoint, pid_ijc_cs.error2, torque2);
 					itr_counter = 0;
 				}
 			}
 		}
 
     void* run(){
-			std::cout << "i am thread >:)" << std::endl;
+			std::cout << "i am thread: "<< id << "  >:O" << std::endl;
+      update_local_zmq_mem();
 			calibration();
 			//While finger is instructed to be active
       while( !(controller_select == 0) ){
@@ -606,8 +604,9 @@ class zmq_client{
   finger* finger_ptrs[7];
   //Amount of fingers in use
   int finger_count;
-  std::string input_string;
-  std::stringstream string_stream;
+  //std::string input_string;
+//  std::string stringtrash;
+//  zmq::message_t update;
   public:
 
     zmq_client(double shared_zmq_memory[7][6], finger* fingers[7]){
@@ -623,7 +622,7 @@ class zmq_client{
 
       //Load pointers to start functions
       for (int i = 0; i < 7; i++){
-        finger_ptrs[0] = fingers[0];
+        finger_ptrs[i] = fingers[i];
       }
     }
 
@@ -631,8 +630,10 @@ class zmq_client{
       while(1){
         address = s_recv (subscriber);  //  Read envelope with address
         //contents = s_recv (subscriber); //  Read message contents
-        input_string = s_recv (subscriber); //  Read message contents
-
+        std::string input_string = s_recv (subscriber); //  Read message contents
+        //subscriber.recv(&update);
+        //std::stringstream string_stream(static_cast<char*>(input_string);
+        std::stringstream string_stream;
         string_stream << input_string;
         string_stream >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4;
 				//sscanf(input_string, "%d %d %f %f %f %f",&finger_select , &controller_select , &data1, &data2, &data3, &data4);
@@ -723,17 +724,20 @@ class spi{
 		int spi_result;
 		int spi_handle;
 
+    int itr_counter;
+
   public:
     spi(double shared_spi_memory[7][7], int chip_selects[7][3]){
+
+      if (gpioInitialise() < 0)
+      {
+         //printf(stderr, "pigpio initialisation failed.\n");
+         std::cout << "pigpio initialisation failed" << std::endl;
+      }
 
 			shared_mem = shared_spi_memory;
 			cs_arr = chip_selects;
 
-			if (gpioInitialise() < 0)
-			{
-				 //printf(stderr, "pigpio initialisation failed.\n");
-				 std::cout << "pigpio initialisation failed" << std::endl;
-			}
 
       //SPI frequency
       frequency = 15000000;
@@ -812,7 +816,6 @@ class spi{
 			spi_result = spiXfer(spi_handle, outBuf, inBuf, 3);
 			gpio_result = gpioWrite(cs,1);
 			pthread_mutex_unlock(&lock);
-			printf("sup");
 		}
 
 		~spi(){
@@ -821,16 +824,17 @@ class spi{
 				printf("Bad handle");
 			}
 			gpioTerminate();
+      printf("we destructed");
 		}
 
 
-		int get_cs_and_handle(){
+		int get_handle(){
 			return spi_handle;
 		}
 
     void* run(){
 			while(1){
-				time0=micros();
+				//time0=micros();
 				//Load info about active fingers
 				pthread_mutex_lock(&lock);
 				for (int i=0; i<7; i++){
@@ -865,6 +869,7 @@ class spi{
 					}
 				}
 				//WAIT
+        /*
 				time1=micros();
 				step=time1-time0;
 				while(step<1000){
@@ -872,7 +877,13 @@ class spi{
 					step=time1-time0;
 					usleep(250);
 					//std::cout << "we waited" << std::endl;
-				}
+				}*/
+        itr_counter++;
+
+        if (itr_counter >10000){
+          std::cout << "10k spi iterations" <<std::endl;
+          itr_counter=0;
+        }
 			}
 		}
 
@@ -885,6 +896,7 @@ main(){
   //Initiate finger objects. The arguments is the identity of the finger.
   //The identity corresponds to specific SPI pins. Choose a value between 0-6.
   //Additional fingers can be added (max 7 with the amount of GPIO pins on a RaspberryPi).
+
 	int cs_f1_sens1 = 2;
 	int cs_f1_sens2 = 3;
 	int cs_f1_esp32 = 4;
@@ -925,13 +937,13 @@ main(){
   spi spi_controller(shared_spi_memory,cs_arr);
 
 	//Creating finger objects and hooking them up to shared memory shared by zmq and spi threads
-  finger finger1(1,&shared_zmq_memory[0][0], &shared_spi_memory[0][0], &cs_arr[0][0]);
-  finger finger2(2,&shared_zmq_memory[1][0], &shared_spi_memory[1][0], &cs_arr[1][0]);
-  finger finger3(3,&shared_zmq_memory[2][0], &shared_spi_memory[2][0], &cs_arr[2][0]);
-	finger finger4(4,&shared_zmq_memory[3][0], &shared_spi_memory[3][0], &cs_arr[3][0]);
-	finger finger5(5,&shared_zmq_memory[4][0], &shared_spi_memory[4][0], &cs_arr[4][0]);
-	finger finger6(6,&shared_zmq_memory[5][0], &shared_spi_memory[5][0], &cs_arr[5][0]);
-	finger finger7(7,&shared_zmq_memory[6][0], &shared_spi_memory[6][0], &cs_arr[5][0]);
+  finger finger1(1,&shared_spi_memory[0][0], &shared_zmq_memory[0][0], &cs_arr[0][0], spi_controller.get_handle());
+  finger finger2(2,&shared_spi_memory[1][0], &shared_zmq_memory[1][0], &cs_arr[1][0], spi_controller.get_handle());
+  finger finger3(3,&shared_spi_memory[2][0], &shared_zmq_memory[2][0], &cs_arr[2][0], spi_controller.get_handle());
+	finger finger4(4,&shared_spi_memory[3][0], &shared_zmq_memory[3][0], &cs_arr[3][0], spi_controller.get_handle());
+	finger finger5(5,&shared_spi_memory[4][0], &shared_zmq_memory[4][0], &cs_arr[4][0], spi_controller.get_handle());
+	finger finger6(6,&shared_spi_memory[5][0], &shared_zmq_memory[5][0], &cs_arr[5][0], spi_controller.get_handle());
+	finger finger7(7,&shared_spi_memory[6][0], &shared_zmq_memory[6][0], &cs_arr[5][0], spi_controller.get_handle());
 
   pthread_create(&(tid[0]), NULL, &spi::init_spi, &spi_controller);
 
