@@ -628,8 +628,8 @@ class zmq_client{
         //contents = s_recv (subscriber); //  Read message contents
         input_string = s_recv (subscriber); //  Read message contents
 
-        string_stream <<input_string;
-23      inputString >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4;
+        string_stream << input_string;
+        string_stream >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4;
 				//sscanf(input_string, "%d %d %f %f %f %f",&finger_select , &controller_select , &data1, &data2, &data3, &data4);
       //  std::cout << input_string << std::endl;
         std::cout << (int)finger_select << " " << (int)controller_select<<" " << (double)data1 << " "<< (double)data2 << " " << (double)data3 <<" "<< (double)data4 <<std::endl;
