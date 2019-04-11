@@ -242,6 +242,7 @@ class finger{
 		}
 
 		void calibration(){
+      gpioInitialise()
 			std::cout << "Hold on, im calibrating finger " << id << std::endl;
 			char read_angle_cmd[]= {0b00000000, 0b00000000, 0b00000000};
 			char set_zero_angle_cmd[2];
@@ -473,6 +474,7 @@ class finger{
 			spi_mem_shared[0] = 1;
 			pthread_mutex_unlock(&lock);
 			//Wait for a controller to be selected
+      gpioTerminate();
 			while(1){
 				sleep(2);
 				update_local_zmq_mem();
