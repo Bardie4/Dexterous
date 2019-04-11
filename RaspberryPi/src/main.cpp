@@ -223,6 +223,7 @@ class finger{
 			data2 = zmq_mem_shared[3];
 			data3 = zmq_mem_shared[4];
 			data4 = zmq_mem_shared[5];
+      std::cout << "finger_select" << zmq_mem_shared[0]<< " cs: "<< controller_select << " d1: "<< data1 <<" d2: "<< data2 <<" d3: "<< data4 <<" d4: "<< data4 <<std::endl;
 			pthread_mutex_unlock(&lock);
 		}
 
@@ -562,6 +563,7 @@ class finger{
 
     void* run(){
 			std::cout << "i am thread: "<< id << "  >:O" << std::endl;
+      std::count << "fs: " << finger_select <<
       update_local_zmq_mem();
 			calibration();
 			//While finger is instructed to be active
