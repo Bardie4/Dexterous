@@ -3,10 +3,10 @@
         {
             "name": "Linux",
             "includePath": [
-                "/home/albert/Downloads/arduino-1.8.8/tools/**",
-                "/home/albert/Downloads/arduino-1.8.8/hardware/arduino/avr/**",
-                "/home/albert/.arduino15/packages/esp32/tools/**",
-                "/home/albert/.arduino15/packages/esp32/hardware/esp32/1.0.1/**"
+                "/home/alb/.arduino15/packages/esp32/tools/**",
+                "/home/alb/.arduino15/packages/esp32/hardware/esp32/1.0.1/**",
+                "/home/alb/Downloads/arduino-1.8.9-linux64/arduino-1.8.9",
+                "/home/alb/Downloads/arduino-1.8.9-linux64/arduino-1.8.9/hardware/arduino/avr"
             ],
             "forcedInclude": [],
             "intelliSenseMode": "gcc-x64",
