@@ -459,8 +459,7 @@ class finger{
 			pthread_mutex_unlock(&lock);
 			theta2=inBuf[0];
 
-			printf("
-      bration: %d | %d \n",	theta1, theta2 );
+			printf("After calibration: %d | %d \n",	theta1, theta2 );
 
 			//Shut of motors
 			torque_cmd[0]=(uint8_t) 0;
