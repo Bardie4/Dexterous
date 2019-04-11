@@ -757,6 +757,7 @@ class spi{
       for (int i=0; i <= 6; i++){
         for (int j=0; j <=3; j++){
           gpio_result = gpioWrite(cs_arr[i][j], 1);
+          std::cout <<"IS THIS THE PLACE?"<<std::endl;
         }
       }
 
