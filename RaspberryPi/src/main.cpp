@@ -561,20 +561,15 @@ class finger{
 
     void* run(){
 			std::cout << "i am thread: "<< id << "  >:O" << std::endl;
-			//calibration();
+      update_local_zmq_mem();
+			calibration();
 			//While finger is instructed to be active
       while( !(controller_select == 0) ){
 				//Cycle through controllers.
-
-    			std::cout << "i am thread: "<< id << "  js" << std::endl;
         jointspace_ijc_pid();
-
-    			std::cout << "i am thread: "<< id << "  js" << std::endl;
         cartesian_ijc_pid();
       }
 			//Tell spi and zmq thread we are finished
-
-        std::cout << "i am thread: "<< id << "  sd" << std::endl;
 			shutdown();
     }
 
