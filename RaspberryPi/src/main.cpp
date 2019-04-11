@@ -834,6 +834,8 @@ class spi{
 
     void* run(){
 			while(1){
+
+        std::cout << "This is the spi loop" << std::endl;
 				time0=micros();
 				//Load info about active fingers
 				pthread_mutex_lock(&lock);
