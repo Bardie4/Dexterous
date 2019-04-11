@@ -837,7 +837,7 @@ class spi{
 			while(1){
 
         std::cout << "This is the spi loop" << std::endl;
-				time0=micros();
+				//time0=micros();
 				//Load info about active fingers
 				pthread_mutex_lock(&lock);
 				for (int i=0; i<7; i++){
@@ -872,6 +872,7 @@ class spi{
 					}
 				}
 				//WAIT
+        /*
 				time1=micros();
 				step=time1-time0;
 				while(step<1000){
@@ -879,7 +880,7 @@ class spi{
 					step=time1-time0;
 					usleep(250);
 					//std::cout << "we waited" << std::endl;
-				}
+				}*/
 			}
 		}
 
