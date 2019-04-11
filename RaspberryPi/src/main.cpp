@@ -606,6 +606,7 @@ class zmq_client{
   std::string input_string;
   std::stringstream string_stream;
   std::string stringtrash;
+  zmq::message_t update;
   public:
 
     zmq_client(double shared_zmq_memory[7][6], finger* fingers[7]){
@@ -629,10 +630,11 @@ class zmq_client{
       while(1){
         address = s_recv (subscriber);  //  Read envelope with address
         //contents = s_recv (subscriber); //  Read message contents
-        input_string = s_recv (subscriber); //  Read message contents
-
-        string_stream << input_string;
-        string_stream >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4 >> stringtrash;
+        //input_string = s_recv (subscriber); //  Read message contents
+        subscriber.recv(&update);
+        std::istringstream iss(static_cast<char*>(update.data()));
+        //string_stream << input_string;
+        iss >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4 >> stringtrash;
 				//sscanf(input_string, "%d %d %f %f %f %f",&finger_select , &controller_select , &data1, &data2, &data3, &data4);
       //  std::cout << input_string << std::endl;
         std::cout << (int)finger_select << " " << (int)controller_select<<" " << (double)data1 << " "<< (double)data2 << " " << (double)data3 <<" "<< (double)data4 <<std::endl;
