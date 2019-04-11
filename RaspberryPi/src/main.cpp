@@ -605,6 +605,7 @@ class zmq_client{
   int finger_count;
   std::string input_string;
   std::stringstream string_stream;
+  std::stringstream stringtrash;
   public:
 
     zmq_client(double shared_zmq_memory[7][6], finger* fingers[7]){
@@ -631,7 +632,7 @@ class zmq_client{
         input_string = s_recv (subscriber); //  Read message contents
 
         string_stream << input_string;
-        string_stream >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4;
+        string_stream >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4 >> stringtrash;
 				//sscanf(input_string, "%d %d %f %f %f %f",&finger_select , &controller_select , &data1, &data2, &data3, &data4);
       //  std::cout << input_string << std::endl;
         std::cout << (int)finger_select << " " << (int)controller_select<<" " << (double)data1 << " "<< (double)data2 << " " << (double)data3 <<" "<< (double)data4 <<std::endl;
