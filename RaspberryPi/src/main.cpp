@@ -605,7 +605,7 @@ class zmq_client{
   int finger_count;
   std::string input_string;
   std::stringstream string_stream;
-  std::stringstream stringtrash;
+  std::string stringtrash;
   public:
 
     zmq_client(double shared_zmq_memory[7][6], finger* fingers[7]){
