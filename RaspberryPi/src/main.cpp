@@ -478,6 +478,7 @@ class finger{
 			while(1){
 				sleep(2);
 				update_local_zmq_mem();
+        std::cout << "at calibration, the controller select was read as: " << controller_select << std::endl;
 				if ( !(controller_select==1) ){
 					break;
 				}
