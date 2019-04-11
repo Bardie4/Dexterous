@@ -479,6 +479,7 @@ class finger{
 				update_local_zmq_mem();
 				if ( !(controller_select==1) ){
 					break;
+        std::cout << "Finger: "<< id <<" is waiting for controller to be selected" << std::endl;
 				}
 			}
 		}
