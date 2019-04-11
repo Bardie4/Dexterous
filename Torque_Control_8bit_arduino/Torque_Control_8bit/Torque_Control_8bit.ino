@@ -125,11 +125,6 @@ void loop() {
   theta_0_mek=magAlpha.readAngleRaw8();
 //  theta_0=theta_0_mek << 2;
   while(1){
-
-  
-    
-   
-    
     time_old=micros();
     for (double i=0; i <10000; i++){
       
