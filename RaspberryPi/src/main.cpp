@@ -628,7 +628,7 @@ class zmq_client{
 
       //Load pointers to start functions
       for (int i = 0; i < 7; i++){
-        finger_ptrs[0] = fingers[0];
+        finger_ptrs[i] = fingers[i];
       }
     }
 
