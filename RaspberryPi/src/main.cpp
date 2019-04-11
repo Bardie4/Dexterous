@@ -257,6 +257,7 @@ class finger{
 			torque_cmd[1]=(uint8_t) 20;
 			torque_cmd[2]=(uint8_t) 20;
 
+      			std::cout << "about to use spi " << std::endl;
 			pthread_mutex_lock(&lock);
 			gpio_result = gpioWrite(cs_output,0);
 			spi_result = spiXfer(handle, torque_cmd, inBuf, 3);
