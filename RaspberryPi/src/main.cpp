@@ -633,7 +633,7 @@ class zmq_client{
         //subscriber.recv(&update);
         //std::stringstream string_stream(static_cast<char*>(input_string);
         std::stringstream string_stream;
-        string_stream >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4 >> stringtrash;
+        string_stream >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4;
 				//sscanf(input_string, "%d %d %f %f %f %f",&finger_select , &controller_select , &data1, &data2, &data3, &data4);
       //  std::cout << input_string << std::endl;
         std::cout << (int)finger_select << " " << (int)controller_select<<" " << (double)data1 << " "<< (double)data2 << " " << (double)data3 <<" "<< (double)data4 <<std::endl;
