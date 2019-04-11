@@ -206,6 +206,7 @@ class finger{
 
 		void shutdown(){
 			//Tell zmq client that the thread is no longer active
+      std::cout << "shutting down thread: " << id <<std::endl;
 			pthread_mutex_lock(&lock);
 			spi_mem_shared[0] = 0;
 			pthread_mutex_unlock(&lock);
@@ -560,7 +561,7 @@ class finger{
 
     void* run(){
 			std::cout << "i am thread >:)" << std::endl;
-			calibration();
+			//calibration();
 			//While finger is instructed to be active
       while( !(controller_select == 0) ){
 				//Cycle through controllers.
