@@ -879,6 +879,8 @@ class spi{
 					//std::cout << "we waited" << std::endl;
 				}*/
         itr_counter++;
+
+          std::cout << "1 spi iteration" <<std::endl;
         if (itr_counter >10000){
           std::cout << "10k spi iterations" <<std::endl;
           itr_counter=0;
