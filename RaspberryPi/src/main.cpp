@@ -563,7 +563,6 @@ class finger{
 
     void* run(){
 			std::cout << "i am thread: "<< id << "  >:O" << std::endl;
-      std::count << "fs: " << finger_select <<
       update_local_zmq_mem();
 			calibration();
 			//While finger is instructed to be active
