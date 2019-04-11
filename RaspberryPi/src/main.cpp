@@ -834,8 +834,6 @@ class spi{
 
     void* run(){
 			while(1){
-
-        std::cout << "This is the spi loop" << std::endl;
 				//time0=micros();
 				//Load info about active fingers
 				pthread_mutex_lock(&lock);
@@ -883,6 +881,7 @@ class spi{
         itr_counter++;
         if (itr_counter >10000){
           std::cout << "10k spi iterations" <<std::endl;
+          itr_counter=0;
         }
 			}
 		}
