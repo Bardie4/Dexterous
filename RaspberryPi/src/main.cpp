@@ -155,7 +155,7 @@ class finger{
 		char outBuf[4];
 
 		//Constructor
-    finger(int identity ,double shared_spi_memory[7], double shared_zmq_memory[6], int spi_var[4]){
+    finger(int identity ,double shared_spi_memory[7], double shared_zmq_memory[6], int spi_var[3],int spi_handle){
 			id= identity;
 			//Get pointers to shared memory
 			spi_mem_shared = shared_spi_memory;
@@ -201,7 +201,7 @@ class finger{
 			cs_angle_sensor_1 = spi_var[0];
 			cs_angle_sensor_2 = spi_var[1];
 			cs_output = spi_var[2];
-			handle = spi_var[3];
+			handle = spi_handle;
     }
 
 		void shutdown(){
@@ -828,7 +828,7 @@ class spi{
 		}
 
 
-		int get_cs_and_handle(){
+		int get_handle(){
 			return spi_handle;
 		}
 
@@ -937,13 +937,13 @@ main(){
   spi spi_controller(shared_spi_memory,cs_arr);
 
 	//Creating finger objects and hooking them up to shared memory shared by zmq and spi threads
-  finger finger1(1,&shared_spi_memory[0][0], &shared_zmq_memory[0][0], &cs_arr[0][0]);
-  finger finger2(2,&shared_spi_memory[1][0], &shared_zmq_memory[1][0], &cs_arr[1][0]);
-  finger finger3(3,&shared_spi_memory[2][0], &shared_zmq_memory[2][0], &cs_arr[2][0]);
-	finger finger4(4,&shared_spi_memory[3][0], &shared_zmq_memory[3][0], &cs_arr[3][0]);
-	finger finger5(5,&shared_spi_memory[4][0], &shared_zmq_memory[4][0], &cs_arr[4][0]);
-	finger finger6(6,&shared_spi_memory[5][0], &shared_zmq_memory[5][0], &cs_arr[5][0]);
-	finger finger7(7,&shared_spi_memory[6][0], &shared_zmq_memory[6][0], &cs_arr[5][0]);
+  finger finger1(1,&shared_spi_memory[0][0], &shared_zmq_memory[0][0], &cs_arr[0][0], spi_controller.get_handle());
+  finger finger2(2,&shared_spi_memory[1][0], &shared_zmq_memory[1][0], &cs_arr[1][0], spi_controller.get_handle());
+  finger finger3(3,&shared_spi_memory[2][0], &shared_zmq_memory[2][0], &cs_arr[2][0], spi_controller.get_handle());
+	finger finger4(4,&shared_spi_memory[3][0], &shared_zmq_memory[3][0], &cs_arr[3][0], spi_controller.get_handle());
+	finger finger5(5,&shared_spi_memory[4][0], &shared_zmq_memory[4][0], &cs_arr[4][0], spi_controller.get_handle());
+	finger finger6(6,&shared_spi_memory[5][0], &shared_zmq_memory[5][0], &cs_arr[5][0], spi_controller.get_handle());
+	finger finger7(7,&shared_spi_memory[6][0], &shared_zmq_memory[6][0], &cs_arr[5][0], spi_controller.get_handle());
 
   pthread_create(&(tid[0]), NULL, &spi::init_spi, &spi_controller);
 
