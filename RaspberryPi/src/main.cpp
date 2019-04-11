@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <wiringPi.h>
+#include <sstream>
 pthread_t tid[10];
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -601,6 +602,7 @@ class zmq_client{
   //Amount of fingers in use
   int finger_count;
   std::string input_string;
+  std::std::stringstream string_stream;
   public:
 
     zmq_client(double shared_zmq_memory[7][6], finger* fingers[7]){
@@ -626,9 +628,11 @@ class zmq_client{
         //contents = s_recv (subscriber); //  Read message contents
         input_string = s_recv (subscriber); //  Read message contents
 
-				sscanf(input_string, "%d %d %f %f %f %f",&finger_select , &controller_select , &data1, &data2, &data3, &data4);
-        std::cout << input_string << std::endl;
-        //std::cout << (int)finger_select << " " << (int)controller_select<<" " << (int)data1 << " "<< (int)data2 << " " << (int)data3 <<" "<< (int)data4 <<std::endl;
+        string_stream <<input_string;
+23      inputString >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4;
+				//sscanf(input_string, "%d %d %f %f %f %f",&finger_select , &controller_select , &data1, &data2, &data3, &data4);
+      //  std::cout << input_string << std::endl;
+        std::cout << (int)finger_select << " " << (int)controller_select<<" " << (double)data1 << " "<< (double)data2 << " " << (double)data3 <<" "<< (double)data4 <<std::endl;
         //finger_select = (uint8_t) contents[0];
 				        //If a viable finger is selected (finger 0-4)
         if ( ( 0 < finger_select) && (finger_select <= 7) ){
