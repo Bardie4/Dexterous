@@ -494,6 +494,7 @@ class finger{
 					torque2 = 0;
 					update_shared_spi_mem();
 					break;
+          std::cout <<"Exiting js controller" <<std::endl;
 				}
 
 				//Read sensors
