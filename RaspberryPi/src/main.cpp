@@ -483,7 +483,6 @@ class finger{
         }
       std::cout << "Finger: "<< id <<" is waiting for controller to be selected. Current selection: " << controller_select <<std::endl;
       }
-			}
 		}
 
 
