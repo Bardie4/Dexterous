@@ -511,10 +511,9 @@ class finger{
 
 				//Print status every 1000 cycles
 				itr_counter++;
-				if ( itr_counter > 1000){
-					printf("This is finger %d\n", id);
-					printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", theta1 , *(pid_ijc_js.theta1_setpoint), pid_ijc_js.error1, torque1);
-					printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", theta2 , *(pid_ijc_js.theta2_setpoint), pid_ijc_js.error2, torque2);
+				if ( itr_counter > 10000){
+					printf("FINGER %d: theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", id, theta1 , *(pid_ijc_js.theta1_setpoint), pid_ijc_js.error1, torque1);
+					printf("FINGER %d: theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", id, theta2 , *(pid_ijc_js.theta2_setpoint), pid_ijc_js.error2, torque2);
 					itr_counter=0;
 				}
 			}
@@ -551,11 +550,9 @@ class finger{
 
 				//Print status every 1000 cycles
 				itr_counter++;
-				if ( itr_counter > 1000){
-
-					printf("This is finger %d\n", id);
-					printf("theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", theta1 , pid_ijc_cs.theta1_setpoint, pid_ijc_cs.error1, torque1);
-					printf("theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", theta2 , pid_ijc_cs.theta2_setpoint, pid_ijc_cs.error2, torque2);
+				if ( itr_counter > 10000){
+					printf("FINGER %d: theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n",id,  theta1 , pid_ijc_cs.theta1_setpoint, pid_ijc_cs.error1, torque1);
+					printf("FINGER %d: theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n",id,  theta2 , pid_ijc_cs.theta2_setpoint, pid_ijc_cs.error2, torque2);
 					itr_counter = 0;
 				}
 			}
@@ -727,6 +724,8 @@ class spi{
 		int spi_result;
 		int spi_handle;
 
+    int itr_counter;
+
   public:
     spi(double shared_spi_memory[7][7], int chip_selects[7][3]){
 
@@ -881,6 +880,10 @@ class spi{
 					usleep(250);
 					//std::cout << "we waited" << std::endl;
 				}*/
+        itr_counter++;
+        if (itr_counter >10000){
+          std::cout << "10k spi iterations" <<std::endl;
+        }
 			}
 		}
 
