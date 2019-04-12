@@ -510,6 +510,7 @@ class finger{
           std::cout <<"Exiting js controller" <<std::endl;
 				}
 
+        usleep(300);
 				//Read sensors
         pthread_mutex_lock(&begin_control_iteration);
         pthread_mutex_unlock(&begin_control_iteration);
@@ -531,7 +532,7 @@ class finger{
           printf("FINGER %d: Last iteration took %d us. (including wait time on spi thread)\n",id , step );
 					itr_counter=0;
 				}
-        usleep(500);
+        usleep(300);
         //Waiting for spi thread to give permision for new iteraton
         pthread_mutex_lock(&restart);
         pthread_mutex_unlock(&restart);
