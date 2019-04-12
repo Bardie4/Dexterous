@@ -523,7 +523,7 @@ class finger{
 				if ( itr_counter > 1000){
 					printf("FINGER %d: theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", id, theta1 , *(pid_ijc_js.theta1_setpoint), pid_ijc_js.error1, torque1);
 					printf("FINGER %d: theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", id, theta2 , *(pid_ijc_js.theta2_setpoint), pid_ijc_js.error2, torque2);
-          printf("Last iteration took %d us. (including a 1000us delay)\n", step );
+          printf("FINGER %d: Last iteration took %d us. (including a 1000us delay)\n",id , step );
 					itr_counter=0;
 				}
         usleep(1000);
@@ -568,7 +568,7 @@ class finger{
 				if ( itr_counter > 1000){
 					printf("FINGER %d: theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n",id,  theta1 , pid_ijc_cs.theta1_setpoint, pid_ijc_cs.error1, torque1);
 					printf("FINGER %d: theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n",id,  theta2 , pid_ijc_cs.theta2_setpoint, pid_ijc_cs.error2, torque2);
-          printf("Last iteration took %d us. (including a 1000us delay)\n", step );
+          printf("FINGER %d: Last iteration took %d us. (including a 1000us delay)\n",id , step );
 					itr_counter = 0;
 				}
         usleep(1000);
@@ -899,7 +899,7 @@ class spi{
 				}*/
         itr_counter++;
         if (itr_counter >1000){
-          std::cout << "10k spi iterations. Last iteration took: "<< step <<" microseconds. (Including 1000us delay)"<<std::endl;
+          std::cout << "SPI thread used: "<< step <<" microseconds on one iteration. (Including 1000us delay)"<<std::endl;
           itr_counter=0;
         }
         usleep(1000);
