@@ -528,8 +528,8 @@ class finger{
 				//Print status every 1000 cycles
 				itr_counter++;
 				if ( itr_counter > 1000){
-					printf("FINGER %d: theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", id, theta1 , *(pid_ijc_js.theta1_setpoint), pid_ijc_js.error1, torque1);
-					printf("FINGER %d: theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", id, theta2 , *(pid_ijc_js.theta2_setpoint), pid_ijc_js.error2, torque2);
+					printf("FINGER %d: theta1: %d | theta1_setpoint: %d | error1: %f | u1: %f \n", id, theta1 , *(pid_ijc_js.theta1_setpoint), pid_ijc_js.error1, torque1);
+					printf("FINGER %d: theta2: %d | theta2_setpoint: %d | error2: %f | u2: %f \n", id, theta2 , *(pid_ijc_js.theta2_setpoint), pid_ijc_js.error2, torque2);
           printf("FINGER %d: Last iteration took %d us. (including wait time on spi thread)\n",id , step );
 					itr_counter=0;
 				}/*
@@ -564,12 +564,6 @@ class finger{
 				update_local_spi_mem();
 				//Inverse kinematics. Source: http://www.hessmer.org/uploads/RobotArm/Inverse%2520Kinematics%2520for%2520Robot%2520Arm.pdf
  				pid_ijc_cs.temp = ( pow( *(pid_ijc_cs.x) ,2) + pow( *(pid_ijc_cs.y) ,2) - pow(pid_ijc_cs.l1,2)-pow(pid_ijc_cs.l2,2))/(2*pid_ijc_cs.l1*pid_ijc_cs.l2);
-
-        double temp123=sqrt( 1- pow(pid_ijc_cs.temp,2) );
-        double temp321=pid_ijc_cs.temp;
-        std::cout <<"temp: " <<  temp123 << std::endl;
-
-        std::cout <<"temp: " <<  temp321 << std::endl;
 				pid_ijc_cs.theta2_setpoint = atan2( sqrt( 1- pow(pid_ijc_cs.temp,2) ), pid_ijc_cs.temp );
 				pid_ijc_cs.k1 = pid_ijc_cs.l1 + pid_ijc_cs.l2*cos(pid_ijc_cs.theta2_setpoint);
 				pid_ijc_cs.k2 = pid_ijc_cs.l2*sin(pid_ijc_cs.theta2_setpoint);
@@ -586,8 +580,8 @@ class finger{
 				//Print status every 1000 cycles
 				itr_counter++;
 				if ( itr_counter > 1000){
-					printf("FINGER %d: theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n",id,  theta1 , pid_ijc_cs.theta1_setpoint, pid_ijc_cs.error1, torque1);
-					printf("FINGER %d: theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n",id,  theta2 , pid_ijc_cs.theta2_setpoint, pid_ijc_cs.error2, torque2);
+					printf("FINGER %d: theta1: %d | theta1_setpoint: %f | error1: %f | u1: %f \n",id,  theta1 , pid_ijc_cs.theta1_setpoint, pid_ijc_cs.error1, torque1);
+					printf("FINGER %d: theta2: %d | theta2_setpoint: %f | error2: %f | u2: %f \n",id,  theta2 , pid_ijc_cs.theta2_setpoint, pid_ijc_cs.error2, torque2);
           printf("FINGER %d: Last iteration took %d us. (including wait time on spi thread)\n",id , step );
           double temp123=sqrt( 1- pow(pid_ijc_cs.temp,2) );
           double temp321=pid_ijc_cs.temp;
