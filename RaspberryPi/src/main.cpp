@@ -499,6 +499,8 @@ class finger{
 		void jointspace_ijc_pid(){
 			while(1){
         time0=micros();
+        pthread_mutex_lock(&begin_control_iteration);
+        pthread_mutex_unlock(&begin_control_iteration);
 				//Check instructions
 				update_local_zmq_mem();
 				//Exit and stop motors if this is not the correct controller
