@@ -498,6 +498,7 @@ class finger{
 
 		void jointspace_ijc_pid(){
 			while(1){
+
 				//Check instructions
 				update_local_zmq_mem();
 				//Exit and stop motors if this is not the correct controller
@@ -512,7 +513,6 @@ class finger{
 				//Read sensors
         pthread_mutex_lock(&begin_control_iteration);
         pthread_mutex_unlock(&begin_control_iteration);
-        time0=micros();
 				update_local_spi_mem();
 				//Proportional controller
 				pid_ijc_js.error1 = *(pid_ijc_js.theta1_setpoint) - theta1;
@@ -530,13 +530,12 @@ class finger{
           printf("FINGER %d: Last iteration took %d us. (including wait time on spi thread)\n",id , step );
 					itr_counter=0;
 				}
-        time1=micros();
-        step=time1-time0;
-        usleep(600);
+        usleep(500);
         //Waiting for spi thread to give permision for new iteraton
         pthread_mutex_lock(&restart);
         pthread_mutex_unlock(&restart);
-
+        time1=micros();
+        step=time1-time0;
 
 			}
 		}
@@ -557,6 +556,7 @@ class finger{
 
         pthread_mutex_lock(&begin_control_iteration);
         pthread_mutex_unlock(&begin_control_iteration);
+
         time0=micros();
 				update_local_spi_mem();
 				//Inverse kinematics. Source: http://www.hessmer.org/uploads/RobotArm/Inverse%2520Kinematics%2520for%2520Robot%2520Arm.pdf
@@ -583,7 +583,7 @@ class finger{
 					itr_counter = 0;
 				}
 
-        usleep(600);
+        usleep(500);
         //Waiting for spi thread to give permision for new iteraton
         pthread_mutex_lock(&restart);
         pthread_mutex_unlock(&restart);
@@ -797,6 +797,7 @@ class spi{
       for (int i=0; i <= 6; i++){
         for (int j=0; j <=3; j++){
           gpio_result = gpioWrite(cs_arr[i][j], 1);
+          std::cout <<"IS THIS THE PLACE?"<<std::endl;
         }
       }
 
