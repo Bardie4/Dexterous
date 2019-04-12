@@ -554,7 +554,7 @@ class finger{
 				}
 
 				//Read sensors
-
+        usleep(300);
         pthread_mutex_lock(&begin_control_iteration);
         pthread_mutex_unlock(&begin_control_iteration);
 
@@ -584,7 +584,7 @@ class finger{
 					itr_counter = 0;
 				}
 
-        usleep(500);
+        usleep(300);
         //Waiting for spi thread to give permision for new iteraton
         pthread_mutex_lock(&restart);
         pthread_mutex_unlock(&restart);
