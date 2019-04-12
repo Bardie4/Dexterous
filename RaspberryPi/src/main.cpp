@@ -498,7 +498,6 @@ class finger{
 
 		void jointspace_ijc_pid(){
 			while(1){
-        time0=micros();
 				//Check instructions
 				update_local_zmq_mem();
 				//Exit and stop motors if this is not the correct controller
@@ -513,6 +512,7 @@ class finger{
 				//Read sensors
         pthread_mutex_lock(&begin_control_iteration);
         pthread_mutex_unlock(&begin_control_iteration);
+        time0=micros();
 				update_local_spi_mem();
 				//Proportional controller
 				pid_ijc_js.error1 = *(pid_ijc_js.theta1_setpoint) - theta1;
@@ -542,7 +542,6 @@ class finger{
 
 		void cartesian_ijc_pid(){
 			while(1){
-        time0=micros();
 				//Check instructions
 				update_local_zmq_mem();
 				//Exit and stop motors if this is not the correct controller
@@ -557,6 +556,7 @@ class finger{
 
         pthread_mutex_lock(&begin_control_iteration);
         pthread_mutex_unlock(&begin_control_iteration);
+        time0=micros();
 				update_local_spi_mem();
 				//Inverse kinematics. Source: http://www.hessmer.org/uploads/RobotArm/Inverse%2520Kinematics%2520for%2520Robot%2520Arm.pdf
 				pid_ijc_cs.temp = (pow( *(pid_ijc_cs.x) ,2) + pow( *(pid_ijc_cs.y) ,2) - pow(pid_ijc_cs.l1,2)-pow(pid_ijc_cs.l2,2))/(2*pid_ijc_cs.l1*pid_ijc_cs.l2);
