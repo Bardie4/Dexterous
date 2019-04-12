@@ -91,64 +91,10 @@ QueueHandle_t qPrintVTheta;
 QueueHandle_t qPrintHTheta;  
 
 
-void setup() {
-
-  //initialise two instances of the SPIClass attached to VSPI and HSPI respectively
-  vspi = new SPIClass(VSPI);
-  hspi = new SPIClass(HSPI);
-
-  //initialise vspi with default pins
-  //SCLK = 18, MISO = 19, MOSI = 23, SS = 5
-  vspi->begin(V_CLK, V_MISO, V_MOSI, V_CS);
-  //SCLK = 14, MISO = 12, MOSI = 13, SS = 15
-  hspi->begin(H_CLK, H_MISO, H_MOSI, H_CS); 
-
-  pinMode(V_CS, OUTPUT); //VSPI SS
-  pinMode(H_CS, OUTPUT); //HSPI SS
-
-  // Angle read -> motor write
-  qM1Angle = xQueueCreate( 1, sizeof( uint8_t ) );
-  qM2Angle = xQueueCreate( 1, sizeof( uint8_t ) );
-
-  qM1Setpoint = xQueueCreate( 1, sizeof( double ) );
-  qM2Setpoint = xQueueCreate( 1, sizeof( double ) );
-
-  qM1Output = xQueueCreate( 1, sizeof( double ) );
-  qM2Output = xQueueCreate( 1, sizeof( double ) );
-
-  // motor write -> Serial write
-  qPrintPWM1A = xQueueCreate( 1, sizeof( uint8_t ) );
-  qPrintPWM1B = xQueueCreate( 1, sizeof( uint8_t ) );
-  qPrintPWM1C = xQueueCreate( 1, sizeof( uint8_t ) );
-  qPrintPWM2A = xQueueCreate( 1, sizeof( uint8_t ) );
-  qPrintPWM2B = xQueueCreate( 1, sizeof( uint8_t ) );
-  qPrintPWM2C = xQueueCreate( 1, sizeof( uint8_t ) );
-  qPrintVTheta = xQueueCreate( 1, sizeof( uint8_t ) );
-  qPrintHTheta = xQueueCreate( 1, sizeof( uint8_t ) );
-
-
-  xTaskCreatePinnedToCore(vspiCommand8, "vspi", 4096, (void *)1, 1, NULL, 0);
-  xTaskCreatePinnedToCore(motor1Control, "M1Ctrl", 4096, (void *)1, 1, NULL, 0);
-  xTaskCreatePinnedToCore(hspiCommand8, "hspi", 4096, (void *)2, 1, NULL, 1);
-  xTaskCreatePinnedToCore(motor2Control, "M2Ctrl", 4096, (void *)1, 1, NULL, 1);
-  xTaskCreatePinnedToCore(motor1PID, "M1PID", 4096, (void *)1, 1, NULL, 1);
-  xTaskCreatePinnedToCore(passMasterCommand, "passMaster", 4096, (void *)2, 1, NULL, 1);
-  //xTaskCreatePinnedToCore(motor1Scroll, "M1_scroll", 4096, (void *)1, 1, NULL, 1);
-  //xTaskCreatePinnedToCore(motor2Scroll, "M2_scroll", 4096, (void *)1, 1, NULL, 1);
-  xTaskCreatePinnedToCore(printer, "printer", 4096, (void *)1, 1, NULL, 0);
-
-  Serial.begin(115200);
-}
-
-// the loop function runs over and over again until power down or reset
-void loop() {
-  vTaskDelay(1 / portTICK_RATE_MS);
-}
-
-
 
 void hspiCommand8(void *pvParameters) {
-  uint8_t uiAngle;
+  uint8_t uiAngle, uiAnglePrev;
+  int8_t uiAngleDelta;
   double theta, deltaTheta, sumTheta = 0, prevTheta = 0;
 
   while(1){
@@ -156,7 +102,7 @@ void hspiCommand8(void *pvParameters) {
     digitalWrite(H_CS, LOW);
     uiAngle = hspi->transfer(0x00);
     digitalWrite(H_CS, HIGH);
-    theta = (uiAngle*360.0)/65536.0;
+    //theta = (uiAngle*360.0)/65536.0;
     hspi->endTransaction();
 
     xQueueOverwrite(qM2Angle, &uiAngle);
@@ -167,21 +113,51 @@ void hspiCommand8(void *pvParameters) {
 }
 
 void vspiCommand8(void *pvParameters) {
-  uint8_t uiAngle;
-  double theta, deltaTheta, sumTheta = 0, prevTheta = 0;
+  uint8_t uiAngle, uiAnglePrev;
+  int16_t uiAngleDelta;
+  double theta; // deltaTheta, sumTheta = 0, prevTheta = 0;
+
+  double Input, Output, Setpoint;
+  double Kp = 1.00, Ki = 0.00, Kd = 0.00;
+  PID pid(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+  
+  pid.SetOutputLimits(-100.0, 100.0);
+  pid.SetMode(AUTOMATIC);
 
   while (1) {
     vspi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
     digitalWrite(V_CS, LOW);
     uiAngle = vspi->transfer(0x00);
     digitalWrite(V_CS, HIGH);
-    theta = (uiAngle*360.0)/65536.0;
+    //theta = (uiAngle*360.0)/65536.0;
     vspi->endTransaction();
 
-    xQueueOverwrite(qM1Angle, &uiAngle);
-    xQueueOverwrite(qPrintVTheta, &uiAngle);
+    uiAngleDelta = uiAngle - uiAnglePrev;
+    uiAnglePrev = uiAngle;
 
-    vTaskDelay(1 / portTICK_RATE_MS);
+    if (uiAngleDelta > 127) uiAngleDelta -= 255;
+    else if (uiAngleDelta < -127) uiAngleDelta += 255;
+    
+    Input = (double)uiAngleDelta;
+    Setpoint = 100.0;
+    pid.Compute();
+
+    xQueueOverwrite(qM1Angle, &uiAngle);
+    xQueueOverwrite(qPrintVTheta, &uiAngleDelta);
+    xQueueOverwrite(qM1Output, &Output);
+
+    // Serial.print("Angle: ");
+    // Serial.print(uiAngle);
+    // Serial.print(" Delta: ");
+    // Serial.print(uiAngleDelta);
+    // Serial.print(" Output: ");
+    // Serial.print(Output);
+    // Serial.print(" Setpoint: ");
+    // Serial.println(Setpoint);
+ 
+    TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+    TIMERG0.wdt_feed = 1;
+    TIMERG0.wdt_wprotect = 0;
   }
 }
 
@@ -248,14 +224,17 @@ void motor1Control(void *pvParameters) {
   Serial.println("start M1");
   xQueuePeek(qM1Angle, &theta_0_mek, 0);
 
-  while(1){
-    //Leading or lagging electrical field
-    // if (u <= 0) lead_lag = phaseShift8_90;
-    // else if (u > 0) lead_lag = phaseShift8_90_minus;
-    
+  while(1){    
     // Read angle
     xQueuePeek(qM1Angle, &theta_raw, 0);
-    xQueuePeek(qM1Setpoint, &scaling, 0);
+    xQueuePeek(qM1Output, &scaling, 0);
+
+    //Leading or lagging electrical field
+    if (scaling <= 0) lead_lag = phaseShift8_90;
+    else lead_lag = phaseShift8_90_minus;
+
+    scaling/=100.0;
+
     // Find optimal electrical angle
     theta_raw += (255 - theta_0_mek);
     theta_multiplied = theta_raw << 2;        //Multiplied by 4 for electrical angle.
@@ -278,7 +257,9 @@ void motor1Control(void *pvParameters) {
     xQueueOverwrite(qPrintPWM1B, &pwmB);
     xQueueOverwrite(qPrintPWM1C, &pwmC);
     
-    //vTaskDelay(1 / portTICK_RATE_MS);
+    TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+    TIMERG0.wdt_feed = 1;
+    TIMERG0.wdt_wprotect = 0;
     }
 }
 
@@ -419,6 +400,40 @@ void printer(void *pvParameters) {
   
 }
 
+
+void motor1PID(void *pvParameters)  {
+  //Specify the initial tuning parameters
+  double Input, Output, Setpoint;
+  double Kp = 1.00, Ki = 0.00, Kd = 0.00;
+  PID pid(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+  pid.SetOutputLimits(-1.0, 1.0);
+
+  while(1){
+    xQueuePeek(qM1Angle, &Input, 0);
+    xQueuePeek(qM1Setpoint, &Setpoint, 0);
+    pid.Compute();
+    xQueueOverwrite(qM1Output, &Output);
+    vTaskDelay(10 / portTICK_RATE_MS);
+  }
+  
+}
+
+void passMasterCommand(void *pvParameters){
+  while(1){
+
+    // Read SPI
+    // hspi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
+    // digitalWrite(H_CS, LOW);
+    // uiAngle = hspi->transfer(0x00);
+    // digitalWrite(H_CS, HIGH);
+    // theta = (uiAngle*360.0)/65536.0;
+    // hspi->endTransaction();
+
+    vTaskDelay(100 / portTICK_RATE_MS);
+  
+  }  
+}
+
 void motor1Scroll(void *pvParameters) {
   uint8_t phaseShift8_120 = 256/3;
   uint8_t currentStepA = 0;
@@ -519,37 +534,60 @@ void motor2Scroll(void *pvParameters) {
   }
 }
 
-void motor1PID(void *pvParameters)  {
-  //Specify the initial tuning parameters
-  double Setpoint, Input, Output;
-  double Kp = 1.00, Ki = 0.00, Kd = 0.00;
-  PID pid(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+void setup() {
 
-  while(1){
-    xQueuePeek(qM1Angle, &Input, 0);
-    xQueuePeek(qM1Setpoint, &Setpoint, 0);
-    pid.Compute();
-    xQueueOverwrite(qM1Output, &Output);
-    vTaskDelay(10 / portTICK_RATE_MS);
-  }
-  
+  //initialise two instances of the SPIClass attached to VSPI and HSPI respectively
+  vspi = new SPIClass(VSPI);
+  hspi = new SPIClass(HSPI);
+
+  //initialise vspi with default pins
+  //SCLK = 18, MISO = 19, MOSI = 23, SS = 5
+  vspi->begin(V_CLK, V_MISO, V_MOSI, V_CS);
+  //SCLK = 14, MISO = 12, MOSI = 13, SS = 15
+  hspi->begin(H_CLK, H_MISO, H_MOSI, H_CS); 
+
+  pinMode(V_CS, OUTPUT); //VSPI SS
+  pinMode(H_CS, OUTPUT); //HSPI SS
+
+  // Angle read -> motor write
+  qM1Angle = xQueueCreate( 1, sizeof( uint8_t ) );
+  qM2Angle = xQueueCreate( 1, sizeof( uint8_t ) );
+
+  qM1Setpoint = xQueueCreate( 1, sizeof( double ) );
+  qM2Setpoint = xQueueCreate( 1, sizeof( double ) );
+
+  qM1Output = xQueueCreate( 1, sizeof( double ) );
+  qM2Output = xQueueCreate( 1, sizeof( double ) );
+
+  // motor write -> Serial write
+  qPrintPWM1A = xQueueCreate( 1, sizeof( uint8_t ) );
+  qPrintPWM1B = xQueueCreate( 1, sizeof( uint8_t ) );
+  qPrintPWM1C = xQueueCreate( 1, sizeof( uint8_t ) );
+  qPrintPWM2A = xQueueCreate( 1, sizeof( uint8_t ) );
+  qPrintPWM2B = xQueueCreate( 1, sizeof( uint8_t ) );
+  qPrintPWM2C = xQueueCreate( 1, sizeof( uint8_t ) );
+  qPrintVTheta = xQueueCreate( 1, sizeof( uint8_t ) );
+  qPrintHTheta = xQueueCreate( 1, sizeof( uint8_t ) );
+
+
+  xTaskCreatePinnedToCore(vspiCommand8, "vspi", 4096, (void *)1, 1, NULL, 0);
+  xTaskCreatePinnedToCore(motor1Control, "M1Ctrl", 4096, (void *)1, 1, NULL, 0);
+  //xTaskCreatePinnedToCore(hspiCommand8, "hspi", 4096, (void *)2, 1, NULL, 1);
+  //xTaskCreatePinnedToCore(motor2Control, "M2Ctrl", 4096, (void *)1, 1, NULL, 1);
+  //xTaskCreatePinnedToCore(motor1PID, "M1PID", 4096, (void *)1, 1, NULL, 1);
+  //xTaskCreatePinnedToCore(passMasterCommand, "passMaster", 4096, (void *)2, 1, NULL, 1);
+  //xTaskCreatePinnedToCore(motor1Scroll, "M1_scroll", 4096, (void *)1, 1, NULL, 1);
+  //xTaskCreatePinnedToCore(motor2Scroll, "M2_scroll", 4096, (void *)1, 1, NULL, 1);
+  //xTaskCreatePinnedToCore(printer, "printer", 4096, (void *)1, 1, NULL, 0);
+
+  Serial.begin(115200);
 }
 
-void passMasterCommand(void *pvParameters){
-  while(1){
-
-    // Read SPI
-    hspi->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
-    digitalWrite(H_CS, LOW);
-    uiAngle = hspi->transfer(0x00);
-    digitalWrite(H_CS, HIGH);
-    theta = (uiAngle*360.0)/65536.0;
-    hspi->endTransaction();
-
-    vTaskDelay(100 / portTICK_RATE_MS);
-  
-  }  
+// the loop function runs over and over again until power down or reset
+void loop() {
+  vTaskDelay(portMAX_DELAY);
 }
+
 
 
 // void vspiCommand16(void *pvParameters) {
