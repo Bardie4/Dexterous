@@ -898,11 +898,11 @@ class spi{
 					//std::cout << "we waited" << std::endl;
 				}*/
         itr_counter++;
-        usleep(1000);
         if (itr_counter >1000){
-          std::cout << "10k spi iterations. Last iteration took: "<< step <<" microseconds. (Including 1000us delay)"<< <<std::endl;
+          std::cout << "10k spi iterations. Last iteration took: "<< step <<" microseconds. (Including 1000us delay)"<<std::endl;
           itr_counter=0;
         }
+        usleep(1000);
         time1=micros();
         step=time1-time0;
 			}
