@@ -15,6 +15,8 @@ pthread_t tid[10];
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t begin_control_iteration = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t restart = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t start_cond = PTHREAD_COND_INITIALIZER;
+pthread_cond_t restart_cond = PTHREAD_COND_INITIALIZER;
 
 
 //Variables used by joint space PID function
@@ -513,6 +515,7 @@ class finger{
         usleep(500);
 				//Read sensors
         pthread_mutex_lock(&begin_control_iteration);
+        pthread_cond_wait(&begin_control_iteration, start_cond);
         pthread_mutex_unlock(&begin_control_iteration);
         time0=micros();
 				update_local_spi_mem();
@@ -535,6 +538,7 @@ class finger{
         usleep(500);
         //Waiting for spi thread to give permision for new iteraton
         pthread_mutex_lock(&restart);
+        pthread_cond_wait(&restart, restart_cond);
         pthread_mutex_unlock(&restart);
         time1=micros();
         step=time1-time0;
@@ -555,8 +559,8 @@ class finger{
 				}
 
 				//Read sensors
-        usleep(500);
         pthread_mutex_lock(&begin_control_iteration);
+        pthread_cond_wait(&begin_control_iteration, start_cond);
         pthread_mutex_unlock(&begin_control_iteration);
 
         time0=micros();
@@ -585,9 +589,10 @@ class finger{
 					itr_counter = 0;
 				}
 
-        usleep(200);
+
         //Waiting for spi thread to give permision for new iteraton
         pthread_mutex_lock(&restart);
+        pthread_cond_wait(&restart, restart_cond);
         pthread_mutex_unlock(&restart);
         time1=micros();
         step=time1-time0;
@@ -927,11 +932,13 @@ class spi{
         //The scheme below makes, sure that measurements are made between each iteration of the controllers
 
         //At this point the measurements are done. Controllers can do an iteration, but not restart
-        pthread_mutex_lock(&restart);
+        pthread_mutex_lock(&begin_control_iteration);
+        pthread_cond_broadcast(&begin_control_iteration);
         pthread_mutex_unlock(&begin_control_iteration);
         usleep(1000);                     //Plenty of time for controllers to finish working
         //Controllers can enter a new iteration, but not begin the actual work before we have a new measurement
-        pthread_mutex_lock(&begin_control_iteration);
+        pthread_mutex_lock(&restart);
+        pthread_cond_broadcast(&restart);
         pthread_mutex_unlock(&restart);
 
         time1=micros();
