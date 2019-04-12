@@ -154,6 +154,12 @@ class finger{
 		char inBuf[4];
 		char outBuf[4];
 
+
+    //Timing
+    //Timing
+    int time0;
+    int time1;
+    int step;
 		//Constructor
     finger(int identity ,double shared_spi_memory[7], double shared_zmq_memory[6], int spi_var[3],int spi_handle){
 			id= identity;
@@ -204,10 +210,6 @@ class finger{
 			handle = spi_handle;
 
 
-      //Timing
-      int time0;
-      int time1;
-      int step;
     }
 
 		void shutdown(){
