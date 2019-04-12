@@ -13,6 +13,8 @@
 #include <sstream>
 pthread_t tid[10];
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t begin_control_iteration = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t restart = PTHREAD_MUTEX_INITIALIZER;
 
 
 //Variables used by joint space PID function
@@ -523,19 +525,18 @@ class finger{
 				if ( itr_counter > 1000){
 					printf("FINGER %d: theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", id, theta1 , *(pid_ijc_js.theta1_setpoint), pid_ijc_js.error1, torque1);
 					printf("FINGER %d: theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", id, theta2 , *(pid_ijc_js.theta2_setpoint), pid_ijc_js.error2, torque2);
-          printf("FINGER %d: Last iteration took %d us. (including a 1000us delay)\n",id , step );
+          printf("FINGER %d: Last iteration took %d us. (including wait time on spi thread)\n",id , step );
 					itr_counter=0;
 				}
-        usleep(1000);
-        time1=micros();
-        step=time1-time0;
+
 			}
 		}
 
 		void cartesian_ijc_pid(){
 			while(1){
-
         time0=micros();
+        pthread_mutex_lock(&begin_control_iteration);
+        pthread_mutex_unlock(&begin_control_iteration);
 				//Check instructions
 				update_local_zmq_mem();
 				//Exit and stop motors if this is not the correct controller
@@ -568,10 +569,14 @@ class finger{
 				if ( itr_counter > 1000){
 					printf("FINGER %d: theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n",id,  theta1 , pid_ijc_cs.theta1_setpoint, pid_ijc_cs.error1, torque1);
 					printf("FINGER %d: theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n",id,  theta2 , pid_ijc_cs.theta2_setpoint, pid_ijc_cs.error2, torque2);
-          printf("FINGER %d: Last iteration took %d us. (including a 1000us delay)\n",id , step );
+          printf("FINGER %d: Last iteration took %d us. (including wait time on spi thread)\n",id , step );
 					itr_counter = 0;
 				}
-        usleep(1000);
+
+
+        //Waiting for spi thread to give permision for new iteraton
+        pthread_mutex_lock(&restart);
+        pthread_mutex_unlock(&restart);
         time1=micros();
         step=time1-time0;
 			}
@@ -790,6 +795,8 @@ class spi{
       read_command_16[0] = 0b00000000;
       read_command_16[1] = 0b00000000;
 
+      pthread_mutex_lock(&begin_control_iteration);
+
     }
 
     uint8_t read_angle_8(int &cs){
@@ -902,6 +909,21 @@ class spi{
           std::cout << "SPI thread used: "<< step <<" microseconds on one iteration. (Including 1000us delay)"<<std::endl;
           itr_counter=0;
         }
+
+        //Each controllers has to bypass the &start lock at the beginning of an
+        //iteration, and bypass &restart at the end of an iteration
+        //The scheme below makes, sure that measurements are made between each iteration of the controllers
+
+        //At this point the measurements are done. Controllers can do an iteration, but not restart
+        pthread_mutex_lock(&restart);
+        pthread_mutex_unlock(&begin_control_iteration);
+        usleep(1000);                     //Plenty of time for controllers to finish working
+        //Controllers can enter a new iteration, but not begin the actual work before we have a new measurement
+        pthread_mutex_lock(&begin_control_iteration);
+        pthread_mutex_unlock(&restart);
+        time1=micros();
+        step=time1-time0;
+
         usleep(1000);
         time1=micros();
         step=time1-time0;
