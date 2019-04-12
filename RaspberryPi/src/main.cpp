@@ -532,11 +532,11 @@ class finger{
 					printf("FINGER %d: theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", id, theta2 , *(pid_ijc_js.theta2_setpoint), pid_ijc_js.error2, torque2);
           printf("FINGER %d: Last iteration took %d us. (including wait time on spi thread)\n",id , step );
 					itr_counter=0;
-				}
+				}/*
         //Waiting for spi thread to give permision for new iteraton
         pthread_mutex_lock(&restart);
         pthread_cond_wait(&restart_cond, &restart);
-        pthread_mutex_unlock(&restart);
+        pthread_mutex_unlock(&restart);*/
         time1=micros();
         step=time1-time0;
         time0=micros();
@@ -586,11 +586,11 @@ class finger{
 					itr_counter = 0;
 				}
 
-
-        //Waiting for spi thread to give permision for new iteraton
+/*
+        //Waiting for spi thread to give permision for new iteraton/
         pthread_mutex_lock(&restart);
         pthread_cond_wait(&restart_cond, &restart);
-        pthread_mutex_unlock(&restart);
+        pthread_mutex_unlock(&restart);*/
         time1=micros();
         step=time1-time0;
         time0=micros();
@@ -934,9 +934,10 @@ class spi{
         pthread_mutex_unlock(&begin_control_iteration);
         usleep(1000);                     //Plenty of time for controllers to finish working
         //Controllers can enter a new iteration, but not begin the actual work before we have a new measurement
+        /*
         pthread_mutex_lock(&restart);
         pthread_cond_broadcast(&restart_cond);
-        pthread_mutex_unlock(&restart);
+        pthread_mutex_unlock(&restart);*/
 
         time1=micros();
         step=time1-time0;
