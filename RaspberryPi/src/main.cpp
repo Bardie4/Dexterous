@@ -566,7 +566,10 @@ class finger{
         std::cout <<"x: "<< *(pid_ijc_cs.x) <<" y: "<< *(pid_ijc_cs.y) << std::endl;
  				pid_ijc_cs.temp = ( pow( *(pid_ijc_cs.x) ,2) + pow( *(pid_ijc_cs.y) ,2) - pow(pid_ijc_cs.l1,2)-pow(pid_ijc_cs.l2,2))/(2*pid_ijc_cs.l1*pid_ijc_cs.l2);
         double temp123=sqrt( 1- pid_ijc_cs.temp );
+        double temp321=pid_ijc_cs.temp;
         std::cout <<"temp: " <<  temp123 << std::endl;
+
+        std::cout <<"temp: " <<  temp321 << std::endl;
 				pid_ijc_cs.theta2_setpoint = atan2( sqrt( 1-pid_ijc_cs.temp ), pid_ijc_cs.temp );
 				pid_ijc_cs.k1 = pid_ijc_cs.l1 + pid_ijc_cs.l2*cos(pid_ijc_cs.theta2_setpoint);
 				pid_ijc_cs.k2 = pid_ijc_cs.l2*sin(pid_ijc_cs.theta2_setpoint);
