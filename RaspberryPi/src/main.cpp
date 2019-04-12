@@ -514,7 +514,7 @@ class finger{
 
 				//Read sensors
         pthread_mutex_lock(&begin_control_iteration);
-        pthread_cond_wait(&begin_control_iteration, &start_cond);
+        pthread_cond_wait(&start_cond, &begin_control_iteration);
         pthread_mutex_unlock(&begin_control_iteration);
 				update_local_spi_mem();
 				//Proportional controller
@@ -535,7 +535,7 @@ class finger{
 				}
         //Waiting for spi thread to give permision for new iteraton
         pthread_mutex_lock(&restart);
-        pthread_cond_wait(&restart, &restart_cond);
+        pthread_cond_wait(&restart_cond, &restart);
         pthread_mutex_unlock(&restart);
         time1=micros();
         step=time1-time0;
@@ -558,7 +558,7 @@ class finger{
 
 				//Read sensors
         pthread_mutex_lock(&begin_control_iteration);
-        pthread_cond_wait(&begin_control_iteration, &start_cond);
+        pthread_cond_wait(&start_cond, &begin_control_iteration);
         pthread_mutex_unlock(&begin_control_iteration);
 
 				update_local_spi_mem();
@@ -589,7 +589,7 @@ class finger{
 
         //Waiting for spi thread to give permision for new iteraton
         pthread_mutex_lock(&restart);
-        pthread_cond_wait(&restart, &restart_cond);
+        pthread_cond_wait(&restart_cond, &restart);
         pthread_mutex_unlock(&restart);
         time1=micros();
         step=time1-time0;
