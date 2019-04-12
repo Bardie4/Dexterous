@@ -512,12 +512,10 @@ class finger{
           std::cout <<"Exiting js controller" <<std::endl;
 				}
 
-        usleep(500);
 				//Read sensors
         pthread_mutex_lock(&begin_control_iteration);
-        pthread_cond_wait(&begin_control_iteration, start_cond);
+        pthread_cond_wait(&begin_control_iteration, &start_cond);
         pthread_mutex_unlock(&begin_control_iteration);
-        time0=micros();
 				update_local_spi_mem();
 				//Proportional controller
 				pid_ijc_js.error1 = *(pid_ijc_js.theta1_setpoint) - theta1;
@@ -535,13 +533,13 @@ class finger{
           printf("FINGER %d: Last iteration took %d us. (including wait time on spi thread)\n",id , step );
 					itr_counter=0;
 				}
-        usleep(500);
         //Waiting for spi thread to give permision for new iteraton
         pthread_mutex_lock(&restart);
-        pthread_cond_wait(&restart, restart_cond);
+        pthread_cond_wait(&restart, &restart_cond);
         pthread_mutex_unlock(&restart);
         time1=micros();
         step=time1-time0;
+        time0=micros();
 
 			}
 		}
@@ -560,10 +558,9 @@ class finger{
 
 				//Read sensors
         pthread_mutex_lock(&begin_control_iteration);
-        pthread_cond_wait(&begin_control_iteration, start_cond);
+        pthread_cond_wait(&begin_control_iteration, &start_cond);
         pthread_mutex_unlock(&begin_control_iteration);
 
-        time0=micros();
 				update_local_spi_mem();
 				//Inverse kinematics. Source: http://www.hessmer.org/uploads/RobotArm/Inverse%2520Kinematics%2520for%2520Robot%2520Arm.pdf
 				pid_ijc_cs.temp = (pow( *(pid_ijc_cs.x) ,2) + pow( *(pid_ijc_cs.y) ,2) - pow(pid_ijc_cs.l1,2)-pow(pid_ijc_cs.l2,2))/(2*pid_ijc_cs.l1*pid_ijc_cs.l2);
@@ -592,10 +589,11 @@ class finger{
 
         //Waiting for spi thread to give permision for new iteraton
         pthread_mutex_lock(&restart);
-        pthread_cond_wait(&restart, restart_cond);
+        pthread_cond_wait(&restart, &restart_cond);
         pthread_mutex_unlock(&restart);
         time1=micros();
         step=time1-time0;
+        time0=micros();
 			}
 		}
 
