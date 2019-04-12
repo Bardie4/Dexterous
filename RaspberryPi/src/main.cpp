@@ -513,6 +513,7 @@ class finger{
 				//Read sensors
         pthread_mutex_lock(&begin_control_iteration);
         pthread_mutex_unlock(&begin_control_iteration);
+        time0=micros();
 				update_local_spi_mem();
 				//Proportional controller
 				pid_ijc_js.error1 = *(pid_ijc_js.theta1_setpoint) - theta1;
