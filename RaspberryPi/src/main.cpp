@@ -202,6 +202,12 @@ class finger{
 			cs_angle_sensor_2 = spi_var[1];
 			cs_output = spi_var[2];
 			handle = spi_handle;
+
+
+      //Timing
+      int time0;
+      int time1;
+      int step;
     }
 
 		void shutdown(){
@@ -488,6 +494,7 @@ class finger{
 
 		void jointspace_ijc_pid(){
 			while(1){
+        time0=micros();
 				//Check instructions
 				update_local_zmq_mem();
 				//Exit and stop motors if this is not the correct controller
@@ -514,17 +521,23 @@ class finger{
 				if ( itr_counter > 10000){
 					printf("FINGER %d: theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n", id, theta1 , *(pid_ijc_js.theta1_setpoint), pid_ijc_js.error1, torque1);
 					printf("FINGER %d: theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n", id, theta2 , *(pid_ijc_js.theta2_setpoint), pid_ijc_js.error2, torque2);
+          printf("Last iteration took %d us. (including a 1000us delay)\n", step );
 					itr_counter=0;
 				}
+        usleep(1000);
+        time1=micros();
+        step=time1-time0;
 			}
 		}
 
 		void cartesian_ijc_pid(){
 			while(1){
+
+        time0=micros();
 				//Check instructions
 				update_local_zmq_mem();
 				//Exit and stop motors if this is not the correct controller
-				if ( !(controller_select == 2) ){
+				if ( !(controller_select == 3) ){
 					torque1 = 0;
 					torque2 = 0;
 					update_shared_spi_mem();
@@ -553,8 +566,12 @@ class finger{
 				if ( itr_counter > 10000){
 					printf("FINGER %d: theta1: %d | theta1_setpoint: %d | error1: %d | u1: %d \n",id,  theta1 , pid_ijc_cs.theta1_setpoint, pid_ijc_cs.error1, torque1);
 					printf("FINGER %d: theta2: %d | theta2_setpoint: %d | error2: %d | u2: %d \n",id,  theta2 , pid_ijc_cs.theta2_setpoint, pid_ijc_cs.error2, torque2);
+          printf("Last iteration took %d us. (including a 1000us delay)\n", step );
 					itr_counter = 0;
 				}
+        usleep(1000);
+        time1=micros();
+        step=time1-time0;
 			}
 		}
 
@@ -726,6 +743,8 @@ class spi{
 
     int itr_counter;
 
+    double timeofday;
+
   public:
     spi(double shared_spi_memory[7][7], int chip_selects[7][3]){
 
@@ -834,7 +853,7 @@ class spi{
 
     void* run(){
 			while(1){
-				//time0=micros();
+				time0=micros();
 				//Load info about active fingers
 				pthread_mutex_lock(&lock);
 				for (int i=0; i<7; i++){
@@ -869,21 +888,21 @@ class spi{
 					}
 				}
 				//WAIT
-        /*
-				time1=micros();
-				step=time1-time0;
-				while(step<1000){
+
+				/*while(step<1000){
 					time1=micros();
 					step=time1-time0;
 					usleep(250);
 					//std::cout << "we waited" << std::endl;
 				}*/
         itr_counter++;
-
-        if (itr_counter >10000){
-          std::cout << "10k spi iterations" <<std::endl;
+        usleep(1000);
+        if (itr_counter >1000){
+          std::cout << "10k spi iterations. Last iteration took: "<< step <<" microseconds. (Including 1000us delay)"<< <<std::endl;
           itr_counter=0;
         }
+        time1=micros();
+        step=time1-time0;
 			}
 		}
 
