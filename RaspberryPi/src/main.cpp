@@ -932,7 +932,7 @@ class spi{
         pthread_mutex_lock(&begin_control_iteration);
         pthread_cond_broadcast(&start_cond);
         pthread_mutex_unlock(&begin_control_iteration);
-        usleep(1000);                     //Plenty of time for controllers to finish working
+        usleep(300);                     //Plenty of time for controllers to finish working
         //Controllers can enter a new iteration, but not begin the actual work before we have a new measurement
         /*
         pthread_mutex_lock(&restart);
