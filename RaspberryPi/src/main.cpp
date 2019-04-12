@@ -921,10 +921,7 @@ class spi{
         //Controllers can enter a new iteration, but not begin the actual work before we have a new measurement
         pthread_mutex_lock(&begin_control_iteration);
         pthread_mutex_unlock(&restart);
-        time1=micros();
-        step=time1-time0;
 
-        usleep(1000);
         time1=micros();
         step=time1-time0;
 			}
