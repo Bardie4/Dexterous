@@ -528,6 +528,12 @@ class finger{
           printf("FINGER %d: Last iteration took %d us. (including wait time on spi thread)\n",id , step );
 					itr_counter=0;
 				}
+        usleep(500);
+        //Waiting for spi thread to give permision for new iteraton
+        pthread_mutex_lock(&restart);
+        pthread_mutex_unlock(&restart);
+        time1=micros();
+        step=time1-time0;
 
 			}
 		}
@@ -573,7 +579,7 @@ class finger{
 					itr_counter = 0;
 				}
 
-
+        usleep(500);
         //Waiting for spi thread to give permision for new iteraton
         pthread_mutex_lock(&restart);
         pthread_mutex_unlock(&restart);
