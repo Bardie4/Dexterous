@@ -563,7 +563,9 @@ class finger{
 
 				update_local_spi_mem();
 				//Inverse kinematics. Source: http://www.hessmer.org/uploads/RobotArm/Inverse%2520Kinematics%2520for%2520Robot%2520Arm.pdf
-				pid_ijc_cs.temp = (pow( *(pid_ijc_cs.x) ,2) + pow( *(pid_ijc_cs.y) ,2) - pow(pid_ijc_cs.l1,2)-pow(pid_ijc_cs.l2,2))/(2*pid_ijc_cs.l1*pid_ijc_cs.l2);
+        std::cout <<"x: "<< *(pid_ijc_cs.x) <<" y: "<< *(pid_ijc_cs.y) << std::endl;
+ 				pid_ijc_cs.temp = (pow( *(pid_ijc_cs.x) ,2) + pow( *(pid_ijc_cs.y) ,2) - pow(pid_ijc_cs.l1,2)-pow(pid_ijc_cs.l2,2))/(2*pid_ijc_cs.l1*pid_ijc_cs.l2);
+        std::cout <<"temp: " << pid_ijc_cs.temp  << std::endl;
 				pid_ijc_cs.theta2_setpoint = atan2( sqrt( 1-pid_ijc_cs.temp ), pid_ijc_cs.temp );
 				pid_ijc_cs.k1 = pid_ijc_cs.l1 + pid_ijc_cs.l2*cos(pid_ijc_cs.theta2_setpoint);
 				pid_ijc_cs.k2 = pid_ijc_cs.l2*sin(pid_ijc_cs.theta2_setpoint);
@@ -802,7 +804,6 @@ class spi{
       for (int i=0; i <= 6; i++){
         for (int j=0; j <=3; j++){
           gpio_result = gpioWrite(cs_arr[i][j], 1);
-          std::cout <<"IS THIS THE PLACE?"<<std::endl;
         }
       }
 
