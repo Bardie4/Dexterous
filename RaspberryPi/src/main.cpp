@@ -810,7 +810,6 @@ class spi{
       read_command_16[0] = 0b00000000;
       read_command_16[1] = 0b00000000;
 
-      pthread_mutex_lock(&begin_control_iteration);
 
     }
 
