@@ -530,7 +530,7 @@ class finger{
           printf("FINGER %d: Last iteration took %d us. (including wait time on spi thread)\n",id , step );
 					itr_counter=0;
 				}
-        //usleep(500);
+        usleep(600);
         //Waiting for spi thread to give permision for new iteraton
         pthread_mutex_lock(&restart);
         pthread_mutex_unlock(&restart);
@@ -582,7 +582,7 @@ class finger{
 					itr_counter = 0;
 				}
 
-        //usleep(500);
+        usleep(600);
         //Waiting for spi thread to give permision for new iteraton
         pthread_mutex_lock(&restart);
         pthread_mutex_unlock(&restart);
@@ -796,7 +796,6 @@ class spi{
       for (int i=0; i <= 6; i++){
         for (int j=0; j <=3; j++){
           gpio_result = gpioWrite(cs_arr[i][j], 1);
-          std::cout <<"IS THIS THE PLACE?"<<std::endl;
         }
       }
 
