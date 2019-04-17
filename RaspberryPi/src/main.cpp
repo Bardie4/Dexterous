@@ -686,7 +686,7 @@ class zmq_client{
          zmq_recv (subscriber, buffer, 1024, 0);
          std::cout <<"identifier: " <<flatbuffers::GetBufferIdentifier(buffer) <<std::endl;
          auto message_obj = GetSimpleInstructionMsg(buffer);
-         std::cout <<"Has identifier: "<< SimpleInstructionMsgBufferHasIdentifier(); << std::endl;
+         std::cout <<"Has identifier: "<< SimpleInstructionMsgBufferHasIdentifier(buffer); << std::endl;
          finger_select = (short) message_obj->finger_select();
          controller_select = (short) message_obj->controller_select();
          data1 = (double) message_obj->data1();
