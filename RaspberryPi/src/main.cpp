@@ -685,7 +685,7 @@ class zmq_client{
          zmq_recv (subscriber, address, 1, 0);
          zmq_recv (subscriber, buffer, 1024, 0);
          auto message_obj = Getsimple_instructions(buffer);
-         finger_select = message_ibj->finger_select;
+         finger_select = message_obj->finger_select;
          controller_select = message_obj->controller_select;
          data1 = message_obj->data1;
          data2 = message_obj->data2;
