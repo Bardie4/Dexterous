@@ -8,9 +8,9 @@
 
 namespace quad_double_mes {
 
-struct simple_instructions;
+struct SimpleInstructionMsg;
 
-struct simple_instructions FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct SimpleInstructionMsg FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_FINGER_SELECT = 4,
     VT_CONTROLLER_SELECT = 6,
@@ -49,40 +49,40 @@ struct simple_instructions FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table 
   }
 };
 
-struct simple_instructionsBuilder {
+struct SimpleInstructionMsgBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
   void add_finger_select(int16_t finger_select) {
-    fbb_.AddElement<int16_t>(simple_instructions::VT_FINGER_SELECT, finger_select, 0);
+    fbb_.AddElement<int16_t>(SimpleInstructionMsg::VT_FINGER_SELECT, finger_select, 0);
   }
   void add_controller_select(int16_t controller_select) {
-    fbb_.AddElement<int16_t>(simple_instructions::VT_CONTROLLER_SELECT, controller_select, 0);
+    fbb_.AddElement<int16_t>(SimpleInstructionMsg::VT_CONTROLLER_SELECT, controller_select, 0);
   }
   void add_data1(double data1) {
-    fbb_.AddElement<double>(simple_instructions::VT_DATA1, data1, 0.0);
+    fbb_.AddElement<double>(SimpleInstructionMsg::VT_DATA1, data1, 0.0);
   }
   void add_data2(double data2) {
-    fbb_.AddElement<double>(simple_instructions::VT_DATA2, data2, 0.0);
+    fbb_.AddElement<double>(SimpleInstructionMsg::VT_DATA2, data2, 0.0);
   }
   void add_data3(double data3) {
-    fbb_.AddElement<double>(simple_instructions::VT_DATA3, data3, 0.0);
+    fbb_.AddElement<double>(SimpleInstructionMsg::VT_DATA3, data3, 0.0);
   }
   void add_data4(double data4) {
-    fbb_.AddElement<double>(simple_instructions::VT_DATA4, data4, 0.0);
+    fbb_.AddElement<double>(SimpleInstructionMsg::VT_DATA4, data4, 0.0);
   }
-  explicit simple_instructionsBuilder(flatbuffers::FlatBufferBuilder &_fbb)
+  explicit SimpleInstructionMsgBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  simple_instructionsBuilder &operator=(const simple_instructionsBuilder &);
-  flatbuffers::Offset<simple_instructions> Finish() {
+  SimpleInstructionMsgBuilder &operator=(const SimpleInstructionMsgBuilder &);
+  flatbuffers::Offset<SimpleInstructionMsg> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<simple_instructions>(end);
+    auto o = flatbuffers::Offset<SimpleInstructionMsg>(end);
     return o;
   }
 };
 
-inline flatbuffers::Offset<simple_instructions> Createsimple_instructions(
+inline flatbuffers::Offset<SimpleInstructionMsg> CreateSimpleInstructionMsg(
     flatbuffers::FlatBufferBuilder &_fbb,
     int16_t finger_select = 0,
     int16_t controller_select = 0,
@@ -90,7 +90,7 @@ inline flatbuffers::Offset<simple_instructions> Createsimple_instructions(
     double data2 = 0.0,
     double data3 = 0.0,
     double data4 = 0.0) {
-  simple_instructionsBuilder builder_(_fbb);
+  SimpleInstructionMsgBuilder builder_(_fbb);
   builder_.add_data4(data4);
   builder_.add_data3(data3);
   builder_.add_data2(data2);
@@ -100,34 +100,43 @@ inline flatbuffers::Offset<simple_instructions> Createsimple_instructions(
   return builder_.Finish();
 }
 
-inline const quad_double_mes::simple_instructions *Getsimple_instructions(const void *buf) {
-  return flatbuffers::GetRoot<quad_double_mes::simple_instructions>(buf);
+inline const quad_double_mes::SimpleInstructionMsg *GetSimpleInstructionMsg(const void *buf) {
+  return flatbuffers::GetRoot<quad_double_mes::SimpleInstructionMsg>(buf);
 }
 
-inline const quad_double_mes::simple_instructions *GetSizePrefixedsimple_instructions(const void *buf) {
-  return flatbuffers::GetSizePrefixedRoot<quad_double_mes::simple_instructions>(buf);
+inline const quad_double_mes::SimpleInstructionMsg *GetSizePrefixedSimpleInstructionMsg(const void *buf) {
+  return flatbuffers::GetSizePrefixedRoot<quad_double_mes::SimpleInstructionMsg>(buf);
 }
 
-inline bool Verifysimple_instructionsBuffer(
+inline const char *SimpleInstructionMsgIdentifier() {
+  return "INST";
+}
+
+inline bool SimpleInstructionMsgBufferHasIdentifier(const void *buf) {
+  return flatbuffers::BufferHasIdentifier(
+      buf, SimpleInstructionMsgIdentifier());
+}
+
+inline bool VerifySimpleInstructionMsgBuffer(
     flatbuffers::Verifier &verifier) {
-  return verifier.VerifyBuffer<quad_double_mes::simple_instructions>(nullptr);
+  return verifier.VerifyBuffer<quad_double_mes::SimpleInstructionMsg>(SimpleInstructionMsgIdentifier());
 }
 
-inline bool VerifySizePrefixedsimple_instructionsBuffer(
+inline bool VerifySizePrefixedSimpleInstructionMsgBuffer(
     flatbuffers::Verifier &verifier) {
-  return verifier.VerifySizePrefixedBuffer<quad_double_mes::simple_instructions>(nullptr);
+  return verifier.VerifySizePrefixedBuffer<quad_double_mes::SimpleInstructionMsg>(SimpleInstructionMsgIdentifier());
 }
 
-inline void Finishsimple_instructionsBuffer(
+inline void FinishSimpleInstructionMsgBuffer(
     flatbuffers::FlatBufferBuilder &fbb,
-    flatbuffers::Offset<quad_double_mes::simple_instructions> root) {
-  fbb.Finish(root);
+    flatbuffers::Offset<quad_double_mes::SimpleInstructionMsg> root) {
+  fbb.Finish(root, SimpleInstructionMsgIdentifier());
 }
 
-inline void FinishSizePrefixedsimple_instructionsBuffer(
+inline void FinishSizePrefixedSimpleInstructionMsgBuffer(
     flatbuffers::FlatBufferBuilder &fbb,
-    flatbuffers::Offset<quad_double_mes::simple_instructions> root) {
-  fbb.FinishSizePrefixed(root);
+    flatbuffers::Offset<quad_double_mes::SimpleInstructionMsg> root) {
+  fbb.FinishSizePrefixed(root, SimpleInstructionMsgIdentifier());
 }
 
 }  // namespace quad_double_mes

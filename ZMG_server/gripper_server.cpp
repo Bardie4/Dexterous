@@ -28,7 +28,6 @@ typedef struct zmq_bundle {
 }zmq_bundle;
 
 flatbuffers::FlatBufferBuilder builder(1024);
-uint8_t *buffer_pointer;
 
 class finger{
   private:
@@ -114,9 +113,8 @@ class finger{
     zmq_bundle* zmq = (zmq_bundle*)input_ptr;
     //from guide: https://stackoverflow.com/questions/40141120/simple-flatbuffers-over-zeromq-c-example-copy-struct-to-flatbuffer-over-zmq-an
     //From guide: http://zguide.zeromq.org/c:wuserver
-    char message [1000];
     //my_message = Createsimple_instructions(builder, zmq->identity, zmq->controller_select, zmq->data1, zmq->data2, zmq->data3, zmq->data4)
-    simple_instructionsBuilder sib(builder);
+    SimpleInstructionMsgBuilder sib(builder);
     sib.add_data4((double)zmq->data4);
     sib.add_data3((double)zmq->data3);
     sib.add_data2((double)zmq->data2);
@@ -235,20 +233,20 @@ class finger{
     char message [100];
     sprintf ( message, "%d %d %d %d %d %d", fing->zmq.identity, fing->zmq.controller_select, fing->zmq.data1, fing->zmq.data2, fing->zmq.data3, fing->zmq.data4);
 
-    simple_instructionsBuilder sib(builder);
-    sib.add_data4((double)zmq->data4);
-    sib.add_data3((double)zmq->data3);
-    sib.add_data2((double)zmq->data2);
-    sib.add_data1((double)zmq->data1);
-    sib.add_controller_select((short)zmq->controller_select);
-    sib.add_finger_select((short)zmq->identity);
+    SimpleInstructionMsgBuilder sib(builder);
+    sib.add_data4((double)fing->zmq.data4);
+    sib.add_data3((double)fing->zmq.data3);
+    sib.add_data2((double)fing->zmq.data2);
+    sib.add_data1((double)fing->zmq.data1);
+    sib.add_controller_select((short)fing->zmq.controller_select);
+    sib.add_finger_select((short)fing->zmq.identity);
 
     auto message_obj = sib.Finish();
     builder.Finish(message_obj);
     uint8_t *buf = builder.GetBufferPointer();
     int size = builder.GetSize();
-    zmq_send(zmq->publisher, "B", 1, ZMQ_SNDMORE);
-    zmq_send (zmq->publisher, buf, size, 0);
+    zmq_send(fing->zmq.publisher, "B", 1, ZMQ_SNDMORE);
+    zmq_send(fing->zmq.publisher, buf, size, 0);
     std::cout << (int) fing->zmq.identity <<" "<< (int) fing->zmq.controller_select <<" "<< (int) fing->zmq.data1<< " " << (int) fing->zmq.data2 << " "<< (int) fing->zmq.data3<< " "<< (int) fing->zmq.data4 << std::endl;
 
   }
@@ -284,7 +282,7 @@ class finger{
     vbox_main = gtk_vbox_new(FALSE, 1);
     gtk_container_add(GTK_CONTAINER(frame), vbox_main);
 
-    sprintf(title,"Finger %d",zmq.identity);
+    sprintf(title,"Finger %d",zmq.identity +1);
     //oss << "Finger " << identity;
     finger_label = gtk_label_new(title);
     gtk_box_pack_start(GTK_BOX(vbox_main), finger_label, TRUE, TRUE, 0);
@@ -484,11 +482,11 @@ int main (int  argc, char *argv[])
         GtkWidget* align_add_del;
         GtkWidget* finger_frame_main;
           GtkWidget* finger_frame_vbox;
-            finger finger1(1, context, publisher);
-            finger finger2(2, context, publisher);
-            finger finger3(3, context, publisher);
-            finger finger4(4, context, publisher);
-            finger finger5(5, context, publisher);
+            finger finger1(0, context, publisher);
+            finger finger2(1, context, publisher);
+            finger finger3(2, context, publisher);
+            finger finger4(3, context, publisher);
+            finger finger5(4, context, publisher);
 
     //Create window
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);

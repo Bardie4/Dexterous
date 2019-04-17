@@ -684,7 +684,7 @@ class zmq_client{
         //contents = s_recv (subscriber); //  Read message contents
          //zmq_recv (subscriber, address, 1, 0);
          zmq_recv (subscriber, buffer, 1024, 0);
-         auto message_obj = Getsimple_instructions(buffer);
+         auto message_obj = GetSimpleInstructionMsg(buffer);
          finger_select = (short) message_obj->finger_select();
          controller_select = (short) message_obj->controller_select();
          data1 = (double) message_obj->data1();
@@ -702,7 +702,7 @@ class zmq_client{
          std::cout << (short)finger_select << " " << (short)controller_select<<" " << (double)data1 << " "<< (double)data2 << " " << (double)data3 <<" "<< (double)data4 <<std::endl;
         //finger_select = (uint8_t) contents[0];
 				        //If a viable finger is selected (finger 0-4)
-        if ( ( 0 < finger_select) && (finger_select <= 7) ){
+        if ( ( 0 < finger_select) && (finger_select < 7) ){
           //Read and unload data to shared memory
 
 					//std::cout << (int)finger_select << " " << (int)controller_select<<" " << (int)data1 << " "<< (int)data2 << " " << (int)data3 <<" "<< (int)data4 <<std::endl;
