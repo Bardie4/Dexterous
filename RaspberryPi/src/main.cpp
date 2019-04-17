@@ -1,7 +1,7 @@
 
 #include <math.h>
 #include "zhelpers.h"
-#include
+#include <zmq.h>
 #include <stdio.h>
 #include <pigpio.h>
 #include <unistd.h>
