@@ -642,8 +642,8 @@ class zmq_client{
 
   //Input data (payload)
   double data1, data2, data3, data4;
-  int finger_select;
-  int controller_select;
+  short finger_select;
+  short controller_select;
 
   //Memory shared by controllers and ZMQ_cleint.
   //Rows:     Finger 1-7  (There is only enough GPIO pins for 7 fingers)
