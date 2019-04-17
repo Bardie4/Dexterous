@@ -682,7 +682,7 @@ class zmq_client{
       while(1){
         address = s_recv (subscriber);  //  Read envelope with address
         //contents = s_recv (subscriber); //  Read message contents
-         zmq_recv (subscriber, address, 1, 0);
+         zmq_recv (subscriber, address, 1, ZMQ_RCVMORE);
          zmq_recv (subscriber, buffer, 1024, 0);
          auto message_obj = Getsimple_instructions(buffer);
          finger_select = (short) message_obj->finger_select();

@@ -128,7 +128,7 @@ class finger{
     builder.Finish(message_obj);
     uint8_t *buf = builder.GetBufferPointer();
     int size = builder.GetSize();
-
+    zmq_send(zmq->publisher, "B", 1, ZMQ_SNDMORE);
     zmq_send (zmq->publisher, buf, size, 0);
     std::cout << (int) zmq->identity <<" "<< (int) zmq->controller_select <<" "<< (int) zmq->data1<< " " << (int) zmq->data2 << " "<< (int) zmq->data3<< " "<< (int) zmq->data4 << std::endl;
   }
@@ -234,8 +234,21 @@ class finger{
 
     char message [100];
     sprintf ( message, "%d %d %d %d %d %d", fing->zmq.identity, fing->zmq.controller_select, fing->zmq.data1, fing->zmq.data2, fing->zmq.data3, fing->zmq.data4);
-    //s_sendmore (fing->zmq.publisher, "B");
-  //  s_send (fing->zmq.publisher, message);
+
+    simple_instructionsBuilder sib(builder);
+    sib.add_data4((double)zmq->data4);
+    sib.add_data3((double)zmq->data3);
+    sib.add_data2((double)zmq->data2);
+    sib.add_data1((double)zmq->data1);
+    sib.add_controller_select((short)zmq->controller_select);
+    sib.add_finger_select((short)zmq->identity);
+
+    auto message_obj = sib.Finish();
+    builder.Finish(message_obj);
+    uint8_t *buf = builder.GetBufferPointer();
+    int size = builder.GetSize();
+    zmq_send(zmq->publisher, "B", 1, ZMQ_SNDMORE);
+    zmq_send (zmq->publisher, buf, size, 0);
     std::cout << (int) fing->zmq.identity <<" "<< (int) fing->zmq.controller_select <<" "<< (int) fing->zmq.data1<< " " << (int) fing->zmq.data2 << " "<< (int) fing->zmq.data3<< " "<< (int) fing->zmq.data4 << std::endl;
 
   }
