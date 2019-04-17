@@ -1,6 +1,7 @@
 
 #include <math.h>
 #include "zhelpers.h"
+#include
 #include <stdio.h>
 #include <pigpio.h>
 #include <unistd.h>
@@ -656,7 +657,8 @@ class zmq_client{
   int finger_count;
   //std::string input_string;
 //  std::string stringtrash;
-//  zmq::message_t update;
+//  zmq::message_t update
+  uint8_t buffer[1024];
   public:
 
     zmq_client(double shared_zmq_memory[7][6], finger* fingers[7]){
@@ -680,12 +682,21 @@ class zmq_client{
       while(1){
         address = s_recv (subscriber);  //  Read envelope with address
         //contents = s_recv (subscriber); //  Read message contents
-        std::string input_string = s_recv (subscriber); //  Read message contents
+         zmq_recv (subscriber, address, 1, 0);
+         zmq_recv (subscriber, buffer, 1024, 0);
+         auto message_obj = Getsimple_instructions(buffer);
+         finger_select = message_ibj->finger_select;
+         controller_select = message_obj->controller_select;
+         data1 = message_obj->data1;
+         data2 = message_obj->data2;
+         data3 = message_obj->data3;
+         data4 = message_obj->data4;
+    //  /std::string input_string = s_recv (subscriber); //  Read message contents
         //subscriber.recv(&update);
         //std::stringstream string_stream(static_cast<char*>(input_string);
-        std::stringstream string_stream;
-        string_stream << input_string;
-        string_stream >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4;
+        //td::stringstream string_stream;
+        //string_stream << input_string;
+        //string_stream >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4;
 				//sscanf(input_string, "%d %d %f %f %f %f",&finger_select , &controller_select , &data1, &data2, &data3, &data4);
       //  std::cout << input_string << std::endl;
         std::cout << (int)finger_select << " " << (int)controller_select<<" " << (double)data1 << " "<< (double)data2 << " " << (double)data3 <<" "<< (double)data4 <<std::endl;
