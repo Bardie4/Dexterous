@@ -685,12 +685,12 @@ class zmq_client{
          zmq_recv (subscriber, address, 1, 0);
          zmq_recv (subscriber, buffer, 1024, 0);
          auto message_obj = Getsimple_instructions(buffer);
-         finger_select = message_obj->finger_select;
-         controller_select = message_obj->controller_select;
-         data1 = message_obj->data1;
-         data2 = message_obj->data2;
-         data3 = message_obj->data3;
-         data4 = message_obj->data4;
+         finger_select = (short) message_obj->finger_select;
+         controller_select = (short) message_obj->controller_select;
+         data1 = (double) message_obj->data1;
+         data2 = (double) message_obj->data2;
+         data3 = (double) message_obj->data3;
+         data4 = (double) message_obj->data4;
     //  /std::string input_string = s_recv (subscriber); //  Read message contents
         //subscriber.recv(&update);
         //std::stringstream string_stream(static_cast<char*>(input_string);
