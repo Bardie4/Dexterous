@@ -680,7 +680,7 @@ class zmq_client{
 
     void* run(){
       while(1){
-        address = s_recv (subscriber);  //  Read envelope with address
+        //address = s_recv (subscriber);  //  Read envelope with address
         //contents = s_recv (subscriber); //  Read message contents
          zmq_recv (subscriber, address, 1, 0);
          zmq_recv (subscriber, buffer, 1024, 0);
@@ -699,7 +699,7 @@ class zmq_client{
         //string_stream >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4;
 				//sscanf(input_string, "%d %d %f %f %f %f",&finger_select , &controller_select , &data1, &data2, &data3, &data4);
       //  std::cout << input_string << std::endl;
-        std::cout << (int)finger_select << " " << (int)controller_select<<" " << (double)data1 << " "<< (double)data2 << " " << (double)data3 <<" "<< (double)data4 <<std::endl;
+         std::cout << (short)finger_select << " " << (short)controller_select<<" " << (double)data1 << " "<< (double)data2 << " " << (double)data3 <<" "<< (double)data4 <<std::endl;
         //finger_select = (uint8_t) contents[0];
 				        //If a viable finger is selected (finger 0-4)
         if ( ( 0 < finger_select) && (finger_select <= 7) ){
@@ -717,7 +717,7 @@ class zmq_client{
 					std::cout << "it worked :O" << std::endl;
 					std::cout <<" Here is the runflag: "<< commands[finger_select][0] <<std::endl;
           //If the finger is not running, and the new command is not to stop
-          if ( (commands[finger_select][0] == 0) && !(controller_select == 0b00000000) ){
+          if ( (commands[finger_select][0] == 0) && !(controller_select == 0) ){
             //Set a flag in shared memory showing that the finger thread is running
             commands[finger_select][0] = 1;
             //Start a the finger on a new thread.
