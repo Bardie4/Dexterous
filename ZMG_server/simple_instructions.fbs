@@ -1,0 +1,12 @@
+// Example IDL file for our monster's schema.
+namespace quad_double_mes;
+
+table simple_instructions {
+  finger_select:short;
+  controller_select:short;
+  data1:double;
+  data2:double;
+  data3:double;
+  data4:double;
+}
+root_type simple_instructions;

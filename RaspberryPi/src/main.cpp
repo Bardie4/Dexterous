@@ -11,6 +11,7 @@
 #include <string>
 #include <wiringPi.h>
 #include <sstream>
+#include "simple_instructions_generated.h"
 pthread_t tid[10];
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t begin_control_iteration = PTHREAD_MUTEX_INITIALIZER;
@@ -18,6 +19,10 @@ static pthread_mutex_t restart = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t start_cond = PTHREAD_COND_INITIALIZER;
 pthread_cond_t restart_cond = PTHREAD_COND_INITIALIZER;
 
+//Flatbuffers
+using namespace quad_double_mes; // Specified in the schema.
+flatbuffers::FlatBufferBuilder builder(1024);
+uint8_t *buffer_pointer;
 
 //Variables used by joint space PID function
 typedef struct jointspace_pid_var {
