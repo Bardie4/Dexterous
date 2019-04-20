@@ -28,35 +28,35 @@
 #define ARDUINO_RUNNING_CORE 1
 #endif
 
-#define H_MOSI  13
+#define H_MOSI  27
+#define H_CS    14
 #define H_MISO  12
-#define H_CLK   14
-#define H_CS    15
+#define H_CLK   13
 
-#define V_MOSI  23
+
+#define V_MOSI  5
+#define V_CS    18
 #define V_MISO  19
-#define V_CLK   18
-#define V_CS    5
+#define V_CLK   21
+
 
 #define M1_PWM1 25 //2
 #define M1_PWM2 33 //4
 #define M1_PWM3 32 //21
-#define M1_nRst 26
-#define M1_nSlp 27
-#define M1_EN   16
+#define M1_nFlt 34
 #define M1_CH1  0
 #define M1_CH2  1
 #define M1_CH3  2
 
-#define M2_PWM1 2 //2
-#define M2_PWM2 4 //4
-#define M2_PWM3 21 //21
-#define M2_nRst 26
-#define M2_nSlp 27
-#define M2_EN   16
+#define M2_PWM1 15 //2
+#define M2_PWM2 2 //4
+#define M2_PWM3 4 //21
+#define M2_nFlt 35
 #define M2_CH1  3
 #define M2_CH2  4
 #define M2_CH3  5
+
+#define M_EN    22
 
 #define PWM_FRQ 300000
 #define PWM_RES 8
@@ -143,7 +143,7 @@ void vspiCommand8(void *pvParameters) {
     pid.Compute();
 
     xQueueOverwrite(qM1Angle, &uiAngle);
-    xQueueOverwrite(qPrintVTheta, &uiAngleDelta);
+    xQueueOverwrite(qPrintVTheta, &uiAngle);
     xQueueOverwrite(qM1Output, &Output);
 
     // Serial.print("Angle: ");
@@ -193,13 +193,7 @@ void motor1Control(void *pvParameters) {
   pinMode(M1_PWM2, OUTPUT);
   pinMode(M1_PWM3, OUTPUT);
 
-  pinMode(M1_EN, OUTPUT);
-  pinMode(M1_nRst, OUTPUT);
-  pinMode(M1_nSlp, OUTPUT);
-
-  digitalWrite(M1_EN, HIGH);
-  digitalWrite(M1_nRst, HIGH);
-  digitalWrite(M1_nSlp, HIGH);
+  pinMode(M1_nFlt, INPUT);
 
   // PWM setup
   ledcSetup(M1_CH1, PWM_FRQ, PWM_RES);
@@ -295,13 +289,7 @@ void motor2Control(void *pvParameters) {
   pinMode(M2_PWM2, OUTPUT);
   pinMode(M2_PWM3, OUTPUT);
 
-  pinMode(M2_EN, OUTPUT);
-  pinMode(M2_nRst, OUTPUT);
-  pinMode(M2_nSlp, OUTPUT);
-
-  digitalWrite(M2_EN, HIGH);
-  digitalWrite(M2_nRst, HIGH);
-  digitalWrite(M2_nSlp, HIGH);
+  pinMode(M2_nFlt, INPUT);
 
   // PWM setup
   ledcSetup(M2_CH1, PWM_FRQ, PWM_RES);
@@ -446,14 +434,6 @@ void motor1Scroll(void *pvParameters) {
   pinMode(M1_PWM2, OUTPUT);
   pinMode(M1_PWM3, OUTPUT);
 
-  pinMode(M1_EN, OUTPUT);
-  pinMode(M1_nRst, OUTPUT);
-  pinMode(M1_nSlp, OUTPUT);
-
-  digitalWrite(M1_EN, HIGH);
-  digitalWrite(M1_nRst, HIGH);
-  digitalWrite(M1_nSlp, HIGH);
-
     // PWM
   ledcSetup(M1_CH1, PWM_FRQ, PWM_RES);
   ledcSetup(M1_CH2, PWM_FRQ, PWM_RES);
@@ -497,14 +477,6 @@ void motor2Scroll(void *pvParameters) {
   pinMode(M2_PWM2, OUTPUT);
   pinMode(M2_PWM3, OUTPUT);
 
-  pinMode(M2_EN, OUTPUT);
-  pinMode(M2_nRst, OUTPUT);
-  pinMode(M2_nSlp, OUTPUT);
-
-  digitalWrite(M2_EN, HIGH);
-  digitalWrite(M2_nRst, HIGH);
-  digitalWrite(M2_nSlp, HIGH);
-
   //PWM
   ledcSetup(M2_CH1, PWM_FRQ, PWM_RES);
   ledcSetup(M2_CH2, PWM_FRQ, PWM_RES);
@@ -529,7 +501,7 @@ void motor2Scroll(void *pvParameters) {
       ledcWrite(M2_CH2, pwmB);
       ledcWrite(M2_CH3, pwmC);
 
-      usleep(100);
+      //usleep(100);
     }
   }
 }
@@ -548,6 +520,9 @@ void setup() {
 
   pinMode(V_CS, OUTPUT); //VSPI SS
   pinMode(H_CS, OUTPUT); //HSPI SS
+
+  pinMode(M_EN, OUTPUT);
+  digitalWrite(M_EN, HIGH);
 
   // Angle read -> motor write
   qM1Angle = xQueueCreate( 1, sizeof( uint8_t ) );
@@ -571,14 +546,14 @@ void setup() {
 
 
   xTaskCreatePinnedToCore(vspiCommand8, "vspi", 4096, (void *)1, 1, NULL, 0);
-  xTaskCreatePinnedToCore(motor1Control, "M1Ctrl", 4096, (void *)1, 1, NULL, 0);
-  //xTaskCreatePinnedToCore(hspiCommand8, "hspi", 4096, (void *)2, 1, NULL, 1);
+  //xTaskCreatePinnedToCore(motor1Control, "M1Ctrl", 4096, (void *)1, 1, NULL, 0);
+  xTaskCreatePinnedToCore(hspiCommand8, "hspi", 4096, (void *)2, 1, NULL, 1);
   //xTaskCreatePinnedToCore(motor2Control, "M2Ctrl", 4096, (void *)1, 1, NULL, 1);
   //xTaskCreatePinnedToCore(motor1PID, "M1PID", 4096, (void *)1, 1, NULL, 1);
   //xTaskCreatePinnedToCore(passMasterCommand, "passMaster", 4096, (void *)2, 1, NULL, 1);
-  //xTaskCreatePinnedToCore(motor1Scroll, "M1_scroll", 4096, (void *)1, 1, NULL, 1);
-  //xTaskCreatePinnedToCore(motor2Scroll, "M2_scroll", 4096, (void *)1, 1, NULL, 1);
-  //xTaskCreatePinnedToCore(printer, "printer", 4096, (void *)1, 1, NULL, 0);
+  xTaskCreatePinnedToCore(motor1Scroll, "M1_scroll", 4096, (void *)1, 1, NULL, 1);
+  xTaskCreatePinnedToCore(motor2Scroll, "M2_scroll", 4096, (void *)1, 1, NULL, 1);
+  xTaskCreatePinnedToCore(printer, "printer", 4096, (void *)1, 1, NULL, 0);
 
   Serial.begin(115200);
 }
