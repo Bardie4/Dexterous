@@ -238,7 +238,6 @@ void motor1Control(void *pvParameters) {
     currentStepC = currentStepB + phaseShift8_120;
 
     //Output
-
     pwmA = (int)(pwmSin[currentStepA] * scaling);
     pwmB = (int)(pwmSin[currentStepB] * scaling);
     pwmC = (int)(pwmSin[currentStepC] * scaling);
@@ -254,7 +253,7 @@ void motor1Control(void *pvParameters) {
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
     TIMERG0.wdt_feed = 1;
     TIMERG0.wdt_wprotect = 0;
-    }
+  }
 }
 
 void motor2Control(void *pvParameters) {
@@ -501,7 +500,7 @@ void motor2Scroll(void *pvParameters) {
       ledcWrite(M2_CH2, pwmB);
       ledcWrite(M2_CH3, pwmC);
 
-      //usleep(100);
+      usleep(100);
     }
   }
 }
@@ -546,13 +545,13 @@ void setup() {
 
 
   xTaskCreatePinnedToCore(vspiCommand8, "vspi", 4096, (void *)1, 1, NULL, 0);
-  //xTaskCreatePinnedToCore(motor1Control, "M1Ctrl", 4096, (void *)1, 1, NULL, 0);
-  xTaskCreatePinnedToCore(hspiCommand8, "hspi", 4096, (void *)2, 1, NULL, 1);
+  xTaskCreatePinnedToCore(motor1Control, "M1Ctrl", 4096, (void *)1, 1, NULL, 0);
+  xTaskCreatePinnedToCore(hspiCommand8, "hspi", 4096, (void *)2, 1, NULL, 0);
   //xTaskCreatePinnedToCore(motor2Control, "M2Ctrl", 4096, (void *)1, 1, NULL, 1);
   //xTaskCreatePinnedToCore(motor1PID, "M1PID", 4096, (void *)1, 1, NULL, 1);
   //xTaskCreatePinnedToCore(passMasterCommand, "passMaster", 4096, (void *)2, 1, NULL, 1);
-  xTaskCreatePinnedToCore(motor1Scroll, "M1_scroll", 4096, (void *)1, 1, NULL, 1);
-  xTaskCreatePinnedToCore(motor2Scroll, "M2_scroll", 4096, (void *)1, 1, NULL, 1);
+  //xTaskCreatePinnedToCore(motor1Scroll, "M1_scroll", 4096, (void *)1, 1, NULL, 1);
+  //xTaskCreatePinnedToCore(motor2Scroll, "M2_scroll", 4096, (void *)1, 1, NULL, 1);
   xTaskCreatePinnedToCore(printer, "printer", 4096, (void *)1, 1, NULL, 0);
 
   Serial.begin(115200);
