@@ -1,0 +1,5 @@
+{
+    "sketch": "GetStarted.ino",
+    "port": "COM4",
+    "board": "Arduino/Genuino Uno (Arduino AVR Board)"
+}
