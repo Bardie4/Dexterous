@@ -661,7 +661,8 @@ class zmq_client{
   //An array of pointers to the functions that starts each finger
   //void* (* finger_run [7])(void *);
   finger* fingerPtrs[7];
-  uint8_t buffer[5000];
+  uint8_t buffer[100000];
+  int messageLength;
   public:
 
     zmq_client(ZmqHandMem* zmq_shared_hand_mem, finger* fingers[7]){
@@ -691,8 +692,8 @@ class zmq_client{
          //zmq_recv (subscriber, address, 1, 0);
          //zmq::message_t buffer;
          //subscriber.recv(&buffer);
-         zmq_recv (subscriber, buffer, 0);
-         std::cout <<"identifier: " <<flatbuffers::GetBufferIdentifier(buffer) <<std::endl;
+         messageLength = zmq_recv (subscriber, buffer, 100000, 0);
+         std::cout <<"Message type: " <<flatbuffers::GetBufferIdentifier(buffer) << " Message length: "<< messageLength <<std::endl;
          auto messageObj = GetSimpleInstructionMsg(buffer);
          std::cout <<"Has identifier: "<< SimpleInstructionMsgBufferHasIdentifier(buffer) << std::endl;
          fingerSelect = (short) messageObj->finger_select();
