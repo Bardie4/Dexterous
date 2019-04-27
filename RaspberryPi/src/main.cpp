@@ -497,7 +497,7 @@ class finger{
 
 			//Tell SPI thread to include sensors in measurement loop
 			pthread_mutex_lock(&spilock);
-			spiHandMem->runFlag = 1;
+			spiFingerMem->runFlag = 1;
 			pthread_mutex_unlock(&spilock);
 			//Wait for a controller to be selected
 			while(1){
@@ -719,11 +719,11 @@ class zmq_client{
           zmqHandMem->finger[fingerSelect].data4 = data4;
 
 					std::cout << "it worked :O" << std::endl;
-					std::cout <<" Here is the runflag: "<< zmqHandMem->finger[fingerSelect].runflag <<std::endl;
+					std::cout <<" Here is the runflag: "<< zmqHandMem->finger[fingerSelect].runFlag <<std::endl;
           //If the finger is not running, and the new command is not to stop
-          if ( (zmqHandMem->finger[fingerSelect].runflag == 0) && !(controllerSelect == 0) ){
+          if ( (zmqHandMem->finger[fingerSelect].runFlag == 0) && !(controllerSelect == 0) ){
             //Set a flag in shared memory showing that the finger thread is running
-            zmqHandMem->finger[fingerSelect].runflag = 1;
+            zmqHandMem->finger[fingerSelect].runFlag = 1;
             //Start a the finger on a new thread.
 						std::cout << "Attempting to create thread"<< std::endl;
             pthread_create(&(tid[2+fingerSelect]), NULL, &finger::init_finger, fingerPtrs[fingerSelect]);
@@ -744,7 +744,7 @@ class zmq_client{
 class spi{
   private:
 		SpiHandMem* spiHandMem;
-    spiHandMem localSpiHandMem;
+    SpiHandMem localSpiHandMem;
 		//double local_mem[7][7];
 
     unsigned frequency;
@@ -920,10 +920,10 @@ class spi{
 
 						pthread_mutex_lock(&spilock);
 						//Send values to shared memory
-						spiHandMem->finger[i].jointAngle1 = local_mem[i][1];
-						spiHandMem->finger[i].jointAngle2 = local_mem[i][2];
-						spiHandMem->finger[i].angularVel1 = local_mem[i][3];
-						spiHandMem->finger[i].angularVel2 = local_mem[i][4];
+						spiHandMem->finger[i].jointAngle1 = localSpiHandMem.finger[i].jointAngle1;
+						spiHandMem->finger[i].jointAngle2 = localSpiHandMem.finger[i].jointAngle2;
+						spiHandMem->finger[i].angularVel1 = localSpiHandMem.finger[i].angularVel1;
+						spiHandMem->finger[i].angularVel2 = localSpiHandMem.finger[i].angularVel2;
 
 						//Read output from shared memory
 						localSpiHandMem.finger[i].commandedTorque1 = spiHandMem->finger[i].commandedTorque1;
