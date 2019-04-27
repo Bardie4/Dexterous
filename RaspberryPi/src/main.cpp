@@ -665,7 +665,7 @@ class zmq_client{
   int messageLength;
   public:
 
-    zmq_client(ZmqHandMem* zmq_shared_hand_mem, finger** fingers){
+    zmq_client(ZmqHandMem* zmq_shared_hand_mem, finger fingers[]){
 
 			zmqHandMem = zmq_shared_hand_mem;
 
@@ -1054,7 +1054,7 @@ main(){
 	fingerPtr[5] = &finger6;
 	fingerPtr[6] = &finger7;
 
-  zmq_client zmq(zmqHandMem, fingerPtr);
+  zmq_client zmq(&zmqHandMem, fingerPtr);
   pthread_create(&(tid[1]), NULL, &zmq_client::init_zmq, &zmq);
 
 
