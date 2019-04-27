@@ -904,16 +904,16 @@ class spi{
 				//Load info about active fingers
 				pthread_mutex_lock(&spilock);
 				for (int i=0; i<7; i++){
-						localSpiHandMem->finger[i].runFlag = spiHandMem->finger[i].runFlag;
+						localSpiHandMem.finger[i].runFlag = spiHandMem->finger[i].runFlag;
 					}
 				pthread_mutex_unlock(&spilock);
 
 				for (int i=0; i<7; i++){
 					//If fingers are active
-					if (localSpiHandMem->finger[i].runFlag){
+					if (localSpiHandMem.finger[i].runFlag){
 						//Read angle from SPI (store it locally)
-						localSpiHandMem->finger[i].jointAngle1 = read_angle_16(cs_arr[i][1]);
-						localSpiHandMem->finger[i].jointAngle2 = read_angle_16(cs_arr[i][2]);
+						localSpiHandMem.finger[i].jointAngle1 = read_angle_16(cs_arr[i][1]);
+						localSpiHandMem.finger[i].jointAngle2 = read_angle_16(cs_arr[i][2]);
 
 						//Calculate speed (store it locally)
 						//************** NOT DONE *********************
