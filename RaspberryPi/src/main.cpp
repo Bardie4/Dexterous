@@ -688,16 +688,16 @@ class zmq_client{
     void* run(){
       while(1){
 
-        std::cout <<"we got here"<< std::endl;
+        std::cout <<"we got here 1"<< std::endl;
          //address = s_recv (subscriber);  //  Read envelope with address
          //contents = s_recv (subscriber); //  Read message contents
-         zmq_recv (subscriber, address, 1, 0);
-         std::cout <<"we got here"<< std::endl;
+         zmq_recv (subscriber, address, 1, ZMQ_RCVMORE);
+         std::cout <<"we got here 2"<< std::endl;
          //zmq::message_t buffer;
          //subscriber.recv(&buffer);
          messageLength = zmq_recv (subscriber, buffer, 1000, 0);
 
-         std::cout <<"we got here too"<< std::endl;
+         std::cout <<"we got here too 3"<< std::endl;
          //std::cout <<"Has identifier: "<< SimpleInstructionMsgBufferHasIdentifier(buffer) << std::endl;
          if (SimpleInstructionMsgBufferHasIdentifier(buffer)){
            auto messageObj = GetSimpleInstructionMsg(buffer);
