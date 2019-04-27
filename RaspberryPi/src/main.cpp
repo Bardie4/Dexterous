@@ -661,7 +661,7 @@ class zmq_client{
   //An array of pointers to the functions that starts each finger
   //void* (* finger_run [7])(void *);
   finger* fingerPtrs[7];
-  uint8_t* buffer[1000];
+  char* buffer[1000];
   std::size_t  messageLength;
   public:
 
@@ -687,6 +687,8 @@ class zmq_client{
 
     void* run(){
       while(1){
+
+        std::cout <<"we got here"<< std::endl;
          //address = s_recv (subscriber);  //  Read envelope with address
          //contents = s_recv (subscriber); //  Read message contents
          zmq_recv (subscriber, address, 1, 0);
