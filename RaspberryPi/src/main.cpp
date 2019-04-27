@@ -689,7 +689,7 @@ class zmq_client{
       while(1){
          //address = s_recv (subscriber);  //  Read envelope with address
          //contents = s_recv (subscriber); //  Read message contents
-         //zmq_recv (subscriber, address, 1, 0);
+         zmq_recv (subscriber, address, 1, 0);
          //zmq::message_t buffer;
          //subscriber.recv(&buffer);
          messageLength = zmq_recv (subscriber, buffer, 100000, 0);
