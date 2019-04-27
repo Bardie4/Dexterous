@@ -1,6 +1,6 @@
 # Makefile for compiling raspberry compatible
 spi_test : src/main.cpp
-	g++ -Wall -pthread -g src/main.cpp -o spi_test -lzmq -lpthread -lpigpio -lrt -lm -I/include/generated_flattbuffers
+	g++ -Wall -pthread -g src/main.cpp -o spi_test -lzmq -lpthread -lpigpio -lrt -lm -I ./include/generated_flattbuffers
 
 #spi_test : src/main.cpp
 	#g++ -Wall -pthread -g src/main.cpp -o spi_test -lzmq -lpthread -lpigpio -lrt -lm -I/include -I/lib  -L/usr/local/lib -lwiringPi -I/usr/local/include
