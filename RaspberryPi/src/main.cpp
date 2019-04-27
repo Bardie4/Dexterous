@@ -1045,7 +1045,7 @@ main(){
 	finger_run_fct_ptr[5] = finger6.run;
 	finger_run_fct_ptr[6] = finger7.run;
 	*/
-	finger* finger_ptr[7];
+	finger* fingerPtr[7];
 	finger_ptr[0] = &finger1;
 	finger_ptr[1] = &finger2;
 	finger_ptr[2] = &finger3;
@@ -1054,7 +1054,7 @@ main(){
 	finger_ptr[5] = &finger6;
 	finger_ptr[6] = &finger7;
 
-  zmq_client zmq(zmqHandMem, finger_ptr);
+  zmq_client zmq(zmqHandMem, fingerPtr);
   pthread_create(&(tid[1]), NULL, &zmq_client::init_zmq, &zmq);
 
 
