@@ -690,11 +690,13 @@ class zmq_client{
          //address = s_recv (subscriber);  //  Read envelope with address
          //contents = s_recv (subscriber); //  Read message contents
          zmq_recv (subscriber, address, 1, 0);
+         std::cout <<"we got here"<< std::endl;
          //zmq::message_t buffer;
          //subscriber.recv(&buffer);
          messageLength = zmq_recv (subscriber, buffer, 1000, 0);
 
-         std::cout <<"Has identifier: "<< SimpleInstructionMsgBufferHasIdentifier(buffer) << std::endl;
+         std::cout <<"we got here too"<< std::endl;
+         //std::cout <<"Has identifier: "<< SimpleInstructionMsgBufferHasIdentifier(buffer) << std::endl;
          if (SimpleInstructionMsgBufferHasIdentifier(buffer)){
            auto messageObj = GetSimpleInstructionMsg(buffer);
 
