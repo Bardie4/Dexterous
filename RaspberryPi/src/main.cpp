@@ -661,7 +661,7 @@ class zmq_client{
   //An array of pointers to the functions that starts each finger
   //void* (* finger_run [7])(void *);
   finger* fingerPtrs[7];
-  //uint8_t buffer[5000];
+  uint8_t buffer[5000];
   public:
 
     zmq_client(ZmqHandMem* zmq_shared_hand_mem, finger* fingers[7]){
@@ -674,14 +674,14 @@ class zmq_client{
       }
 
       //ZMQ setup
-      zmq::context_t context (1);
-      zmq::socket_t subscriber (context, ZMQ_SUB);
-      subscriber.connect("tcp://169.254.27.157:5563");
-      subscriber.setsockopt(ZMQ_SUBSCRIBE, "B", 1);
-      //context = zmq_ctx_new ();
-      //subscriber = zmq_socket (context, ZMQ_SUB);
-      //zmq_connect (subscriber, "tcp://169.254.27.157:5563");
-      //zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "B", 1);
+      /zmq::context_t context (1);
+      //zmq::socket_t subscriber (context, ZMQ_SUB);
+      //subscriber.connect("tcp://169.254.27.157:5563");
+      //subscriber.setsockopt(ZMQ_SUBSCRIBE, "B", 1);
+      context = zmq_ctx_new ();
+      subscriber = zmq_socket (context, ZMQ_SUB);
+      zmq_connect (subscriber, "tcp://169.254.27.157:5563");
+      zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "B", 1);
     }
 
     void* run(){
@@ -689,9 +689,9 @@ class zmq_client{
          //address = s_recv (subscriber);  //  Read envelope with address
          //contents = s_recv (subscriber); //  Read message contents
          //zmq_recv (subscriber, address, 1, 0);
-         zmq::message_t buffer;
-         subscriber.recv(&buffer);
-         //zmq_recv (subscriber, buffer, 0);
+         //zmq::message_t buffer;
+         //subscriber.recv(&buffer);
+         zmq_recv (subscriber, buffer, 0);
          std::cout <<"identifier: " <<flatbuffers::GetBufferIdentifier(buffer) <<std::endl;
          auto messageObj = GetSimpleInstructionMsg(buffer);
          std::cout <<"Has identifier: "<< SimpleInstructionMsgBufferHasIdentifier(buffer) << std::endl;
