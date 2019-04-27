@@ -665,7 +665,7 @@ class zmq_client{
   int messageLength;
   public:
 
-    zmq_client(ZmqHandMem* zmq_shared_hand_mem, finger fingers[]){
+    zmq_client(ZmqHandMem* zmq_shared_hand_mem, finger* fingers[]){
 
 			zmqHandMem = zmq_shared_hand_mem;
 
