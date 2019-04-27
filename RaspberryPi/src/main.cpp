@@ -13,6 +13,7 @@
 #include <wiringPi.h>
 #include <sstream>
 #include "generated_flattbuffers/simple_instructions_generated.h"
+#include "controller_structs.h"
 pthread_t tid[10];
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t begin_control_iteration = PTHREAD_MUTEX_INITIALIZER;
