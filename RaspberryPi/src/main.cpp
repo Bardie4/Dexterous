@@ -692,7 +692,7 @@ class zmq_client{
          zmq_recv (subscriber, address, 1, 0);
          //zmq::message_t buffer;
          //subscriber.recv(&buffer);
-         messageLength = zmq_recv (subscriber, buffer, 100000, 0);
+         messageLength = zmq_recv (subscriber, buffer, 10000, 0);
          std::cout <<"Message type: " <<flatbuffers::GetBufferIdentifier(buffer) << " Message length: "<< messageLength <<std::endl;
          auto messageObj = GetSimpleInstructionMsg(buffer);
          std::cout <<"Has identifier: "<< SimpleInstructionMsgBufferHasIdentifier(buffer) << std::endl;
