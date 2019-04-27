@@ -662,7 +662,7 @@ class zmq_client{
   //void* (* finger_run [7])(void *);
   finger* fingerPtrs[7];
   uint8_t buffer[1000];
-  int messageLength;
+  std::size_t  messageLength;
   public:
 
     zmq_client(ZmqHandMem* zmq_shared_hand_mem, finger* fingers[]){
