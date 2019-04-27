@@ -674,7 +674,7 @@ class zmq_client{
       }
 
       //ZMQ setup
-      /zmq::context_t context (1);
+      //zmq::context_t context (1);
       //zmq::socket_t subscriber (context, ZMQ_SUB);
       //subscriber.connect("tcp://169.254.27.157:5563");
       //subscriber.setsockopt(ZMQ_SUBSCRIBE, "B", 1);
