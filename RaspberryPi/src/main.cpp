@@ -692,10 +692,12 @@ class zmq_client{
          //address = s_recv (subscriber);  //  Read envelope with address
          //contents = s_recv (subscriber); //  Read message contents
       //  zmq_recv (subscriber, address, 1, 0);
+
+        address = s_recv (subscriber);
          std::cout <<"we got here 2. Length: "<<  messageLength << std::endl;
          //zmq::message_t buffer;
          //subscriber.recv(&buffer);
-         zmq_recv (subscriber, buffer, 1, 0);
+         zmq_recv (subscriber, buffer, 1000, 0);
 
          std::cout <<"we got here too 3"<< std::endl;
          //std::cout <<"Has identifier: "<< SimpleInstructionMsgBufferHasIdentifier(buffer) << std::endl;
