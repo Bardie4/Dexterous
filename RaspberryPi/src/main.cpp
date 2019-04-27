@@ -696,49 +696,52 @@ class zmq_client{
          std::cout <<"Message type: " <<flatbuffers::GetBufferIdentifier(buffer) << " Message length: "<< messageLength <<std::endl;
          auto messageObj = GetSimpleInstructionMsg(buffer);
          std::cout <<"Has identifier: "<< SimpleInstructionMsgBufferHasIdentifier(buffer) << std::endl;
-         fingerSelect = (short) messageObj->finger_select();
-         controllerSelect = (short) messageObj->controller_select();
-         data1 = (double) messageObj->data1();
-         data2 = (double) messageObj->data2();
-         data3 = (double) messageObj->data3();
-         data4 = (double) messageObj->data4();
-    //  /std::string input_string = s_recv (subscriber); //  Read message contents
-        //subscriber.recv(&update);
-        //std::stringstream string_stream(static_cast<char*>(input_string);
-        //td::stringstream string_stream;
-        //string_stream << input_string;
-        //string_stream >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4;
-				//sscanf(input_string, "%d %d %f %f %f %f",&finger_select , &controller_select , &data1, &data2, &data3, &data4);
-      //  std::cout << input_string << std::endl;
-         std::cout << (short)fingerSelect << " " << (short)controllerSelect<<" " << (double)data1 << " "<< (double)data2 << " " << (double)data3 <<" "<< (double)data4 <<std::endl;
-        //finger_select = (uint8_t) contents[0];
-				        //If a viable finger is selected (finger 0-4)
-        if ( ( 0 <= fingerSelect) && (fingerSelect < 7) ){
-          //Read and unload data to shared memory
+         if (SimpleInstructionMsgBufferHasIdentifier(buffer)){
+           fingerSelect = (short) messageObj->finger_select();
+           controllerSelect = (short) messageObj->controller_select();
+           data1 = (double) messageObj->data1();
+           data2 = (double) messageObj->data2();
+           data3 = (double) messageObj->data3();
+           data4 = (double) messageObj->data4();
 
-					//std::cout << (int)finger_select << " " << (int)controller_select<<" " << (int)data1 << " "<< (int)data2 << " " << (int)data3 <<" "<< (int)data4 <<std::endl;
-					std::cout << "Putting commands in shared memory" << std::endl;
-          pthread_mutex_lock(&zmqlock);
-          zmqHandMem->finger[fingerSelect].controllerSelect = controllerSelect;
-          zmqHandMem->finger[fingerSelect].data1 = data1;
-          zmqHandMem->finger[fingerSelect].data2 = data2;
-          zmqHandMem->finger[fingerSelect].data3 = data3;
-          zmqHandMem->finger[fingerSelect].data4 = data4;
+      //  /std::string input_string = s_recv (subscriber); //  Read message contents
+          //subscriber.recv(&update);
+          //std::stringstream string_stream(static_cast<char*>(input_string);
+          //td::stringstream string_stream;
+          //string_stream << input_string;
+          //string_stream >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4;
+  				//sscanf(input_string, "%d %d %f %f %f %f",&finger_select , &controller_select , &data1, &data2, &data3, &data4);
+        //  std::cout << input_string << std::endl;
+           std::cout << (short)fingerSelect << " " << (short)controllerSelect<<" " << (double)data1 << " "<< (double)data2 << " " << (double)data3 <<" "<< (double)data4 <<std::endl;
+          //finger_select = (uint8_t) contents[0];
+  				        //If a viable finger is selected (finger 0-4)
+          if ( ( 0 <= fingerSelect) && (fingerSelect < 7) ){
+            //Read and unload data to shared memory
 
-					std::cout << "it worked :O" << std::endl;
-					std::cout <<" Here is the runflag: "<< zmqHandMem->finger[fingerSelect].runFlag <<std::endl;
-          //If the finger is not running, and the new command is not to stop
-          if ( (zmqHandMem->finger[fingerSelect].runFlag == 0) && !(controllerSelect == 0) ){
-            //Set a flag in shared memory showing that the finger thread is running
-            zmqHandMem->finger[fingerSelect].runFlag = 1;
-            //Start a the finger on a new thread.
-						std::cout << "Attempting to create thread"<< std::endl;
-            pthread_create(&(tid[2+fingerSelect]), NULL, &finger::init_finger, fingerPtrs[fingerSelect]);
-            //Note that the finger thread will terminate on its own
-            //and set the run_flag low when controller_select = 0.
+  					//std::cout << (int)finger_select << " " << (int)controller_select<<" " << (int)data1 << " "<< (int)data2 << " " << (int)data3 <<" "<< (int)data4 <<std::endl;
+  					std::cout << "Putting commands in shared memory" << std::endl;
+            pthread_mutex_lock(&zmqlock);
+            zmqHandMem->finger[fingerSelect].controllerSelect = controllerSelect;
+            zmqHandMem->finger[fingerSelect].data1 = data1;
+            zmqHandMem->finger[fingerSelect].data2 = data2;
+            zmqHandMem->finger[fingerSelect].data3 = data3;
+            zmqHandMem->finger[fingerSelect].data4 = data4;
+
+  					std::cout << "it worked :O" << std::endl;
+  					std::cout <<" Here is the runflag: "<< zmqHandMem->finger[fingerSelect].runFlag <<std::endl;
+            //If the finger is not running, and the new command is not to stop
+            if ( (zmqHandMem->finger[fingerSelect].runFlag == 0) && !(controllerSelect == 0) ){
+              //Set a flag in shared memory showing that the finger thread is running
+              zmqHandMem->finger[fingerSelect].runFlag = 1;
+              //Start a the finger on a new thread.
+  						std::cout << "Attempting to create thread"<< std::endl;
+              pthread_create(&(tid[2+fingerSelect]), NULL, &finger::init_finger, fingerPtrs[fingerSelect]);
+              //Note that the finger thread will terminate on its own
+              //and set the run_flag low when controller_select = 0.
+            }
+            pthread_mutex_unlock(&zmqlock);
+  					std::cout << "after creating thread" << std::endl;
           }
-          pthread_mutex_unlock(&zmqlock);
-					std::cout << "after creating thread" << std::endl;
         }
       }
     };
