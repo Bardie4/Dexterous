@@ -175,7 +175,7 @@ class finger{
     SpiFingerMem* spiFingerMem;
     ZmqFingerMem* zmqFingerMem;
 		//Constructor
-    finger(int identity ,*SpiFingerMem spi_finger_mem, *ZmqFingerMem zmq_finger_mem, int spi_var[3],int spi_handle){
+    finger(int identity ,SpiFingerMem* spi_finger_mem, ZmqFingerMem* zmq_finger_mem, int spi_var[3],int spi_handle){
 			id= identity;
 			//Get pointers to shared memory
       spiFingerMem = spi_finger_mem;
