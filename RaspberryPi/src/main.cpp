@@ -642,7 +642,7 @@ class zmq_client{
 
   private:
   //ZMQ
-  char* address;
+  char* address[255];
   char* contents;
   void* context;
   void* subscriber;
@@ -691,9 +691,8 @@ class zmq_client{
         std::cout <<"we got here 1"<< std::endl;
          //address = s_recv (subscriber);  //  Read envelope with address
          //contents = s_recv (subscriber); //  Read message contents
-      //  zmq_recv (subscriber, address, 1, 0);
-
-        address = s_recv (subscriber);
+      //  zmq_recv (subscriber, address, 255, 0);
+         //address = s_recv (subscriber);
          std::cout <<"we got here 2. Length: "<<  messageLength << std::endl;
          //zmq::message_t buffer;
          //subscriber.recv(&buffer);
