@@ -193,7 +193,7 @@ void motorL(void *pvParameters) {
 
 double getScaleL() {
   double scaling;
-
+    scaling = 100;
   return scaling;
 }
 

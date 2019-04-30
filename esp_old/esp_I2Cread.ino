@@ -40,9 +40,9 @@
  * - i2c master(ESP32) will read data from i2c slave(ESP32).
  */
 
-#define DATA_LENGTH                        64              /*!<Data buffer length for test buffer*/
+#define DATA_LENGTH                        512              /*!<Data buffer length for test buffer*/
 #define RW_TEST_LENGTH                     129              /*!<Data length for r/w test, any value from 0-DATA_LENGTH*/
-#define DELAY_TIME_BETWEEN_ITEMS_MS        100             /*!< delay time between different test items */
+#define DELAY_TIME_BETWEEN_ITEMS_MS        500             /*!< delay time between different test items */
 
 #define I2C_EXAMPLE_SLAVE_SCL_IO           GPIO_NUM_16               /*!<gpio number for i2c slave clock  */
 #define I2C_EXAMPLE_SLAVE_SDA_IO           GPIO_NUM_17               /*!<gpio number for i2c slave data */
@@ -69,6 +69,8 @@
 
 SemaphoreHandle_t print_mux = NULL;
 
+
+
 static void i2c_example_slave_init(){
       i2c_port_t i2c_slave_port = I2C_EXAMPLE_SLAVE_NUM;
     i2c_config_t conf_slave;
@@ -80,9 +82,11 @@ static void i2c_example_slave_init(){
     conf_slave.slave.addr_10bit_en = 0;
     conf_slave.slave.slave_addr = ESP_SLAVE_ADDR;
     i2c_param_config(i2c_slave_port, &conf_slave);
-    i2c_driver_install(i2c_slave_port, conf_slave.mode,
-                       I2C_EXAMPLE_SLAVE_RX_BUF_LEN,
-                       I2C_EXAMPLE_SLAVE_TX_BUF_LEN, I2C_NUM_0);
+    i2c_driver_install(i2c_slave_port, 
+                        conf_slave.mode,
+                        I2C_EXAMPLE_SLAVE_RX_BUF_LEN,
+                        I2C_EXAMPLE_SLAVE_TX_BUF_LEN, 
+                        I2C_NUM_0);
 }
 
 // static esp_err_t i2c_example_master_write_slave(i2c_port_t i2c_num, uint8_t* data_wr, size_t size)
@@ -101,26 +105,19 @@ static void disp_buf(uint8_t* buf, int len)
 {
     int i;
     for (i = 0; i < len; i++) {
-        Serial.print("incoming: ");
+
         Serial.print(buf[i]);
         Serial.print(" ");
         if (( i + 1 ) % 16 == 0) {
             Serial.println();
         }
     }
-    Serial.println("");
 }
 
 static void i2c_test_task(void* arg)
 {
-    int i = 0;
-    int ret;
-    uint32_t task_idx = (uint32_t) arg;
     uint8_t* data = (uint8_t*) malloc(DATA_LENGTH);
-    uint8_t* data_wr = (uint8_t*) malloc(DATA_LENGTH);
-    uint8_t* data_rd = (uint8_t*) malloc(DATA_LENGTH);
-    uint8_t sensor_data_h, sensor_data_l;
-    int cnt = 0;
+
     int size;
 
     while (1) {
@@ -129,7 +126,7 @@ static void i2c_test_task(void* arg)
 
       disp_buf(data, size);
 
-      vTaskDelay(( DELAY_TIME_BETWEEN_ITEMS_MS * ( task_idx + 1 ) ) / portTICK_RATE_MS);
+      vTaskDelay( 1 / portTICK_RATE_MS);
     }
 }
 
@@ -139,7 +136,15 @@ void setup()
     print_mux = xSemaphoreCreateMutex();
     i2c_example_slave_init();
     
-    xTaskCreate(i2c_test_task, "i2c_test_task_0", 1024 * 2, (void* ) 0, 10, NULL);
+    //i2c_port_t i2c_num,
+    //void (*fn)(void *),
+    //void *arg,
+    //int intr_alloc_flags; 
+
+    //intr_handle_t intr = NULL;
+
+    //i2c_isr_register(I2C_EXAMPLE_SLAVE_NUM, i2c_test_task, NULL, ESP_INTR_FLAG_LEVEL6, &intr);
+    xTaskCreatePinnedToCore(i2c_test_task, "printer", 1024 * 2, (void *)7, 1, NULL, 0);
 }
 
 void loop(){
