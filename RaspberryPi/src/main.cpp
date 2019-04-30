@@ -13,8 +13,10 @@
 #include <wiringPi.h>
 #include <sstream>
 #include "generated_flattbuffers/simple_instructions_generated.h"
+#include "controller_structs.h"
 pthread_t tid[10];
-static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t zmqlock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t spilock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t begin_control_iteration = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t restart = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t start_cond = PTHREAD_COND_INITIALIZER;
@@ -170,12 +172,17 @@ class finger{
     int time0;
     int time1;
     int step;
+
+    SpiFingerMem* spiFingerMem;
+    ZmqFingerMem* zmqFingerMem;
 		//Constructor
-    finger(int identity ,double shared_spi_memory[7], double shared_zmq_memory[6], int spi_var[3],int spi_handle){
+    finger(int identity ,SpiFingerMem* spi_finger_mem, ZmqFingerMem* zmq_finger_mem, int spi_var[3],int spi_handle){
 			id= identity;
 			//Get pointers to shared memory
-			spi_mem_shared = shared_spi_memory;
-			zmq_mem_shared = shared_zmq_memory;
+      spiFingerMem = spi_finger_mem;
+      zmqFingerMem = zmq_finger_mem;
+      //spi_mem_shared = shared_spi_memory;
+			//zmq_mem_shared = shared_zmq_memory;
 
 
       //Set default settings for controllers
@@ -225,39 +232,39 @@ class finger{
 		void shutdown(){
 			//Tell zmq client that the thread is no longer active
       std::cout << "shutting down thread: " << id <<std::endl;
-			pthread_mutex_lock(&lock);
-			spi_mem_shared[0] = 0;
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_lock(&spilock);
+      spiFingerMem->runFlag = 0;
+			pthread_mutex_unlock(&spilock);
 			//Tell zmq function to no longer measure sesnors for this finger
-			pthread_mutex_lock(&lock);
-			zmq_mem_shared[0] = 0;
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_lock(&zmqlock);
+      zmqFingerMem->runFlag = 0;
+			pthread_mutex_unlock(&zmqlock);
 			}
 
 		void update_local_zmq_mem(){
-			pthread_mutex_lock(&lock);
-			controller_select = zmq_mem_shared[1];
-			data1 = zmq_mem_shared[2];
-			data2 = zmq_mem_shared[3];
-			data3 = zmq_mem_shared[4];
-			data4 = zmq_mem_shared[5];
-      pthread_mutex_unlock(&lock);
+			pthread_mutex_lock(&zmqlock);
+			controller_select = zmqFingerMem->controllerSelect;
+			data1 = zmqFingerMem->data1;
+			data2 = zmqFingerMem->data2;
+			data3 = zmqFingerMem->data3;
+			data4 = zmqFingerMem->data4;
+      pthread_mutex_unlock(&zmqlock);
 		}
 
 		void update_local_spi_mem(){
-			//pthread_mutex_lock(&lock);
-			theta1 = spi_mem_shared[1];
-			theta2 = spi_mem_shared[2];
-			angular_vel1 = spi_mem_shared[3];
-			angular_vel2 = spi_mem_shared[4];
-			//pthread_mutex_unlock(&lock);
+			pthread_mutex_lock(&spilock);
+			theta1 = spiFingerMem->jointAngle1;
+			theta2 = spiFingerMem->jointAngle2;
+			angular_vel1 = spiFingerMem->angularVel1;
+			angular_vel2 = spiFingerMem->angularVel2;
+			pthread_mutex_unlock(&spilock);
 		}
 
 		void update_shared_spi_mem(){
-			pthread_mutex_lock(&lock);
-			spi_mem_shared[5]=torque1;
-			spi_mem_shared[6]=torque2;
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_lock(&spilock);
+			spiFingerMem->commandedTorque1 = torque1;
+			spiFingerMem->commandedTorque2 = torque2;
+			pthread_mutex_unlock(&spilock);
 		}
 
 		void calibration(){
@@ -278,30 +285,30 @@ class finger{
 			torque_cmd[2]=(uint8_t) 20;
 
       std::cout << "about to use spi " << std::endl;
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_output,0);
 			spi_result = spiXfer(handle, torque_cmd, inBuf, 3);
 			gpio_result = gpioWrite(cs_output,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 
 			printf("Driving to endpoint\n");
 			usleep(5000000);
 
 			//READ ANGLE AT END POINT
 			outBuf[0] = 0b00000000;
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_1,0);
 			spi_result = spiXfer(handle, outBuf, inBuf, 1);
 			gpio_result = gpioWrite(cs_angle_sensor_1,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			theta1 = inBuf[0];
 
 			outBuf[0] = 0b00000000;
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_2,0);
 			spi_result = spiXfer(handle, outBuf, inBuf, 1);
 			gpio_result = gpioWrite(cs_angle_sensor_2,1);
-		 	pthread_mutex_unlock(&lock);
+		 	pthread_mutex_unlock(&spilock);
 			theta2 = inBuf[0];
 
 			printf("Before calibration: %d | %d\n", theta1 , theta2);
@@ -318,39 +325,39 @@ class finger{
 			//RESET OLD ZERO POINT
 			set_zero_angle_cmd[0]=0b10000001; //WRITE REG 1 (8 MSB of zero angle)
 			set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_1,0);
 			spi_result = spiXfer(handle, set_zero_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_1,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			usleep(100000);
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_1,0);
 			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_1,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			usleep(100000);
 			set_zero_angle_cmd[0]=0b10000000; //WRITE REG 0 (8 LSB of zero angle)
 			set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_1,0);
 			spi_result = spiXfer(handle, set_zero_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_1,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			usleep(100000);
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_1,0);
 			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_1,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			usleep(100000);
 
 			//MEASURE ANGLE AFTER RESET AND CALCULATE REGISTER INPUT
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_1,0);
 			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_1,1);									//MEASURE CURRENT ANGLE
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			zero_point = (inBuf[0] << 8);                               //COMBINE 8 bit values to 16 bit
 			zero_point = zero_point + inBuf[1];
 			zero_point = (uint16_t) (0b10000000000000000-zero_point+0b0000100000000000);   	//CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
@@ -358,31 +365,31 @@ class finger{
 			//SET NEW ZERO POINT
 			set_zero_angle_cmd[0]=0b10000001;
 			set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //8 MSB of Compliment of new zero angle
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_1,0);
 			spi_result = spiXfer(handle, set_zero_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_1,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			usleep(100000);
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_1,0);
 			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_1,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			usleep(100000);
 			set_zero_angle_cmd[0]=0b10000000;
 			set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //8 LSB of Compliment of new zero angle
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_1,0);
 			spi_result = spiXfer(handle, set_zero_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_1,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			usleep(100000);
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_1,0);
 			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_1,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			usleep(100000);
 
 
@@ -392,39 +399,39 @@ class finger{
 			//RESET OLD ZERO POINT
 			set_zero_angle_cmd[0]=0b10000001;   //WRITE REG 1 (8 MSB of zero angle)
 			set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_2,0);
 			spi_result = spiXfer(handle, set_zero_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_2,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			usleep(100000);
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_2,0);
 			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_2,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			usleep(100000);
 			set_zero_angle_cmd[0]=0b10000000;   //WRITE REG 0 (8 LSB of zero angle)
 			set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_2,0);
 			spi_result = spiXfer(handle, set_zero_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_2,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			usleep(100000);
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_2,0);
 			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_2,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			usleep(100000);
 
 			//MEASURE ANGLE AFTER RESET AND CALCULATE REGISTER INPUT
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_2,0);
 			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_2,1); // MEASURE ZERO ANGLE
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			zero_point = (inBuf[0] << 8);
 			zero_point = zero_point + inBuf[1];
 			zero_point = (uint16_t) (0b10000000000000000-zero_point+0b0000100000000000);   //CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
@@ -432,66 +439,66 @@ class finger{
 			//SET NEW ZERO POINT
 			set_zero_angle_cmd[0]=0b10000001;                           //WRITE REG 1 (8 MSB of zero angle)
 			set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //ZERO ANGLE SET TO CURRENT ANGLE
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_2,0);
 			spi_result = spiXfer(handle, set_zero_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_2,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			usleep(100000);
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_2,0);
 			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_2,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			usleep(100000);
 			set_zero_angle_cmd[0]=0b10000000;                           //WRITE REG 0 (8 LSB of zero angle)
 			set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //ZERO ANGLE SET TO CURRENT ANGLE
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_2,0);
 			spi_result = spiXfer(handle, set_zero_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_2,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			usleep(100000);
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_2,0);
 			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 2);
 			gpio_result = gpioWrite(cs_angle_sensor_2,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			usleep(100000);
 
 
 			//*********PRINT RESULT****************
 			//*************************************
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_1,0);
 			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 1);
 			gpio_result = gpioWrite(cs_angle_sensor_1,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			theta1=inBuf[0];
 
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_angle_sensor_2,0);
 			spi_result = spiXfer(handle, read_angle_cmd, inBuf, 1);
 			gpio_result = gpioWrite(cs_angle_sensor_2,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 			theta2=inBuf[0];
 
 			printf("After calibration: %d | %d \n",	theta1, theta2 );
 
 			//Shut of motors
 			torque_cmd[0]=(uint8_t) 0;
-			torque_cmd[1]=(uint8_t) 20;
-			torque_cmd[2]=(uint8_t) 20;
-			pthread_mutex_lock(&lock);
+			torque_cmd[1]=(uint8_t) 0;
+			torque_cmd[2]=(uint8_t) 0;
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs_output,0);
 			spi_result = spiXfer(handle, torque_cmd, inBuf, 3);
 			gpio_result = gpioWrite(cs_output,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 
 			//Tell SPI thread to include sensors in measurement loop
-			pthread_mutex_lock(&lock);
-			spi_mem_shared[0] = 1;
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_lock(&spilock);
+			spiFingerMem->runFlag = 1;
+			pthread_mutex_unlock(&spilock);
 			//Wait for a controller to be selected
 			while(1){
 				sleep(2);
@@ -635,101 +642,114 @@ class zmq_client{
 
   private:
   //ZMQ
-  char* address;
+  char* address[255];
   char* contents;
   void* context;
   void* subscriber;
 
   //Input data (payload)
   double data1, data2, data3, data4;
-  short finger_select;
-  short controller_select;
+  short fingerSelect;
+  short controllerSelect;
 
   //Memory shared by controllers and ZMQ_cleint.
   //Rows:     Finger 1-7  (There is only enough GPIO pins for 7 fingers)
   //Coloums:  run_flag, controller_select, data1, data2, data3, data4
-  double (*commands)[6];
+  //double (*commands)[6];
+  ZmqHandMem* zmqHandMem;
 
   //An array of pointers to the functions that starts each finger
   //void* (* finger_run [7])(void *);
-  finger* finger_ptrs[7];
-  //Amount of fingers in use
-  int finger_count;
-  //std::string input_string;
-//  std::string stringtrash;
-//  zmq::message_t update
-  uint8_t buffer[1024];
+  finger* fingerPtrs[7];
+  char buffer[1000];
+  std::size_t  messageLength;
   public:
 
-    zmq_client(double shared_zmq_memory[7][6], finger* fingers[7]){
-			commands = shared_zmq_memory;
+    zmq_client(ZmqHandMem* zmq_shared_hand_mem, finger* fingers[]){
+
+			zmqHandMem = zmq_shared_hand_mem;
+
+      //Load pointers to functions that starts fingers
+      for (int i = 0; i < 7; i++){
+        fingerPtrs[i] = fingers[i];
+      }
+
       //ZMQ setup
+      //zmq::context_t context (1);
+      //zmq::socket_t subscriber (context, ZMQ_SUB);
+      //subscriber.connect("tcp://169.254.27.157:5563");
+      //subscriber.setsockopt(ZMQ_SUBSCRIBE, "B", 1);
       context = zmq_ctx_new ();
       subscriber = zmq_socket (context, ZMQ_SUB);
       zmq_connect (subscriber, "tcp://169.254.27.157:5563");
       zmq_setsockopt (subscriber, ZMQ_SUBSCRIBE, "B", 1);
-
-
-      //Clear the shared memory that will be used
-
-      //Load pointers to start functions
-      for (int i = 0; i < 7; i++){
-        finger_ptrs[i] = fingers[i];
-      }
     }
 
     void* run(){
       while(1){
-        address = s_recv (subscriber);  //  Read envelope with address
-        //contents = s_recv (subscriber); //  Read message contents
-         //zmq_recv (subscriber, address, 1, 0);
-         zmq_recv (subscriber, buffer, 1024, 0);
-         std::cout <<"identifier: " <<flatbuffers::GetBufferIdentifier(buffer) <<std::endl;
-         auto message_obj = GetSimpleInstructionMsg(buffer);
-         std::cout <<"Has identifier: "<< SimpleInstructionMsgBufferHasIdentifier(buffer) << std::endl;
-         finger_select = (short) message_obj->finger_select();
-         controller_select = (short) message_obj->controller_select();
-         data1 = (double) message_obj->data1();
-         data2 = (double) message_obj->data2();
-         data3 = (double) message_obj->data3();
-         data4 = (double) message_obj->data4();
-    //  /std::string input_string = s_recv (subscriber); //  Read message contents
-        //subscriber.recv(&update);
-        //std::stringstream string_stream(static_cast<char*>(input_string);
-        //td::stringstream string_stream;
-        //string_stream << input_string;
-        //string_stream >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4;
-				//sscanf(input_string, "%d %d %f %f %f %f",&finger_select , &controller_select , &data1, &data2, &data3, &data4);
-      //  std::cout << input_string << std::endl;
-         std::cout << (short)finger_select << " " << (short)controller_select<<" " << (double)data1 << " "<< (double)data2 << " " << (double)data3 <<" "<< (double)data4 <<std::endl;
-        //finger_select = (uint8_t) contents[0];
-				        //If a viable finger is selected (finger 0-4)
-        if ( ( 0 <= finger_select) && (finger_select < 7) ){
-          //Read and unload data to shared memory
 
-					//std::cout << (int)finger_select << " " << (int)controller_select<<" " << (int)data1 << " "<< (int)data2 << " " << (int)data3 <<" "<< (int)data4 <<std::endl;
-					std::cout << "Putting commands in shared memory" << std::endl;
-          pthread_mutex_lock(&lock);
-          commands[finger_select][1] = controller_select;
-          commands[finger_select][2] = data1;
-          commands[finger_select][3] = data2;
-          commands[finger_select][4] = data3;
-          commands[finger_select][5] = data4;
+        std::cout <<"we got here 1"<< std::endl;
+         //address = s_recv (subscriber);  //  Read envelope with address
+         //contents = s_recv (subscriber); //  Read message contents
+      //  zmq_recv (subscriber, address, 255, 0);
+         //address = s_recv (subscriber);
+         std::cout <<"we got here 2. Length: "<<  messageLength << std::endl;
+         //zmq::message_t buffer;
+         //subscriber.recv(&buffer);
+         zmq_recv (subscriber, buffer, 1000, 0);
 
-					std::cout << "it worked :O" << std::endl;
-					std::cout <<" Here is the runflag: "<< commands[finger_select][0] <<std::endl;
-          //If the finger is not running, and the new command is not to stop
-          if ( (commands[finger_select][0] == 0) && !(controller_select == 0) ){
-            //Set a flag in shared memory showing that the finger thread is running
-            commands[finger_select][0] = 1;
-            //Start a the finger on a new thread.
-											std::cout << "Attempting to create thread"<< std::endl;
-            pthread_create(&(tid[2+finger_select]), NULL, &finger::init_finger, finger_ptrs[finger_select]);
-            //Note that the finger thread will terminate on its own
-            //and set the run_flag low when controller_select = 0.
+         std::cout <<"we got here too 3"<< std::endl;
+         //std::cout <<"Has identifier: "<< SimpleInstructionMsgBufferHasIdentifier(buffer) << std::endl;
+         if (SimpleInstructionMsgBufferHasIdentifier(buffer)){
+           auto messageObj = GetSimpleInstructionMsg(buffer);
+
+           std::cout <<"Message type: " <<flatbuffers::GetBufferIdentifier(buffer) << " Message length: "<< messageLength <<std::endl;
+
+           fingerSelect = (short) messageObj->finger_select();
+           controllerSelect = (short) messageObj->controller_select();
+           data1 = (double) messageObj->data1();
+           data2 = (double) messageObj->data2();
+           data3 = (double) messageObj->data3();
+           data4 = (double) messageObj->data4();
+
+      //  /std::string input_string = s_recv (subscriber); //  Read message contents
+          //subscriber.recv(&update);
+          //std::stringstream string_stream(static_cast<char*>(input_string);
+          //td::stringstream string_stream;
+          //string_stream << input_string;
+          //string_stream >> finger_select >> controller_select >> data1 >> data2 >> data3 >> data4;
+  				//sscanf(input_string, "%d %d %f %f %f %f",&finger_select , &controller_select , &data1, &data2, &data3, &data4);
+        //  std::cout << input_string << std::endl;
+           std::cout << (short)fingerSelect << " " << (short)controllerSelect<<" " << (double)data1 << " "<< (double)data2 << " " << (double)data3 <<" "<< (double)data4 <<std::endl;
+          //finger_select = (uint8_t) contents[0];
+  				        //If a viable finger is selected (finger 0-4)
+          if ( ( 0 <= fingerSelect) && (fingerSelect < 7) ){
+            //Read and unload data to shared memory
+
+  					//std::cout << (int)finger_select << " " << (int)controller_select<<" " << (int)data1 << " "<< (int)data2 << " " << (int)data3 <<" "<< (int)data4 <<std::endl;
+  					std::cout << "Putting commands in shared memory" << std::endl;
+            pthread_mutex_lock(&zmqlock);
+            zmqHandMem->finger[fingerSelect].controllerSelect = controllerSelect;
+            zmqHandMem->finger[fingerSelect].data1 = data1;
+            zmqHandMem->finger[fingerSelect].data2 = data2;
+            zmqHandMem->finger[fingerSelect].data3 = data3;
+            zmqHandMem->finger[fingerSelect].data4 = data4;
+
+  					std::cout << "it worked :O" << std::endl;
+  					std::cout <<" Here is the runflag: "<< zmqHandMem->finger[fingerSelect].runFlag <<std::endl;
+            //If the finger is not running, and the new command is not to stop
+            if ( (zmqHandMem->finger[fingerSelect].runFlag == 0) && !(controllerSelect == 0) ){
+              //Set a flag in shared memory showing that the finger thread is running
+              zmqHandMem->finger[fingerSelect].runFlag = 1;
+              //Start a the finger on a new thread.
+  						std::cout << "Attempting to create thread"<< std::endl;
+              pthread_create(&(tid[2+fingerSelect]), NULL, &finger::init_finger, fingerPtrs[fingerSelect]);
+              //Note that the finger thread will terminate on its own
+              //and set the run_flag low when controller_select = 0.
+            }
+            pthread_mutex_unlock(&zmqlock);
+  					std::cout << "after creating thread" << std::endl;
           }
-          pthread_mutex_unlock(&lock);
-						std::cout << "after creating thread" << std::endl;
         }
       }
     };
@@ -741,8 +761,9 @@ class zmq_client{
 
 class spi{
   private:
-		double (*shared_mem)[7];
-		double local_mem[7][7];
+		SpiHandMem* spiHandMem;
+    SpiHandMem localSpiHandMem;
+		//double local_mem[7][7];
 
     unsigned frequency;
     unsigned spi_channel;
@@ -792,17 +813,15 @@ class spi{
     double timeofday;
 
   public:
-    spi(double shared_spi_memory[7][7], int chip_selects[7][3]){
+    spi(SpiHandMem* spi_hand_mem, int chip_selects[7][3]){
+      spiHandMem = spi_hand_mem;
+      cs_arr = chip_selects;
 
       if (gpioInitialise() < 0)
       {
          //printf(stderr, "pigpio initialisation failed.\n");
          std::cout << "pigpio initialisation failed" << std::endl;
       }
-
-			shared_mem = shared_spi_memory;
-			cs_arr = chip_selects;
-
 
       //SPI frequency
       frequency = 15000000;
@@ -838,26 +857,26 @@ class spi{
 
     uint8_t read_angle_8(int &cs){
       outBuf[0] = read_command_8;
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
       gpio_result = gpioWrite(cs,0);
       spi_result = spiXfer(spi_handle, outBuf, inBuf, 1);
       gpio_result = gpioWrite(cs,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
       return inBuf[0];
     }
     uint16_t read_angle_16(int &cs){
       outBuf[0] = read_command_16[0];
       outBuf[1] = read_command_16[1];
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
       gpio_result = gpioWrite(cs,0);
       spi_result = spiXfer(spi_handle, outBuf, inBuf, 2);
       gpio_result = gpioWrite(cs,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
       temp = inBuf[0] << 8;
       temp = temp + inBuf[1];
       return temp;
     }
-		void write_output_8(int &cs, double &output1, double &output2){
+		void write_output_8(int &cs, float &output1, float &output2){
 			outBuf[0] = 0;
 			if ( output1 < 0 ){
 				output1 = output1*(-1);
@@ -876,11 +895,11 @@ class spi{
 			outBuf[1] =  (uint8_t) output1;
 			outBuf[2] =  (uint8_t) output2;
 
-			pthread_mutex_lock(&lock);
+			pthread_mutex_lock(&spilock);
 			gpio_result = gpioWrite(cs,0);
 			spi_result = spiXfer(spi_handle, outBuf, inBuf, 3);
 			gpio_result = gpioWrite(cs,1);
-			pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&spilock);
 		}
 
 		~spi(){
@@ -901,46 +920,39 @@ class spi{
 			while(1){
 				time0=micros();
 				//Load info about active fingers
-				pthread_mutex_lock(&lock);
+				pthread_mutex_lock(&spilock);
 				for (int i=0; i<7; i++){
-						local_mem[i][0] = shared_mem[i][0];
+						localSpiHandMem.finger[i].runFlag = spiHandMem->finger[i].runFlag;
 					}
-				pthread_mutex_unlock(&lock);
+				pthread_mutex_unlock(&spilock);
 
 				for (int i=0; i<7; i++){
 					//If fingers are active
-					if (local_mem[i][0]){
-						//Read angle from SPI
-						local_mem[i][1] = read_angle_16(cs_arr[i][1]);
-						local_mem[i][2] = read_angle_16(cs_arr[i][2]);
+					if (localSpiHandMem.finger[i].runFlag){
+						//Read angle from SPI (store it locally)
+						localSpiHandMem.finger[i].jointAngle1 = read_angle_16(cs_arr[i][1]);
+						localSpiHandMem.finger[i].jointAngle2 = read_angle_16(cs_arr[i][2]);
 
-						//Calculate speed
+						//Calculate speed (store it locally)
 						//************** NOT DONE *********************
 
-						pthread_mutex_lock(&lock);
-						//Update shared memory
-						shared_mem[i][1] = local_mem[i][1];
-						shared_mem[i][2] = local_mem[i][2];
-						shared_mem[i][3] = local_mem[i][3];
-						shared_mem[i][4] = local_mem[i][4];
+						pthread_mutex_lock(&spilock);
+						//Send values to shared memory
+						spiHandMem->finger[i].jointAngle1 = localSpiHandMem.finger[i].jointAngle1;
+						spiHandMem->finger[i].jointAngle2 = localSpiHandMem.finger[i].jointAngle2;
+						spiHandMem->finger[i].angularVel1 = localSpiHandMem.finger[i].angularVel1;
+						spiHandMem->finger[i].angularVel2 = localSpiHandMem.finger[i].angularVel2;
 
 						//Read output from shared memory
-						local_mem[i][5] = shared_mem[i][5];
-						local_mem[i][6] = shared_mem[i][6];
-						pthread_mutex_unlock(&lock);
+						localSpiHandMem.finger[i].commandedTorque1 = spiHandMem->finger[i].commandedTorque1;
+						localSpiHandMem.finger[i].commandedTorque2 = spiHandMem->finger[i].commandedTorque2;
+						pthread_mutex_unlock(&spilock);
 
 						//Send output to SPI
-						write_output_8(cs_arr[i][3],local_mem[i][5],local_mem[i][6]);
+						write_output_8(cs_arr[i][3],localSpiHandMem.finger[i].commandedTorque1, localSpiHandMem.finger[i].commandedTorque2);
 					}
 				}
-				//WAIT
 
-				/*while(step<1000){
-					time1=micros();
-					step=time1-time0;
-					usleep(250);
-					//std::cout << "we waited" << std::endl;
-				}*/
         itr_counter++;
         if (itr_counter >1000){
           std::cout << "SPI thread used: "<< step <<" microseconds on one iteration. (Including 1000us delay)"<<std::endl;
@@ -1014,16 +1026,19 @@ main(){
 	std::fill( shared_spi_memory[0], shared_spi_memory[0] + 7*7, 0);
 	std::fill( shared_zmq_memory[0], shared_zmq_memory[0] + 7*6, 0);
 
-  spi spi_controller(shared_spi_memory,cs_arr);
+  ZmqHandMem zmqHandMem;
+  SpiHandMem spiHandMem;
+
+  spi spi_controller(&spiHandMem, cs_arr);
 
 	//Creating finger objects and hooking them up to shared memory shared by zmq and spi threads
-  finger finger1(1,&shared_spi_memory[0][0], &shared_zmq_memory[0][0], &cs_arr[0][0], spi_controller.get_handle());
-  finger finger2(2,&shared_spi_memory[1][0], &shared_zmq_memory[1][0], &cs_arr[1][0], spi_controller.get_handle());
-  finger finger3(3,&shared_spi_memory[2][0], &shared_zmq_memory[2][0], &cs_arr[2][0], spi_controller.get_handle());
-	finger finger4(4,&shared_spi_memory[3][0], &shared_zmq_memory[3][0], &cs_arr[3][0], spi_controller.get_handle());
-	finger finger5(5,&shared_spi_memory[4][0], &shared_zmq_memory[4][0], &cs_arr[4][0], spi_controller.get_handle());
-	finger finger6(6,&shared_spi_memory[5][0], &shared_zmq_memory[5][0], &cs_arr[5][0], spi_controller.get_handle());
-	finger finger7(7,&shared_spi_memory[6][0], &shared_zmq_memory[6][0], &cs_arr[5][0], spi_controller.get_handle());
+  finger finger1(1 ,&spiHandMem.finger[0], &zmqHandMem.finger[0], &cs_arr[0][0], spi_controller.get_handle());
+  finger finger2(2 ,&spiHandMem.finger[1], &zmqHandMem.finger[1], &cs_arr[1][0], spi_controller.get_handle());
+  finger finger3(3 ,&spiHandMem.finger[2], &zmqHandMem.finger[2], &cs_arr[2][0], spi_controller.get_handle());
+	finger finger4(4 ,&spiHandMem.finger[3], &zmqHandMem.finger[3], &cs_arr[3][0], spi_controller.get_handle());
+	finger finger5(5 ,&spiHandMem.finger[4], &zmqHandMem.finger[4], &cs_arr[4][0], spi_controller.get_handle());
+	finger finger6(6 ,&spiHandMem.finger[5], &zmqHandMem.finger[5], &cs_arr[5][0], spi_controller.get_handle());
+	finger finger7(7 ,&spiHandMem.finger[6], &zmqHandMem.finger[6], &cs_arr[5][0], spi_controller.get_handle());
 
   pthread_create(&(tid[0]), NULL, &spi::init_spi, &spi_controller);
 
@@ -1041,16 +1056,16 @@ main(){
 	finger_run_fct_ptr[5] = finger6.run;
 	finger_run_fct_ptr[6] = finger7.run;
 	*/
-	finger* finger_ptr[7];
-	finger_ptr[0] = &finger1;
-	finger_ptr[1] = &finger2;
-	finger_ptr[2] = &finger3;
-	finger_ptr[3] = &finger4;
-	finger_ptr[4] = &finger5;
-	finger_ptr[5] = &finger6;
-	finger_ptr[6] = &finger7;
+	finger* fingerPtr[7];
+	fingerPtr[0] = &finger1;
+	fingerPtr[1] = &finger2;
+	fingerPtr[2] = &finger3;
+	fingerPtr[3] = &finger4;
+	fingerPtr[4] = &finger5;
+	fingerPtr[5] = &finger6;
+	fingerPtr[6] = &finger7;
 
-  zmq_client zmq(shared_zmq_memory, finger_ptr);
+  zmq_client zmq(&zmqHandMem, fingerPtr);
   pthread_create(&(tid[1]), NULL, &zmq_client::init_zmq, &zmq);
 
 
