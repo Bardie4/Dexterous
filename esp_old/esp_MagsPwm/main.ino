@@ -555,8 +555,8 @@ void setup() {
   //xTaskCreatePinnedToCore(motor2Control, "M2Ctrl", 4096, (void *)1, 1, NULL, 1);
   //xTaskCreatePinnedToCore(motor1PID, "M1PID", 4096, (void *)1, 1, NULL, 1);
   //xTaskCreatePinnedToCore(motor1MasterCommand, "passMaster", 4096, (void *)2, 1, NULL, 1);
-  //xTaskCreatePinnedToCore(motor1Scroll, "M1_scroll", 4096, (void *)1, 1, NULL, 1);
-  //xTaskCreatePinnedToCore(motor2Scroll, "M2_scroll", 4096, (void *)1, 1, NULL, 1);
+  xTaskCreatePinnedToCore(motor1Scroll, "M1_scroll", 4096, (void *)1, 1, NULL, 1);
+  xTaskCreatePinnedToCore(motor2Scroll, "M2_scroll", 4096, (void *)1, 1, NULL, 1);
   xTaskCreatePinnedToCore(printer, "printer", 4096, (void *)1, 1, NULL, 0);
 
   Serial.begin(115200);
