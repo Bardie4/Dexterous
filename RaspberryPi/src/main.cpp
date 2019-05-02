@@ -1,7 +1,7 @@
 
 #include <math.h>
-#include <zmq.h>
-#include "zmq/zhelpers.h"
+//#include <zmq.h>
+//#include "zmq/zhelpers.h"
 #include "zmq/zmq.hpp"
 #include <stdio.h>
 #include <pigpio.h>
