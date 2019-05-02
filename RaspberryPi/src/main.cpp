@@ -165,7 +165,8 @@ class Finger{
 		int spiHandle;
 		char inBuf[4];
 		char outBuf[4];
-    int i2cHandle;
+    int i2cReg;
+    int i2cAddress;
 
 
     //Timing
@@ -248,8 +249,8 @@ class Finger{
 
 		void update_shared_spi_mem(){
 			pthread_mutex_lock(&periphLock);
-			perpihSharedMem.commandedTorque1 = torque1;
-			perpihSharedMem.commandedTorque2 = torque2;
+			periphhSharedMem.commandedTorque1 = torque1;
+			periphSharedMem.commandedTorque2 = torque2;
 			pthread_mutex_unlock(&periphLock);
 		}
 */
@@ -849,7 +850,7 @@ class PeripheralsController{
 			outBuf[2] =  (uint8_t) Output2Scaled8;
 
       //Send
-      if ( i2cHandle = i2cOpen(0, i2cAddress, 0) < 0 ){
+      if ( ( i2cHandle = i2cOpen(0, i2cAddress, 0) ) < 0 ){
         std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
       }
       if ( i2cBlockProcessCall(i2cHandle, i2cReg, outBuf, 3) < 0 ){
@@ -921,7 +922,7 @@ class PeripheralsController{
       }
 
       //The finger threads and periphersal thread use this memory to communicate
-      fingerMemPtr[finger->id] = &(finger->perpihSharedMem);
+      fingerMemPtr[finger->id] = &(finger->periphSharedMem);
       //During calibration, the finger takes control over the pheripherals.
       //Here it it given the means to do so.
       finger->spiHandle = spiHandle;
@@ -1078,7 +1079,7 @@ main(){
   zmqSub.bindFinger( &finger1);
   zmqSub.bindFinger( &finger2);
   zmqSub.bindFinger( &finger3);
-  zmqSub.bindFinger( &fingee4);
+  zmqSub.bindFinger( &finger4);
   zmqSub.bindFinger( &finger5);
   zmqSub.bindFinger( &finger6);
 
