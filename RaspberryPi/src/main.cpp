@@ -647,12 +647,14 @@ class ZmqSubscriber{
   //char buffer[1000];
 
   bool oldRunFlag;
+
+  zmq::context context;
+  zmq::socket_t subscriber;
   public:
 
-    ZmqSubscriber(){
+    ZmqSubscriber()
+      :context(1) , subscriber(context, ZMQ_SUB){
       //ZMQ setup: http://zguide.zeromq.org/cpp:wuclient
-      zmq::context_t context (1);
-      zmq::socket_t subscriber(context, ZMQ_SUB);
       const char *filter = "10001 ";
       subscriber.setsockopt(ZMQ_SUBSCRIBE, filter, strlen (filter));
       subscriber.connect("tcp://169.254.27.157:5563");
@@ -732,7 +734,7 @@ class ZmqSubscriber{
       pthread_mutex_unlock(&zmqSubLock);
     }
 
-    void run(){
+    void* run(){
       while(1){
         //Listen for messages
         //From guide: http://zguide.zeromq.org/cpp:interrupt
@@ -754,7 +756,7 @@ class ZmqSubscriber{
     }
 
 		static void* start(void* zmq_sub_object){
-			((ZmqSubscriber*)zmq_sub_object)->run();
+			return ((ZmqSubscriber*)zmq_sub_object)->run();
 		}
 };
 
