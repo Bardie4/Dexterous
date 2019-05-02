@@ -690,7 +690,7 @@ class ZmqSubscriber{
     }
 
     static void *initFinger(void *finger_object){
-      std::cout << "New thread created for finger: "<< finger_object->id << std::endl;
+      std::cout << "New thread created for finger: "<< ((Finger*)finger_object)->id << std::endl;
       return ((Finger*)finger_object)->run();
     }
 
