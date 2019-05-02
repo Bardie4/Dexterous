@@ -1,4 +1,4 @@
-typedef struct ZmqFingerMem{
+typedef struct ZmqSubFingerMem{
   bool runFlag;
   bool newMessage;
   short fingerSelect;
@@ -14,7 +14,7 @@ typedef struct ZmqFingerMem{
   float trajAcceleration[1024];
 }ZmqFingerMem;
 
-typedef struct SpiFingerMem{
+typedef struct PeripheralFingerMem{
   bool runFlag;
   float jointAngle1;
   float jointAngle2;
@@ -22,24 +22,8 @@ typedef struct SpiFingerMem{
   float angularVel2;
   float commandedTorque1;
   float commandedTorque2;
-}SpiFingerMem;
+}PeripheralFingerMem;
 
 typedef struct ZmqHandMem{
  ZmqFingerMem finger[7];
 }ZmqHandMem;
-
-typedef struct SpiHandMem{
- SpiFingerMem finger[7];
-}SpiHandMem;
-
-/*
-typedef struct chipSelect{
-  short csJointSensor1;
-  short csJointSensor2;
-  short csTorqueController;
-}chipSelect;
-
-typedef struct csList{
-  chipSelect finger[7];
-}csList;
-*/
