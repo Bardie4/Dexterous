@@ -732,7 +732,7 @@ class ZmqSubscriber{
       pthread_mutex_unlock(&zmqSubLock);
     }
 
-    void* run(){
+    void run(){
       while(1){
         //Listen for messages
         //From guide: http://zguide.zeromq.org/cpp:interrupt
@@ -754,7 +754,7 @@ class ZmqSubscriber{
     }
 
 		static void* start(void* zmq_sub_object){
-			return ((ZmqSubscriber*)zmq_sub_object)->run();
+			((ZmqSubscriber*)zmq_sub_object)->run();
 		}
 };
 
