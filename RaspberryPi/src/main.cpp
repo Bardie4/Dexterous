@@ -1,4 +1,4 @@
-csAngleSensor1
+
 #include <math.h>
 #include <zmq.h>
 #include "zmq/zhelpers.h"
@@ -19,9 +19,7 @@ pthread_t tid[10];
 static pthread_mutex_t zmqSubLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t periphLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t begin_control_iteration = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t restart = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t start_cond = PTHREAD_COND_INITIALIZER;
-pthread_cond_t restart_cond = PTHREAD_COND_INITIALIZER;
 
 //micro seconds between sensor reads.
 //(the process of reading adds additional time to the total step length)
