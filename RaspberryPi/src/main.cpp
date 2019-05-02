@@ -607,8 +607,8 @@ class Finger{
 			//While finger is instructed to be active
       while( !(controller_select == 0) ){
 				//Cycle through controllers.
-        jointspace_ijc_pid();
-        cartesian_ijc_pid();
+        //jointspace_ijc_pid();
+      //  cartesian_ijc_pid();
       }
 			//Tell spi and zmq thread we are finished
 			shutdown();
