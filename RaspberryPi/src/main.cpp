@@ -1012,7 +1012,7 @@ class PeripheralsController{
     }
 };
 
-main(){
+void main(){
   //Initiate finger objects. The arguments is the identity of the finger.
   //The identity corresponds to specific SPI pins. Choose a value between 0-6.
   //Additional fingers can be added (max 7 with the amount of GPIO pins on a RaspberryPi).
