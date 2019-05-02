@@ -655,7 +655,7 @@ class ZmqSubscriber{
       //ZMQ setup: http://zguide.zeromq.org/cpp:wuclient
       zmq::context_t context (1);
       zmq::socket_t subscriber (context, ZMQ_SUB);
-      const char *filter = (argc > 1)? argv [1]: "10001 ";
+      const char *filter = "10001 ";
       subscriber.setsockopt(ZMQ_SUBSCRIBE, filter, strlen (filter));
       subscriber.connect("tcp://169.254.27.157:5563");
 
@@ -698,6 +698,7 @@ class ZmqSubscriber{
     void passOnSimpleInstructions(zmq::message_t* buffer){
       //Parse flattbuffer and store it
       //auto messageObj = GetSimpleInstructionMsg(buffer->data());
+      auto messageObj;
       fingerMem.fingerSelect = messageObj->finger_select();
       //Return if selected finger is not valid
       if ( (fingerMem.fingerSelect < 0) || (fingerMem.fingerSelect > 6) ){
