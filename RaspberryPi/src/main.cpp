@@ -697,7 +697,7 @@ class ZmqSubscriber{
 
     void passOnSimpleInstructions(zmq::message_t* buffer){
       //Parse flattbuffer and store it
-      auto messageObj = GetSimpleInstructionMsg(buffer->data());
+      //auto messageObj = GetSimpleInstructionMsg(buffer->data());
       fingerMem.fingerSelect = messageObj->finger_select();
       //Return if selected finger is not valid
       if ( (fingerMem.fingerSelect < 0) || (fingerMem.fingerSelect > 6) ){
@@ -1067,23 +1067,23 @@ main(){
 	Finger finger3(3);
 	Finger finger4(4);
 	Finger finger5(5);
-	Finger finger7(6);
+	Finger finger6(6);
 
+  periphContrl.bindFinger( &finger0);
   periphContrl.bindFinger( &finger1);
   periphContrl.bindFinger( &finger2);
   periphContrl.bindFinger( &finger3);
   periphContrl.bindFinger( &finger4);
   periphContrl.bindFinger( &finger5);
   periphContrl.bindFinger( &finger6);
-  periphContrl.bindFinger( &finger7);
 
+  zmqSub.bindFinger( &finger0);
   zmqSub.bindFinger( &finger1);
   zmqSub.bindFinger( &finger2);
   zmqSub.bindFinger( &finger3);
-  zmqSub.bindFinger( &finger4);
+  zmqSub.bindFinger( &fingee4);
   zmqSub.bindFinger( &finger5);
   zmqSub.bindFinger( &finger6);
-  zmqSub.bindFinger( &finger7);
 
   pthread_create(&(tid[0]), NULL, &PeripheralsController::start, &periphContrl);
   pthread_create(&(tid[1]), NULL, &ZmqSubscriber::start, &zmqSub);
