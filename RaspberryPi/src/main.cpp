@@ -985,11 +985,11 @@ class PeripheralsController{
 						writeOutput8(csAndI2cAddr[i][3],fingerMem[i].commandedTorque1, fingerMem[i].commandedTorque2);
 
             //Load into flatbuffer struct
-            auto fingerStates= CreateFingerStates{i,  fingerMem[i].jointAngle1,       fingerMem[i].jointAngle2,
-                                                      fingerMem[i].angularVel1,       fingerMem[i].angularVel2,
-                                                      0,                              0,
-                                                      fingerMem[i].commandedTorque1,  fingerMem[i].commandedTorque1,
-                                                      0,0,0,0};
+            auto fingerStates= CreateFingerStates{builder,  i,  fingerMem[i].jointAngle1,       fingerMem[i].jointAngle2,
+                                                                fingerMem[i].angularVel1,       fingerMem[i].angularVel2,
+                                                                0,                              0,
+                                                                fingerMem[i].commandedTorque1,  fingerMem[i].commandedTorque1,
+                                                                0,0,0,0};
             handStatesStdVec.push_back(fingerStates);
 					}
 				}
@@ -1010,7 +1010,7 @@ class PeripheralsController{
 
         //Finish flatbuffer
         auto hand = builder.CreateVector(handStates);
-        auto handBroadcast = CreateHandBroadcast(hand);
+        auto handBroadcast = CreateHandBroadcast(builder, hand);
         FinishHandBroadcast(builder, handBroadcast);
         //Send
         uint8_t *buf = builder.GetBufferPointer();
