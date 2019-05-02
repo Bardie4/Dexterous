@@ -738,7 +738,7 @@ class ZmqSubscriber{
         //From guide: http://zguide.zeromq.org/cpp:interrupt
         zmq::message_t buffer;
         //try {
-        //subscriber.recv(buffer);
+        subscriber.recv(buffer);
         //}
         //catch(zmq::error_t& e) {
         //  std::cout << "Interrupt received" << std::endl;
