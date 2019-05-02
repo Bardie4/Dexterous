@@ -626,8 +626,6 @@ class ZmqSubscriber{
   //ZMQ
   char* address[255];
   char* contents;
-  void* context;
-  void* subscriber;
 
   //Input data (payload)
   double data1, data2, data3, data4, data5, data6, data7, data8, data9, data10;
