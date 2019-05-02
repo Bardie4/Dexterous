@@ -1,4 +1,4 @@
-
+csAngleSensor1
 #include <math.h>
 #include <zmq.h>
 #include "zmq/zhelpers.h"
@@ -161,8 +161,8 @@ class Finger{
 		int id;
 
 		//SPI variables(Used only for calibration)
-		int cs_angle_sensor_1;
-		int cs_angle_sensor_2;
+		int csAngleSensor1;
+		int csAngleSensor2;
 		int cs_output;
 		int spiHandle;
 		char inBuf[4];
@@ -285,17 +285,17 @@ class Finger{
 			//READ ANGLE AT END POINT
 			outBuf[0] = 0b00000000;
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_1,0);
+			gpioResult = gpioWrite(csAngleSensor1,0);
 			spiResult = spiXfer(spiHandle, outBuf, inBuf, 1);
-			gpioResult = gpioWrite(cs_angle_sensor_1,1);
+			gpioResult = gpioWrite(csAngleSensor1,1);
 			pthread_mutex_unlock(&periphLock);
 			theta1 = inBuf[0];
 
 			outBuf[0] = 0b00000000;
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_2,0);
+			gpioResult = gpioWrite(csAngleSensor2,0);
 			spiResult = spiXfer(spiHandle, outBuf, inBuf, 1);
-			gpioResult = gpioWrite(cs_angle_sensor_2,1);
+			gpioResult = gpioWrite(csAngleSensor2,1);
 		 	pthread_mutex_unlock(&periphLock);
 			theta2 = inBuf[0];
 
@@ -314,37 +314,37 @@ class Finger{
 			set_zero_angle_cmd[0]=0b10000001; //WRITE REG 1 (8 MSB of zero angle)
 			set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_1,0);
+			gpioResult = gpioWrite(csAngleSensor1,0);
 			spiResult = spiXfer(spiHandle, set_zero_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_1,1);
+			gpioResult = gpioWrite(csAngleSensor1,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_1,0);
+			gpioResult = gpioWrite(csAngleSensor1,0);
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_1,1);
+			gpioResult = gpioWrite(csAngleSensor1,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
 			set_zero_angle_cmd[0]=0b10000000; //WRITE REG 0 (8 LSB of zero angle)
 			set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_1,0);
+			gpioResult = gpioWrite(csAngleSensor1,0);
 			spiResult = spiXfer(spiHandle, set_zero_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_1,1);
+			gpioResult = gpioWrite(csAngleSensor1,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_1,0);
+			gpioResult = gpioWrite(csAngleSensor1,0);
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_1,1);
+			gpioResult = gpioWrite(csAngleSensor1,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
 
 			//MEASURE ANGLE AFTER RESET AND CALCULATE REGISTER INPUT
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_1,0);
+			gpioResult = gpioWrite(csAngleSensor1,0);
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_1,1);									//MEASURE CURRENT ANGLE
+			gpioResult = gpioWrite(csAngleSensor1,1);									//MEASURE CURRENT ANGLE
 			pthread_mutex_unlock(&periphLock);
 			zero_point = (inBuf[0] << 8);                               //COMBINE 8 bit values to 16 bit
 			zero_point = zero_point + inBuf[1];
@@ -354,29 +354,29 @@ class Finger{
 			set_zero_angle_cmd[0]=0b10000001;
 			set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //8 MSB of Compliment of new zero angle
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_1,0);
+			gpioResult = gpioWrite(csAngleSensor1,0);
 			spiResult = spiXfer(spiHandle, set_zero_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_1,1);
+			gpioResult = gpioWrite(csAngleSensor1,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_1,0);
+			gpioResult = gpioWrite(csAngleSensor1,0);
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_1,1);
+			gpioResult = gpioWrite(csAngleSensor1,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
 			set_zero_angle_cmd[0]=0b10000000;
 			set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //8 LSB of Compliment of new zero angle
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_1,0);
+			gpioResult = gpioWrite(csAngleSensor1,0);
 			spiResult = spiXfer(spiHandle, set_zero_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_1,1);
+			gpioResult = gpioWrite(csAngleSensor1,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_1,0);
+			gpioResult = gpioWrite(csAngleSensor1,0);
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_1,1);
+			gpioResult = gpioWrite(csAngleSensor1,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
 
@@ -388,37 +388,37 @@ class Finger{
 			set_zero_angle_cmd[0]=0b10000001;   //WRITE REG 1 (8 MSB of zero angle)
 			set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_2,0);
+			gpioResult = gpioWrite(csAngleSensor2,0);
 			spiResult = spiXfer(spiHandle, set_zero_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_2,1);
+			gpioResult = gpioWrite(csAngleSensor2,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_2,0);
+			gpioResult = gpioWrite(csAngleSensor2,0);
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_2,1);
+			gpioResult = gpioWrite(csAngleSensor2,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
 			set_zero_angle_cmd[0]=0b10000000;   //WRITE REG 0 (8 LSB of zero angle)
 			set_zero_angle_cmd[1]=0b00000000;   //RESET ZERO ANGLE
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_2,0);
+			gpioResult = gpioWrite(csAngleSensor2,0);
 			spiResult = spiXfer(spiHandle, set_zero_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_2,1);
+			gpioResult = gpioWrite(csAngleSensor2,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_2,0);
+			gpioResult = gpioWrite(csAngleSensor2,0);
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_2,1);
+			gpioResult = gpioWrite(csAngleSensor2,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
 
 			//MEASURE ANGLE AFTER RESET AND CALCULATE REGISTER INPUT
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_2,0);
+			gpioResult = gpioWrite(csAngleSensor2,0);
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_2,1); // MEASURE ZERO ANGLE
+			gpioResult = gpioWrite(csAngleSensor2,1); // MEASURE ZERO ANGLE
 			pthread_mutex_unlock(&periphLock);
 			zero_point = (inBuf[0] << 8);
 			zero_point = zero_point + inBuf[1];
@@ -428,29 +428,29 @@ class Finger{
 			set_zero_angle_cmd[0]=0b10000001;                           //WRITE REG 1 (8 MSB of zero angle)
 			set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //ZERO ANGLE SET TO CURRENT ANGLE
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_2,0);
+			gpioResult = gpioWrite(csAngleSensor2,0);
 			spiResult = spiXfer(spiHandle, set_zero_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_2,1);
+			gpioResult = gpioWrite(csAngleSensor2,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_2,0);
+			gpioResult = gpioWrite(csAngleSensor2,0);
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_2,1);
+			gpioResult = gpioWrite(csAngleSensor2,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
 			set_zero_angle_cmd[0]=0b10000000;                           //WRITE REG 0 (8 LSB of zero angle)
 			set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //ZERO ANGLE SET TO CURRENT ANGLE
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_2,0);
+			gpioResult = gpioWrite(csAngleSensor2,0);
 			spiResult = spiXfer(spiHandle, set_zero_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_2,1);
+			gpioResult = gpioWrite(csAngleSensor2,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_2,0);
+			gpioResult = gpioWrite(csAngleSensor2,0);
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
-			gpioResult = gpioWrite(cs_angle_sensor_2,1);
+			gpioResult = gpioWrite(csAngleSensor2,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
 
@@ -458,16 +458,16 @@ class Finger{
 			//*********PRINT RESULT****************
 			//*************************************
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_1,0);
+			gpioResult = gpioWrite(csAngleSensor1,0);
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 1);
-			gpioResult = gpioWrite(cs_angle_sensor_1,1);
+			gpioResult = gpioWrite(csAngleSensor1,1);
 			pthread_mutex_unlock(&periphLock);
 			theta1=inBuf[0];
 
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_angle_sensor_2,0);
+			gpioResult = gpioWrite(csAngleSensor2,0);
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 1);
-			gpioResult = gpioWrite(cs_angle_sensor_2,1);
+			gpioResult = gpioWrite(csAngleSensor2,1);
 			pthread_mutex_unlock(&periphLock);
 			theta2=inBuf[0];
 
@@ -799,7 +799,7 @@ class PeripheralsController{
       outBuf[0] = read_command_8;
 			pthread_mutex_lock(&periphLock);
       gpioResult = gpioWrite(cs,0);
-      spi_result = spiXfer(spiHandle, outBuf, inBuf, 1);
+      spiResult = spiXfer(spiHandle, outBuf, inBuf, 1);
       gpioResult = gpioWrite(cs,1);
       angle8 = inBuf[0];
       pthread_mutex_unlock(&periphLock);
@@ -812,12 +812,12 @@ class PeripheralsController{
       outBuf[1] = read_command_16[1];
 			pthread_mutex_lock(&periphLock);
       gpioResult = gpioWrite(cs,0);
-      spi_result = spiXfer(spiHandle, outBuf, inBuf, 2);
+      spiResult = spiXfer(spiHandle, outBuf, inBuf, 2);
       gpioResult = gpioWrite(cs,1);
       angle16 = inBuf[0] << 8;
-      angle16 = temp + inBuf[1];
+      angle16 = angle16 + inBuf[1];
 			pthread_mutex_unlock(&periphLock);
-      angleRad = (angle16 * 2.0*3.14159) / 65535.0
+      angleRad = (angle16 * 2.0*3.14159) / 65535.0;
       return angleRad;
     }
 
@@ -826,8 +826,8 @@ class PeripheralsController{
       //2nd. byte carries absolute value of torque for link1
       //3rd. byte carries absolute value of torque for link2
 
-      Output1Scaled8 = (output1 / maxTorqLink1) * 255.0);
-      Output2Scaled8 = (output2 / maxTorqLink2) * 255.0);
+      Output1Scaled8 =( (output1 / maxTorqLink1) * 255.0);
+      Output2Scaled8 =( (output2 / maxTorqLink2) * 255.0);
 
       //Set flags and make torque positive
       outBuf[0] = 0;
@@ -856,12 +856,11 @@ class PeripheralsController{
         std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
       }
       if ( i2cBlockProcessCall(i2cHandle, i2cReg, outBuf, 3) < 0 ){
-        std::count << "i2cBlockProcessCall() failed. Handle: " << i2cHandle << " Address: "<< i2cAddress << std::endl;
+        std::cout << "i2cBlockProcessCall() failed. Handle: " << i2cHandle << " Address: "<< i2cAddress << std::endl;
       }
       if ( i2cClose( i2cHandle ) < 0 ){
         std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
       }
-
 		}
 
   public:
