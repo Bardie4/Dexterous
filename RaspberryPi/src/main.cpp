@@ -14,6 +14,7 @@
 #include <wiringPi.h>
 #include <sstream>
 #include "generated_flattbuffers/simple_instructions_generated.h"
+#include "generated_flattbuffers/finger_broadcast_generated.h"
 #include "controller_structs.h"
 pthread_t tid[10];
 static pthread_mutex_t zmqSubLock = PTHREAD_MUTEX_INITIALIZER;
@@ -955,6 +956,7 @@ class PeripheralsController{
         step=time1-time0;
         time0=micros();
 
+        std::vector<flatbuffers::Offset<FingerStates>> handStatesStdVec;
 				for (int i=0; i<7; i++){
 					//If finger is active
 					if (fingerMem[i].runFlag){
@@ -981,6 +983,14 @@ class PeripheralsController{
 
 						//Send output to motor
 						writeOutput8(csAndI2cAddr[i][3],fingerMem[i].commandedTorque1, fingerMem[i].commandedTorque2);
+
+            //Load into flatbuffer struct
+            auto fingerStates= CreateFingerStates{i,  fingerMem[i].jointAngle1,       fingerMem[i].jointAngle2,
+                                                      fingerMem[i].angularVel1,       fingerMem[i].angularVel2,
+                                                      0,                              0,
+                                                      fingerMem[i].commandedTorque1,  fingerMem[i].commandedTorque1,
+                                                      0,0,0,0};
+            handStatesStdVec.push_back(fingerStates);
 					}
 				}
 
@@ -998,10 +1008,19 @@ class PeripheralsController{
         //Give controllers time to finish an iteration
         usleep(ITR_DEADLINE);
 
+        //Finish flatbuffer
+        auto hand = builder.CreateVector(handStates);
+        auto handBroadcast = CreateHandBroadcast(hand);
+        FinishHandBroadcast(builder, handBroadcast);
+        //Send
+        uint8_t *buf = builder.GetBufferPointer();
+        int size = builder.GetSize();
+        zmq_send (publisher, buf, size, 0);
         //Exit on cntrl+c
         //if ( quit.load() ){
         //  break;
         //}
+
 			}
     }
 

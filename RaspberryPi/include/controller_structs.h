@@ -33,3 +33,14 @@ typedef struct PeripheralFingerMem{
 typedef struct ZmqHandMem{
  ZmqFingerMem finger[7];
 }ZmqHandMem;
+
+typedef struct FingerStates{
+float angle;
+float angVelocity;
+float angAcceleration;
+float commandedTorque;
+float torque;
+flaot Empty1;
+float empty2;
+float empty3;
+}FingerStates;
