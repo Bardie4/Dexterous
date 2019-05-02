@@ -694,8 +694,7 @@ class ZmqSubscriber{
 
     void passOnSimpleInstructions(zmq::message_t* buffer){
       //Parse flattbuffer and store it
-      //auto messageObj = GetSimpleInstructionMsg(buffer->data());
-      auto messageObj;
+      auto messageObj = GetSimpleInstructionMsg(buffer->data());
       fingerMem.fingerSelect = messageObj->finger_select();
       //Return if selected finger is not valid
       if ( (fingerMem.fingerSelect < 0) || (fingerMem.fingerSelect > 6) ){
@@ -877,9 +876,9 @@ class PeripheralsController{
         << std::endl;
       }
       if ( (spiHandle = spiOpen(spiChannel, spiFrequency, 0) ) < 0 ){
-        std::count << "spiOpen() failed" << std::endl;
+        std::cout << "spiOpen() failed" << std::endl;
       } else {
-        std::count << "SPI is open. Hande: " << spiHandle << std::endl;
+        std::cout << "SPI is open. Hande: " << spiHandle << std::endl;
       }
 
       //Data is not transmitted on SPI when cs is high.
