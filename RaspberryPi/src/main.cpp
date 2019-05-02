@@ -646,7 +646,6 @@ class ZmqSubscriber{
   //void* (* finger_run [7])(void *);
   Finger* fingerPtrs[7];
   //char buffer[1000];
-  std::size_t  messageLength;
 
   bool oldRunFlag;
   public:
