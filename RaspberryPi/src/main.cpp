@@ -31,7 +31,7 @@ pthread_cond_t restart_cond = PTHREAD_COND_INITIALIZER;
 using namespace quad_double_mes; // Specified in the schema.
 flatbuffers::FlatBufferBuilder builder(1024);
 uint8_t *buffer_pointer;
-
+/*
 //Variables used by joint space PID function
 typedef struct jointspace_pid_var {
    double error1;
@@ -72,6 +72,7 @@ typedef struct controller_variables{
 	cartesian_pid_var	 cs;
 	jointspace_pid_var js;
 }controller_variables;
+/*
 /*
 typedef struct zmq_payload{
 	short data1;
@@ -128,10 +129,10 @@ class Finger{
 
 		//Define a set of variables used by the PID idependant joint controller
 		//with cartesian coordinates as input
-		cartesian_pid_var pid_ijc_cs;
+		//cartesian_pid_var pid_ijc_cs;
 		//Define a set of variables used by the PID idependant joint controller
 		//with joint angle set point as input
-		jointspace_pid_var pid_ijc_js;
+	//	jointspace_pid_var pid_ijc_js;
 
  		//MEMORY SHARED WITH ZMQ Thread
 		double* zmq_mem_shared;
@@ -166,7 +167,7 @@ class Finger{
 		int spiHandle;
 		char inBuf[4];
 		char outBuf[4];
-    int i2cHandle
+    int i2cHandle;
 
 
     //Timing
@@ -175,14 +176,14 @@ class Finger{
     int time1;
     int step;
 
-    SpiFingerMem* spiFingerMem;
-    ZmqFingerMem* zmqFingerMem;
-    ZmqFingerMem zmqSubSharedMem;
+//    SpiFingerMem* spiFingerMem
+//    ZmqFingerMem* zmqFingerMem;
+    ZmqSubFingerMem zmqSubSharedMem;
     PeripheralFingerMem periphSharedMem;
 		//Constructor
-    finger(int identity){
+    Finger(int identity){
 			id= identity;
-
+/*
       //Set default settings for controllers
 			//joint space controller vaules
       pid_ijc_js.kp1 = 1;
@@ -208,7 +209,7 @@ class Finger{
 
 			pid_ijc_cs.x = &data1;
 			pid_ijc_cs.y = &data2;
-
+*/
 			itr_counter=0;
 
 			//SPI:
@@ -223,30 +224,30 @@ class Finger{
 			//Tell zmq client that the thread is no longer active
       std::cout << "shutting down thread: " << id <<std::endl;
 			pthread_mutex_lock(&periphLock);
-      perpihSharedMem.runFlag = 0;
+      periphSharedMem.runFlag = 0;
 			pthread_mutex_unlock(&periphLock);
 			//Tell zmq function to no longer measure sesnors for this finger
 			pthread_mutex_lock(&zmqlock);
-      zmqFingerMem->runFlag = 0;
+      zmqSubSharedMem->runFlag = 0;
 			pthread_mutex_unlock(&zmqlock);
 			}
 
 		void update_local_zmq_mem(){
 			pthread_mutex_lock(&zmqlock);
-			controller_select = zmqFingerMem->controllerSelect;
-			data1 = zmqFingerMem->data1;
-			data2 = zmqFingerMem->data2;
-			data3 = zmqFingerMem->data3;
-			data4 = zmqFingerMem->data4;
+			controller_select = zmqSubSharedMem->controllerSelect;
+			data1 = zmqSubSharedMem->data1;
+			data2 = zmqSubSharedMem->data2;
+			data3 = zmqSubSharedMem->data3;
+			data4 = zmqSubSharedMem->data4;
       pthread_mutex_unlock(&zmqlock);
 		}
 
 		void update_local_spi_mem(){
 			pthread_mutex_lock(&periphLock);
-			theta1 = perpihSharedMem.jointAngle1;
-			theta2 = perpihSharedMem.jointAngle2;
-			angular_vel1 = perpihSharedMem.angularVel1;
-			angular_vel2 = perpihSharedMem.angularVel2;
+			theta1 = periphSharedMem.jointAngle1;
+			theta2 = periphSharedMem.jointAngle2;
+			angular_vel1 = periphSharedMem.angularVel1;
+			angular_vel2 = periphSharedMem.angularVel2;
 			pthread_mutex_unlock(&periphLock);
 		}
 
@@ -500,7 +501,7 @@ class Finger{
       }
 		}
 
-
+/*
 		void jointspace_ijc_pid(){
 			while(1){
 
@@ -535,11 +536,8 @@ class Finger{
 					printf("FINGER %d: theta2: %d | theta2_setpoint: %d | error2: %f | u2: %f \n", id, theta2 , *(pid_ijc_js.theta2_setpoint), pid_ijc_js.error2, torque2);
           printf("FINGER %d: Last iteration took %d us. (including wait time on spi thread)\n",id , step );
 					itr_counter=0;
-				}/*
-        //Waiting for spi thread to give permision for new iteraton
-        pthread_mutex_lock(&restart);
-        pthread_cond_wait(&restart_cond, &restart);
-        pthread_mutex_unlock(&restart);*/
+				}
+
         time1=micros();
         step=time1-time0;
         time0=micros();
@@ -595,16 +593,12 @@ class Finger{
 					itr_counter = 0;
 				}
 
-/*
-        //Waiting for spi thread to give permision for new iteraton/
-        pthread_mutex_lock(&restart);
-        pthread_cond_wait(&restart_cond, &restart);
-        pthread_mutex_unlock(&restart);*/
         time1=micros();
         step=time1-time0;
         time0=micros();
 			}
 		}
+*/
 
     void* run(){
 			std::cout << "i am thread: "<< id << "  >:O" << std::endl;
@@ -632,7 +626,7 @@ class ZmqSubscriber{
 
   private:
   ZmqSubFingerMem* fingerMemPtr[7];
-  ZmqSubFingerMem* fingerMem;;
+  ZmqSubFingerMem fingerMem;
   //ZMQ
   char* address[255];
   char* contents;
@@ -652,7 +646,7 @@ class ZmqSubscriber{
 
   //An array of pointers to the functions that starts each finger
   //void* (* finger_run [7])(void *);
-  finger* fingerPtrs[7];
+  Finger* fingerPtrs[7];
   //char buffer[1000];
   std::size_t  messageLength;
 
