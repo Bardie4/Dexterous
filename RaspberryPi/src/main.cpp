@@ -955,7 +955,6 @@ class PeripheralsController{
         time1=micros();
         step=time1-time0;
         time0=micros();
-
         std::vector<flatbuffers::Offset<FingerStates>> handStates;
 				for (int i=0; i<7; i++){
 					//If finger is active
