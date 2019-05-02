@@ -28,6 +28,7 @@ pthread_cond_t start_cond = PTHREAD_COND_INITIALIZER;
 
 //Flatbuffers
 using namespace quad_double_mes; // Specified in the schema.
+using namespace quad_double_me; // Specified in the schema.
 flatbuffers::FlatBufferBuilder builder(1024);
 uint8_t *buffer_pointer;
 /*
