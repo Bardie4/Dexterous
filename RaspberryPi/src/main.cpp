@@ -956,7 +956,7 @@ class PeripheralsController{
         step=time1-time0;
         time0=micros();
 
-        std::vector<flatbuffers::Offset<FingerStates>> handStatesStdVec;
+        std::vector<flatbuffers::Offset<FingerStates>> handStates;
 				for (int i=0; i<7; i++){
 					//If finger is active
 					if (fingerMem[i].runFlag){
@@ -985,12 +985,12 @@ class PeripheralsController{
 						writeOutput8(csAndI2cAddr[i][3],fingerMem[i].commandedTorque1, fingerMem[i].commandedTorque2);
 
             //Load into flatbuffer struct
-            auto fingerStates= CreateFingerStates{builder,  i,  fingerMem[i].jointAngle1,       fingerMem[i].jointAngle2,
+            auto fingerStates= CreateFingerStates(builder,  i,  fingerMem[i].jointAngle1,       fingerMem[i].jointAngle2,
                                                                 fingerMem[i].angularVel1,       fingerMem[i].angularVel2,
                                                                 0,                              0,
                                                                 fingerMem[i].commandedTorque1,  fingerMem[i].commandedTorque1,
-                                                                0,0,0,0};
-            handStatesStdVec.push_back(fingerStates);
+                                                                0,0,0,0);
+            handStates.push_back(fingerStates);
 					}
 				}
 
