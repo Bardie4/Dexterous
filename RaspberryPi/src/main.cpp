@@ -792,6 +792,8 @@ class PeripheralsController{
 		int step;
     int itr_counter;
 
+    zmq::context_t context;
+    zmq::socket_t publisher;
 
     float readAngle8(int &cs){
       outBuf[0] = read_command_8;
@@ -862,7 +864,8 @@ class PeripheralsController{
 		}
 
   public:
-    PeripheralsController(int cs_and_i2c_addr[7][3]){
+    PeripheralsController(int cs_and_i2c_addr[7][3])
+        :context (1), publisher (context, ZMQ_PUB){
 
       csAndI2cAddr = cs_and_i2c_addr;
 
@@ -905,6 +908,10 @@ class PeripheralsController{
       for (int i=0; i<7; i++){
         fingerMemPtr[i] = NULL;
       }
+
+      //ZMQ publisher
+
+    publisher.bind("tcp://*:5564");
     }
 
     void bindFinger (Finger* finger){
