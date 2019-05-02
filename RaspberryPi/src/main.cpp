@@ -16,7 +16,7 @@
 #include "generated_flattbuffers/simple_instructions_generated.h"
 #include "controller_structs.h"
 pthread_t tid[10];
-static pthread_mutex_t zmqlock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t zmqSubLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t periphLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t begin_control_iteration = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t restart = PTHREAD_MUTEX_INITIALIZER;
@@ -224,19 +224,19 @@ class Finger{
       periphSharedMem.runFlag = 0;
 			pthread_mutex_unlock(&periphLock);
 			//Tell zmq function to no longer measure sesnors for this finger
-			pthread_mutex_lock(&zmqlock);
+			pthread_mutex_lock(&zmqSubLock);
       zmqSubSharedMem.runFlag = 0;
-			pthread_mutex_unlock(&zmqlock);
+			pthread_mutex_unlock(&zmqSubLock);
 			}
 
 		void update_local_zmq_mem(){
-			pthread_mutex_lock(&zmqlock);
+			pthread_mutex_lock(&zmqSubLock);
 			controller_select = zmqSubSharedMem.controllerSelect;
 			data1 = zmqSubSharedMem.data1;
 			data2 = zmqSubSharedMem.data2;
 			data3 = zmqSubSharedMem.data3;
 			data4 = zmqSubSharedMem.data4;
-      pthread_mutex_unlock(&zmqlock);
+      pthread_mutex_unlock(&zmqSubLock);
 		}
 /*
 		void update_local_spi_mem(){
@@ -615,7 +615,7 @@ class Finger{
 			//This function starts the run() function.
 		static void *init_finger(void *finger_object){
 			std::cout << "i am static bootstrap of thread" << std::endl;
-			return ((finger*)finger_object)->run();
+			return ((Finger*)finger_object)->run();
 		}
 };
 
@@ -696,7 +696,7 @@ class ZmqSubscriber{
 
     void passOnSimpleInstructions(zmq::message_t* buffer){
       //Parse flattbuffer and store it
-      auto messageObj = GetSimpleInstructionMsg(*buffer);
+      auto messageObj = GetSimpleInstructionMsg(buffer->data());
       fingerMem.fingerSelect = messageObj->finger_select();
       //Return if selected finger is not valid
       if (fingerMem.fingerSelect < 0) || (fingerMem.fingerSelect > 6){
@@ -746,7 +746,7 @@ class ZmqSubscriber{
             break;
           }
 
-         std::cout <<"Message type: " <<flatbuffers::GetBufferIdentifier(buffer) << std::endl;
+         std::cout <<"Message type: " <<flatbuffers::GetBufferIdentifier(buffer.data()) << std::endl;
 
          if (SimpleInstructionMsgBufferHasIdentifier(buffer)){
            passOnSimpleInstructions(&buffer);
@@ -754,7 +754,7 @@ class ZmqSubscriber{
 
         }
       }
-    };
+    }
 
 		static void* start(void* zmq_sub_object){
 			return ((ZmqSubscriber*)zmq_sub_object)->run();
