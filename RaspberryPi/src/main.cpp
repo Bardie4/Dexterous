@@ -640,6 +640,7 @@ class ZmqSubscriber{
   //Coloums:  run_flag, controller_select, data1, data2, data3, data4
   //double (*commands)[6];
   ZmqHandMem* zmqHandMem;
+  \
 
   //An array of pointers to the functions that starts each finger
   //void* (* finger_run [7])(void *);
@@ -647,7 +648,7 @@ class ZmqSubscriber{
   //char buffer[1000];
   std::size_t  messageLength;
 
-  bool isActive;
+  bool oldRunFlag;
   public:
 
     ZmqSubscriber(){
@@ -699,7 +700,7 @@ class ZmqSubscriber{
       auto messageObj = GetSimpleInstructionMsg(buffer->data());
       fingerMem.fingerSelect = messageObj->finger_select();
       //Return if selected finger is not valid
-      if (fingerMem.fingerSelect < 0) || (fingerMem.fingerSelect > 6){
+      if ( (fingerMem.fingerSelect < 0) || (fingerMem.fingerSelect > 6) ){
         return;
       }
       if (fingerMemPtr[fingerMem.fingerSelect] == NULL){
@@ -748,7 +749,7 @@ class ZmqSubscriber{
 
          std::cout <<"Message type: " <<flatbuffers::GetBufferIdentifier(buffer.data()) << std::endl;
 
-         if (SimpleInstructionMsgBufferHasIdentifier(buffer)){
+         if ( SimpleInstructionMsgBufferHasIdentifier( buffer.data() ) ){
            passOnSimpleInstructions(&buffer);
          }
 
