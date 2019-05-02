@@ -648,7 +648,7 @@ class ZmqSubscriber{
 
   bool oldRunFlag;
 
-  zmq::context context;
+  zmq::context_t context;
   zmq::socket_t subscriber;
   public:
 
