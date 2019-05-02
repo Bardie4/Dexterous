@@ -738,21 +738,19 @@ class ZmqSubscriber{
       while(1){
         //Listen for messages
         //From guide: http://zguide.zeromq.org/cpp:interrupt
-         zmq::message_t buffer;
-         try {
-            subscriber.recv (&buffer);
-          }
-          catch(zmq::error_t& e) {
-            std::cout << "Interrupt received" << std::endl;
-            break;
-          }
+        zmq::message_t buffer;
+        try {
+          subscriber.recv (&buffer);
+        }
+        catch(zmq::error_t& e) {
+          std::cout << "Interrupt received" << std::endl;
+          break;
+        }
 
-         std::cout <<"Message type: " <<flatbuffers::GetBufferIdentifier(buffer.data()) << std::endl;
+        std::cout <<"Message type: " <<flatbuffers::GetBufferIdentifier(buffer.data()) << std::endl;
 
-         if ( SimpleInstructionMsgBufferHasIdentifier( buffer.data() ) ){
-           passOnSimpleInstructions(&buffer);
-         }
-
+        if ( SimpleInstructionMsgBufferHasIdentifier( buffer.data() ) ){
+          passOnSimpleInstructions(&buffer);
         }
       }
     }
