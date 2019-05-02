@@ -214,10 +214,7 @@ class Finger{
 
 			//SPI:
 			//During normal operation, only the dedicated spi-thread talks to the sensors,
-			//However, since
-			cs_angle_sensor_1 = spi_var[0];
-			cs_angle_sensor_2 = spi_var[1];
-			cs_output = spi_var[2];
+			//However, sinced
     }
 
 		void shutdown(){
@@ -228,20 +225,20 @@ class Finger{
 			pthread_mutex_unlock(&periphLock);
 			//Tell zmq function to no longer measure sesnors for this finger
 			pthread_mutex_lock(&zmqlock);
-      zmqSubSharedMem->runFlag = 0;
+      zmqSubSharedMem.runFlag = 0;
 			pthread_mutex_unlock(&zmqlock);
 			}
 
 		void update_local_zmq_mem(){
 			pthread_mutex_lock(&zmqlock);
-			controller_select = zmqSubSharedMem->controllerSelect;
-			data1 = zmqSubSharedMem->data1;
-			data2 = zmqSubSharedMem->data2;
-			data3 = zmqSubSharedMem->data3;
-			data4 = zmqSubSharedMem->data4;
+			controller_select = zmqSubSharedMem.controllerSelect;
+			data1 = zmqSubSharedMem.data1;
+			data2 = zmqSubSharedMem.data2;
+			data3 = zmqSubSharedMem.data3;
+			data4 = zmqSubSharedMem.data4;
       pthread_mutex_unlock(&zmqlock);
 		}
-
+/*
 		void update_local_spi_mem(){
 			pthread_mutex_lock(&periphLock);
 			theta1 = periphSharedMem.jointAngle1;
@@ -257,7 +254,7 @@ class Finger{
 			perpihSharedMem.commandedTorque2 = torque2;
 			pthread_mutex_unlock(&periphLock);
 		}
-
+*/
 		void calibration(){
 
 			std::cout << "Hold on, im calibrating finger " << id << std::endl;
