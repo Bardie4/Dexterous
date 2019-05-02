@@ -652,7 +652,7 @@ class ZmqSubscriber{
     ZmqSubscriber(){
       //ZMQ setup: http://zguide.zeromq.org/cpp:wuclient
       zmq::context_t context (1);
-      zmq::socket_t subscriber(&context, ZMQ_SUB);
+      zmq::socket_t subscriber(context, ZMQ_SUB);
       const char *filter = "10001 ";
       subscriber.setsockopt(ZMQ_SUBSCRIBE, filter, strlen (filter));
       subscriber.connect("tcp://169.254.27.157:5563");
@@ -738,7 +738,7 @@ class ZmqSubscriber{
         //From guide: http://zguide.zeromq.org/cpp:interrupt
         zmq::message_t buffer;
         //try {
-        subscriber.recv(buffer);
+        //subscriber.recv(buffer);
         //}
         //catch(zmq::error_t& e) {
         //  std::cout << "Interrupt received" << std::endl;

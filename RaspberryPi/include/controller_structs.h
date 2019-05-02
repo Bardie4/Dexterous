@@ -7,6 +7,12 @@ typedef struct ZmqSubFingerMem{
   float data2;
   float data3;
   float data4;
+  float data5;
+  float data6;
+  float data7;
+  float data8;
+  float data9;
+  float data10;
   short trajSize;
   float trajTimeStamp[1024];
   float trajPosition[1024];
