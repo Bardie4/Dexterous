@@ -1,0 +1,21 @@
+// Example IDL file for our monster's schema.
+namespace quad_double_me;
+
+table HandBroadcast {
+  hand:[FingerStates];
+}
+
+table FingerStates {
+  id:short;
+  angle:float;
+  angVelocity:float;
+  angAcceleration:float;
+  commandedTorque:float;
+  torque:float;
+  Empty1:float;
+  empty2:float;
+  empty3:float;
+}
+
+root_type HandBroadcast;
+file_identifier "HBRC";
