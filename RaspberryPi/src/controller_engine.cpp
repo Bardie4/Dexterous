@@ -64,8 +64,8 @@ void ControllerEngine::readTrajZmqSub(){
     }
     zmqSubMemPtr->newMessage = 0;
   pthread_mutex_unlock(&zmqSubLock);
+  }
 }
-
 void ControllerEngine::readPeriph(){
   jointAngle1 = periphMemPtr->jointAngle1;
   jointAngle2 = periphMemPtr->jointAngle2;
