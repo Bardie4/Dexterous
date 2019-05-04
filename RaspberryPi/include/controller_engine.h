@@ -1,6 +1,10 @@
 #ifndef CONTROLLER_ENGINE
 #define CONTROLLER_ENGINE
 #include "controller_structs.h"
+extern pthread_mutex_t zmqSubLock;
+extern pthread_mutex_t periphLock;
+extern pthread_mutex_t begin_control_iteration;
+extern pthread_cond_t start_cond;
 
 class ControllerEngine {
   //This is a template of a controller, se also cpp file in src folder.
