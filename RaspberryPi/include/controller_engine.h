@@ -2,11 +2,12 @@
 #define CONTROLLER_ENGINE
 #include "controller_structs.h"
 #include <pthread.h>
+/*
 extern pthread_mutex_t zmqSubLock;
 extern pthread_mutex_t periphLock;
 extern pthread_mutex_t begin_control_iteration;
 extern pthread_cond_t start_cond;
-
+*/
 class ControllerEngine {
   //This is a template of a controller, se also cpp file in src folder.
   private:
@@ -48,6 +49,11 @@ class ControllerEngine {
   int itrCounter;
 
   public:
+  pthread_mutex_t* zmqSubLock;
+  pthread_mutex_t* periphLock;
+  pthread_mutex_t* begin_control_iteration;
+  pthread_cond_t* start_cond;
+
   short fingerId;
   short controllerId;
   PeripheralFingerMem* periphMemPtr;
