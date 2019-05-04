@@ -2,9 +2,9 @@
 #define CONTROLLER_ENGINE
 #include "controller_structs.h"
 #include <pthread.h>
-extern pthread_mutex_t zmqSubLock;
-extern pthread_mutex_t periphLock;
-extern pthread_mutex_t begin_control_iteration;
+extern static pthread_mutex_t zmqSubLock;
+extern static pthread_mutex_t periphLock;
+extern static pthread_mutex_t begin_control_iteration;
 extern pthread_cond_t start_cond;
 
 class ControllerEngine {
