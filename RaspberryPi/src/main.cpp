@@ -15,7 +15,7 @@
 #include <sstream>
 #include "generated_flattbuffers/simple_instructions_generated.h"
 #include "generated_flattbuffers/finger_broadcast_generated.h"
-#include "js_pos_controller.h"
+#include "controllers/js_pos_controller.h"
 pthread_t tid[10];
 static pthread_mutex_t zmqSubLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t periphLock = PTHREAD_MUTEX_INITIALIZER;
