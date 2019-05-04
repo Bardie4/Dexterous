@@ -6,13 +6,13 @@ gripper: main.o controller_engine.o js_pos_controller.o
 	g++ -g main.o controller_engine.o js_pos_controller.o -o gripper
 
 main.o: src/main.cpp
-	g++ -Wall -pthread -c src/main.cpp -lzmq -lpthread -lpigpio -lrt -lm -I ./include/ -I ./lib/  -L/usr/local/lib -lwiringPi -I/usr/local/include
+	g++ -c -Wall -pthread src/main.cpp -lzmq -lpthread -lpigpio -lrt -lm -I ./include/ -I ./lib/  -L/usr/local/lib -lwiringPi -I/usr/local/include
 
 controller_engine.o: src/controller_engine.cpp
-	g++ -Wall -pthread -c src/controller_engine.cpp -I ./include/
+	g++ -c -Wall -pthread src/controller_engine.cpp -I ./include/
 
 js_pos_controller.o: src/js_pos_controller.cpp
-	g++ -Wall -c src/js_pos_controller.cpp -I ./include/
+	g++ -c -Wall src/js_pos_controller.cpp -I ./include/
 
 clean:
 	rm -rf *o gripper
