@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <algorithm>
 //#include <bitset>
-#include <pthread.h>
+#include "pthread.h"
 #include <iostream>
 #include <string>
 #include <wiringPi.h>
