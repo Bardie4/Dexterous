@@ -2,7 +2,7 @@
 //Customize names that fit your implementation
 JointSpacePosController::JointSpacePosController():controllerEngine(){
   controllerEngine.controllerObject = this;
-  controllerEngine.iterate = &iterateStatic;
+  controllerEngine.iterate = &JointSpacePosController::iterateStatic;
   //ZmqSub inputs
   *name1 = &controllerEngine.data1;
   *name2 = &controllerEngine.data2;
