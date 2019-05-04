@@ -7,18 +7,14 @@ table HandBroadcast {
 
 table FingerStates {
   id:short;
-  angle1:float;
-  angle2:float;
-  angVelocity1:float;
-  angVelocity2:float;
-  angAcceleration1:float;
-  angAcceleration2:float;
-  commandedTorque1:float;
-  commandedTorque2:float;
+  angle:float;
+  angVelocity:float;
+  angAcceleration:float;
+  commandedTorque:float;
+  torque:float;
   Empty1:float;
   empty2:float;
   empty3:float;
-  empty4:float;
 }
 
 root_type HandBroadcast;

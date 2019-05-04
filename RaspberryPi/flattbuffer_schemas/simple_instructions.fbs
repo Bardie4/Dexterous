@@ -4,10 +4,16 @@ namespace quad_double_mes;
 table SimpleInstructionMsg {
   finger_select:short;
   controller_select:short;
-  data1:double;
-  data2:double;
-  data3:double;
-  data4:double;
+  data1:float;
+  data2:float;
+  data3:float;
+  data4:float;
+  data5:float;
+  data6:float;
+  data7:float;
+  data8:float;
+  data9:float;
+  data10:float;
 }
 
 root_type SimpleInstructionMsg;

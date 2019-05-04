@@ -16,6 +16,8 @@
 #include "generated_flattbuffers/simple_instructions_generated.h"
 #include "generated_flattbuffers/finger_broadcast_generated.h"
 #include "controller_structs.h"
+
+#include "controllers/template_controller.h"
 pthread_t tid[10];
 static pthread_mutex_t zmqSubLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t periphLock = PTHREAD_MUTEX_INITIALIZER;
@@ -184,38 +186,8 @@ class Finger{
 		//Constructor
     Finger(int identity){
 			id= identity;
-/*
-      //Set default settings for controllers
-			//joint space controller vaules
-      pid_ijc_js.kp1 = 1;
-		  pid_ijc_js.ki1 = 0;
-			pid_ijc_js.kd1 = 0;
-			pid_ijc_js.kp2 = 0.5;
-			pid_ijc_js.ki2 = 0;
-			pid_ijc_js.kd2 = 0;
-			//cartesian space controller values
-      pid_ijc_cs.kp1 = 1;
-      pid_ijc_cs.ki1 = 0;
-      pid_ijc_cs.kd1 = 0;
-			pid_ijc_cs.kp2 = 0.5;
-      pid_ijc_cs.ki2 = 0;
-      pid_ijc_cs.kd2 = 0;
-      pid_ijc_cs.l1 = 53;
-      pid_ijc_cs.l2 = 48;
-
-			//Pointing controller variables to local zmq buffer
-			//(Data1-4 has potentially different meanings to different controllers)
-			pid_ijc_js.theta1_setpoint = &data1;
-			pid_ijc_js.theta2_setpoint = &data2;
-
-			pid_ijc_cs.x = &data1;
-			pid_ijc_cs.y = &data2;
-*/
 			itr_counter=0;
 
-			//SPI:
-			//During normal operation, only the dedicated spi-thread talks to the sensors,
-			//However, sinced
     }
 
 		void shutdown(){
@@ -229,6 +201,13 @@ class Finger{
       zmqSubSharedMem.runFlag = 0;
 			pthread_mutex_unlock(&zmqSubLock);
 			}
+
+    void bindController(TemplateController* handle, short controller_id){
+        handle->zmqSubMemPtr = &zmqSubSharedMem;
+        handle->periphMemPtr = &periphSharedMem;
+        handle->fingerId = id;
+        handle->controllerId = controller_id;
+    }
 
 		void update_local_zmq_mem(){
 			pthread_mutex_lock(&zmqSubLock);
@@ -498,9 +477,8 @@ class Finger{
       std::cout << "Finger: "<< id <<" is waiting for controller to be selected. Current selection: " << controller_select <<std::endl;
       }
 		}
-
 /*
-		void jointspace_ijc_pid(){
+    void jointspace_ijc_pid(){
 			while(1){
 
 				//Check instructions
@@ -542,7 +520,8 @@ class Finger{
 
 			}
 		}
-
+*/
+/*
 		void cartesian_ijc_pid(){
 			while(1){
 				//Check instructions
@@ -605,7 +584,8 @@ class Finger{
 			//While finger is instructed to be active
       while( !(controller_select == 0) ){
 				//Cycle through controllers.
-        //jointspace_ijc_pid();
+        templateController.run();
+          //jointspace_ijc_pid();
       //  cartesian_ijc_pid();
       }
 			//Tell spi and zmq thread we are finished
@@ -1082,10 +1062,17 @@ main(){
     									 			,{csSens1_f6, csSens2_f6, i2cEsp32_f6}
     									 			,{csSens1_f7, csSens2_f7, i2cEsp32_f7}};
 
+
   PeripheralsController periphContrl( csAndI2cAddr );
-
   ZmqSubscriber zmqSub;
-
+/*
+  Finger finger[7] = {0, 1, 2, 3, 4, 5, 6};
+  for (int = i; i<7; i++){
+    finger[i].setID(i);
+    periphContrl.bindFinger( &finger[i] );
+    zmqSub.bindFinger( &finger[i] ) ;
+  }
+*/
   Finger finger0(0);
   Finger finger1(1);
   Finger finger2(2);

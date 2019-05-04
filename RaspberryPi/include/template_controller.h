@@ -1,15 +1,14 @@
-#ifndef template_controller.h
-#define template_controller.h
-#include "controller_structs.h"
+#include "template_controller.h"
+#ifndef  "controller_structs.h"
 
 class TemplateController {
   //This is a template of a controller, se also cpp file in src folder.
   private:
 
-  int fingerId;
-  int controllerId;
-  ZmqFingerMem* zmqMemPtr;
-  SpiFingerMem* spiMemPtr;
+  short fingerId;
+  short controllerId;
+  PeripheralFingerMem* periphMemPtr;
+  ZmqSubFingerMem* zmqSubMemPtr;
 
 
   //REQUIRED: Local copies of variables shared by zmq thread
@@ -18,6 +17,12 @@ class TemplateController {
   float data2;
   float data3;
   float data4;
+  float data5;
+  float data6;
+  float data7;
+  float data8;
+  float data9;
+  float data10;
   int trajSize;
   float trajTimeStamp[1024];
   float trajPosition[1024];
@@ -34,11 +39,12 @@ class TemplateController {
   //***********EDIT THIS PART**************
   //When bindToFinger() is called, these references is assigned to data1-4,
   //Give them meaningfull names to help readability of your controller code
+  /*
   float& meaningFullVarName1;
   float& meaningFullVarName2;
   float& meaningFullVarName3;
   float& meaningFullVarName4;
-
+*/
   //OPTIONAL: Used to count iterations
   int itrCounter;
 
@@ -53,22 +59,25 @@ class TemplateController {
   //When bindToFinger() is called, these references is assigned to var1-20.
   //Give the refrences names that are meaningful to your implementation.
   //Example names variables needed for two pid controllers:
+  /*
   float& kp1;
   float& ki1;
   float& Kd1;
   float& kp2;
   float& ki2;
   float& Kd2;
-
+  */
 
   //This is analogous to a constructor.
   //Lets the controller know which finger it runs on, and assigns it a unique number
   //The controller gets access to memory updated by the spi thread and zmq thread
   //Returns addresses of tunable variables to finger
-  float* bind_to_finger(int finger_id, int controller_id, ZmqFingerMem* zmq_mem_ptr, SpiFingerMem* spi_mem_ptr);
-  void zmq_read();           //reads user inputs from zmq: controllerSelect & data1-4
-  void zmq_read_traj();       //Same as above, but also reads trajectory data
-  void spi_read();           //reads sensor data: joint angle and joint velocity
-  void spi_write();          //Writes commanded torque to memory shared with spi thread.
+  void bindToFinger(int finger_id, Finger* finger);
+  static void (*setVariableNames)
+  void readZmqSub();           //reads user inputs from zmq: controllerSelect & data1-4
+  void readTrajZmqSub();       //Same as above, but also reads trajectory data
+  void readPeriph();           //reads sensor data: joint angle and joint velocity
+  void writeOutput();          //Writes commanded torque to memory shared with spi thread.
   void run();               //The actual control loop.
+  static void (iterate*)(TemplateController* templateController);
 }

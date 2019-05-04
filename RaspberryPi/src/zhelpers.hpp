@@ -36,7 +36,7 @@
 #   define srandom srand
 #   define random rand
 #endif
-      
+
 // Visual Studio versions below 2015 do not support sprintf properly. This is a workaround.
 // Taken from http://stackoverflow.com/questions/2915672/snprintf-and-visual-studio-2010
 #if defined(_MSC_VER) && _MSC_VER < 1900

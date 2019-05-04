@@ -1,17 +1,17 @@
 #include "controllers/template_controller.h"
-extern pthread_mutex_t zmqlock = PTHREAD_MUTEX_INITIALIZER;
+#include "finger.h"
+extern pthread_mutex_t zmqSubLock = PTHREAD_MUTEX_INITIALIZER;
+extern pthread_mutex_t periphLock = PTHREAD_MUTEX_INITIALIZER;
 extern pthread_mutex_t begin_control_iteration = PTHREAD_MUTEX_INITIALIZER;
-extern pthread_mutex_t restart = PTHREAD_MUTEX_INITIALIZER;
 extern pthread_cond_t start_cond = PTHREAD_COND_INITIALIZER;
-extern extpthread_cond_t restart_cond = PTHREAD_COND_INITIALIZER;
 
-float* TemplateController::bind_to_finger(int finger_id, int controller_id, ZmqFingerMem* zmq_mem_ptr, spiFingerMem* spi_mem_ptr){
+float* TemplateController::bind_to_finger(short controller_id, Finger* finger){
   //Let controller know the memory location of controller/sensor inputs/outputs
-  zmqMemPtr = zmq_mem_ptr;              //See .zmqRead() & zmqReadTraj()
-  spiMemPtr = spi_mem_ptr;              //See .spiRead() & .spiWrite
+  zmqSubMemPtr = finger->zmqSubSharedMem;              //See .zmqRead() & zmqReadTraj()
+  periphMemPtr = finger->periphSharedMem;              //See .spiRead() & .spiWrite
 
   //Let controller know which finger it runs on, and its assigned number
-  fingerId = finger_id;                 //Usefull when printing to terminal
+  fingerId = finger->id;                 //Usefull when printing to terminal
   controllerId = controller_id;         //See .run()
 
   //See .getPtrsToVars()
@@ -22,43 +22,64 @@ float* TemplateController::bind_to_finger(int finger_id, int controller_id, ZmqF
   //Change names of references to fit your implementation
   //data1-4 is controller input from zmq. var1-20 is variables that can be changed at runtime.
   //Unchangeble variables can be added in header file
+  /*
   float& meaningFullVarName1 = data1;
   float& meaningFullVarName2 = data2;
   float& meaningFullVarName3 = data3;
   float& meaningFullVarName4 = data4;
+  float& meaningFullVarName5 = data5;
+  float& meaningFullVarName6 = data6;
+  float& meaningFullVarName7 = data7;
+  float& meaningFullVarName8 = data8;
+  float& meaningFullVarName9 = data9;
+  float& meaningFullVarName10 = data10;
+
   float& kp1 = var1;
   float& ki1 = var2;
   float& Kd1 = var3;
   float& kp2 = var4;
   float& ki2 = var5;
   float& Kd2 = var6;
+  */
 
   //Let the finger know the addresses of "tunable" variables in this controller
   return varPtrs;
 }
 
-void TemplateController::zmq_read(){
+void TemplateController::readZmqSub(){
   pthread_mutex_lock(&zmqlock);
-  if (zmqMemPtr->newMessage){
-    controllerSelect = zmqMemPtr->controllerSelect;
-    data1 = zmqMemPtr->data1;
-    data2 = zmqMemPtr->data2;
-    data3 = zmqMemPtr->data3;
-    data4 = zmqMemPtr->data4;
+  if (zmqSubMemPtr->newMessage){
+    controllerSelect = zmqSubMemPtr->controllerSelect;
+    data1 = zmqSubMemPtr->data1;
+    data2 = zmqSubMemPtr->data2;
+    data3 = zmqSubMemPtr->data3;
+    data4 = zmqSubMemPtr->data4;
+    data5 = zmqSubMemPtr->data5;
+    data6 = zmqSubMemPtr->data6;
+    data7 = zmqSubMemPtr->data7;
+    data8 = zmqSubMemPtr->data8;
+    data9 = zmqSubMemPtr->data9;
+    data10 = zmqSubMemPtr->data10;
   }
   zmqMemPtr->newMessage = 0;
   pthread_mutex_unlock(&zmqlock);
 }
 
-void TemplateController::zmq_read_traj(){
+void TemplateController::readTrajZmqSub(){
   pthread_mutex_lock(&zmqlock);
-  if (zmqMemPtr->newMessage){
-    controllerSelect = zmqMemPtr->controllerSelect;
-    data1 = zmqMemPtr->data1;
-    data2 = zmqMemPtr->data2;
-    data3 = zmqMemPtr->data3;
-    data4 = zmqMemPtr->data4;
-    trajSize = zmqMemPtr->trajSize;
+  if (zmqSubMemPtr->newMessage){
+    controllerSelect = zmqSubMemPtr->controllerSelect;
+    data1 = zmqSubMemPtr->data1;
+    data2 = zmqSubMemPtr->data2;
+    data3 = zmqSubMemPtr->data3;
+    data4 = zmqSubMemPtr->data4;
+    data5 = zmqSubMemPtr->data5;
+    data6 = zmqSubMemPtr->data6;
+    data7 = zmqSubMemPtr->data7;
+    data8 = zmqSubMemPtr->data8;
+    data9 = zmqSubMemPtr->data9;
+    data10 = zmqSubMemPtr->data10;
+    trajSize = zmqSubMemPtr->trajSize;
     if (trajSize > 1024){
       trajSize = 1024;
     }
@@ -66,39 +87,32 @@ void TemplateController::zmq_read_traj(){
       trajSize = 0;
     }
     for (int i=0; i < trajSize; i++){
-      trajTimeStamp[i] = zmqMemPtr->trajTimeStamp[i];
-      trajPosition[i] = zmqMemPtr->trajPosition[i];
-      trajVelocity[i] = zmqMemPtr->trajVelocity[i];
-      trajAcceleration[i] = zmqMemPtr->Acceleration[i];
+      trajTimeStamp[i] = zmqSubMemPtr->trajTimeStamp[i];
+      trajPosition[i] = zmqSubMemPtr->trajPosition[i];
+      trajVelocity[i] = zmqSubMemPtr->trajVelocity[i];
+      trajAcceleration[i] = zmqSubMemPtr->Acceleration[i];
     }
     zmqMemPtr->newMessage = 0;
   pthread_mutex_unlock(&zmqlock);
 }
 
-void TemplateController::spiRead(){
-  jointAngle1 = spiMemPtr->jointAngle1;
-  jointAngle2 = spiMemPtr->jointAngle2;
-  angularVel1 = spiMemPtr->angularVel1;
-  angularVel2 = spiMemPtr->angularVel2;
+void TemplateController::readPeriph(){
+  jointAngle1 = periphMemPtr->jointAngle1;
+  jointAngle2 = periphMemPtr->jointAngle2;
+  angularVel1 = periphMemPtr->angularVel1;
+  angularVel2 = periphMemPtr->angularVel2;
 }
 
-void TemplateController::spi_read(){
-  jointAngle1 = spiMemPtr->jointAngle1;
-  jointAngle2 = spiMemPtr->jointAngle2;
-  angularVel1 = spiMemPtr->angularVel1;
-  angularVel2 = spiMemPtr->angularVel2;
-}
-
-void TemplateController::spi_write(){
-  spiMemPtr->commandedTorque1 = commandedTorque1;
-  spiMemPtr->CommandedTorque2 = commandedTorque2;
+void TemplateController::writeOutput(){
+  periphMemPtr->commandedTorque1 = commandedTorque1;
+  periphMemPtr->CommandedTorque2 = commandedTorque2;
 }
 
 void TemplateController::run(){
   while(1){
     //Check controller user inputs
-    TemplateController::zmq_read();
-    //Alternativly: TemplateController::zmqReadTraj();
+    TemplateController::readZmqSub();
+    //Alternativly: TemplateController::zmqSubReadTraj;
 
     //If this is not the correct controller
     if ( !(controllerSelect == controllerId) ){
@@ -112,30 +126,12 @@ void TemplateController::run(){
     pthread_mutex_unlock(&begin_control_iteration);
 
     //Read sensordata while spi thread is sleeping
-    TemplateController::spi_read()
+    TemplateController::readPeriph()
 
-
-
-    //***************WRITE CONTROLLER FROM HERE********************
-
-
-    //Use the now updated sensordata:
-    //jointAngle1, jointAngle2 , angularVel1, angularVel2
-
-    //and controller user inputs:
-    //data1, data2, data3, data4 / meaningFullVarName(1-4)
-    //trajTimeStamp, trajPosition, trajVelocity, trajtrajAcceleration
-
-    //To calculate output:
-    //commandedTorque1; commandedTorque2;
-
-
-    //************* TO HERE****************************************
-
-
+    iterate();
 
     //Send output to spi
-    TemplateController::spi_write();
+    TemplateController::writeOutput();
 
     //OPTIONAL: report status to terminal
     itrCounter++;
