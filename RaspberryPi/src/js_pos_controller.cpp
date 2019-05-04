@@ -1,7 +1,7 @@
 #include "controllers/js_pos_controller.h"
 //Customize names that fit your implementation
 JointSpacePosController::JointSpacePosController():controllerEngine(){
-  controllerEngine.controllerObject = *this;
+  controllerEngine.controllerObject = this;
   controllerEngine.iterate = &iterateStatic;
   //ZmqSub inputs
   *name1 = &controllerEngine.data1;

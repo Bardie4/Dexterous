@@ -90,7 +90,7 @@ void ControllerEngine::run(){
     //Read sensordata while spi thread is sleeping
     readPeriph();
 
-    iterate();
+    iterate(controllerObject);
 
     //Send output to spi
     writeOutput();
