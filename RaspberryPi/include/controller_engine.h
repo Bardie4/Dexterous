@@ -56,6 +56,7 @@ class ControllerEngine {
   short controllerId;
   PeripheralFingerMem* periphMemPtr;
   ZmqSubFingerMem* zmqSubMemPtr;
+  void* controllerObject;
 
   //20 variables that are tunable via ZMQ.
   float var1, var2, var3, var4, var5, var6, var7, var8, var9, var10;
