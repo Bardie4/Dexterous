@@ -1,11 +1,3 @@
-/* i2c - Example
-   For other examples please check:
-   https://github.com/espressif/esp-idf/tree/master/examples
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
 #include <stdio.h>
 #include "driver/i2c.h"
 
@@ -40,9 +32,9 @@
  * - i2c master(ESP32) will read data from i2c slave(ESP32).
  */
 
-#define DATA_LENGTH                        64              /*!<Data buffer length for test buffer*/
+#define DATA_LENGTH                        512              /*!<Data buffer length for test buffer*/
 #define RW_TEST_LENGTH                     129              /*!<Data length for r/w test, any value from 0-DATA_LENGTH*/
-#define DELAY_TIME_BETWEEN_ITEMS_MS        100             /*!< delay time between different test items */
+#define DELAY_TIME_BETWEEN_ITEMS_MS        500             /*!< delay time between different test items */
 
 #define I2C_EXAMPLE_SLAVE_SCL_IO           GPIO_NUM_16               /*!<gpio number for i2c slave clock  */
 #define I2C_EXAMPLE_SLAVE_SDA_IO           GPIO_NUM_17               /*!<gpio number for i2c slave data */
@@ -50,22 +42,9 @@
 #define I2C_EXAMPLE_SLAVE_TX_BUF_LEN       (2*DATA_LENGTH)  /*!<I2C slave tx buffer size */
 #define I2C_EXAMPLE_SLAVE_RX_BUF_LEN       (2*DATA_LENGTH)  /*!<I2C slave rx buffer size */
 
-// #define I2C_EXAMPLE_MASTER_SCL_IO          19               /*!< gpio number for I2C master clock */
-// #define I2C_EXAMPLE_MASTER_SDA_IO          18               /*!< gpio number for I2C master data  */
-// #define I2C_EXAMPLE_MASTER_NUM             I2C_NUM_1        /*!< I2C port number for master dev */
-// #define I2C_EXAMPLE_MASTER_TX_BUF_DISABLE  0                /*!< I2C master do not need buffer */
-// #define I2C_EXAMPLE_MASTER_RX_BUF_DISABLE  0                /*!< I2C master do not need buffer */
-// #define I2C_EXAMPLE_MASTER_FREQ_HZ         100000           /*!< I2C master clock frequency */
-
-// #define BH1750_SENSOR_ADDR                 0x23             /*!< slave address for BH1750 sensor */
-// #define BH1750_CMD_START                   0x23             /*!< Command to set measure mode */
 #define ESP_SLAVE_ADDR                     0x28             /*!< ESP32 slave address, you can set any 7bit value */
 #define WRITE_BIT                          I2C_MASTER_WRITE /*!< I2C master write */
-// #define READ_BIT                           I2C_MASTER_READ  /*!< I2C master read */
 #define ACK_CHECK_EN                       0x1              /*!< I2C master will check ack from slave*/
-// #define ACK_CHECK_DIS                      0x0              /*!< I2C master will not check ack from slave */
-// #define ACK_VAL                            0x0              /*!< I2C ack value */
-// #define NACK_VAL                           0x1              /*!< I2C nack value */
 
 SemaphoreHandle_t print_mux = NULL;
 
@@ -80,47 +59,30 @@ static void i2c_example_slave_init(){
     conf_slave.slave.addr_10bit_en = 0;
     conf_slave.slave.slave_addr = ESP_SLAVE_ADDR;
     i2c_param_config(i2c_slave_port, &conf_slave);
-    i2c_driver_install(i2c_slave_port, conf_slave.mode,
-                       I2C_EXAMPLE_SLAVE_RX_BUF_LEN,
-                       I2C_EXAMPLE_SLAVE_TX_BUF_LEN, I2C_NUM_0);
+    i2c_driver_install(i2c_slave_port, 
+                        conf_slave.mode,
+                        I2C_EXAMPLE_SLAVE_RX_BUF_LEN,
+                        I2C_EXAMPLE_SLAVE_TX_BUF_LEN, 
+                        I2C_NUM_0);
 }
-
-// static esp_err_t i2c_example_master_write_slave(i2c_port_t i2c_num, uint8_t* data_wr, size_t size)
-// {
-//     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-//     i2c_master_start(cmd);
-//     i2c_master_write_byte(cmd, ( ESP_SLAVE_ADDR << 1 ) | WRITE_BIT, ACK_CHECK_EN);
-//     i2c_master_write(cmd, data_wr, size, ACK_CHECK_EN);
-//     i2c_master_stop(cmd);
-//     esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
-//     i2c_cmd_link_delete(cmd);
-//     return ret;
-// }
 
 static void disp_buf(uint8_t* buf, int len)
 {
     int i;
     for (i = 0; i < len; i++) {
-        Serial.print("incoming: ");
+
         Serial.print(buf[i]);
         Serial.print(" ");
         if (( i + 1 ) % 16 == 0) {
             Serial.println();
         }
     }
-    Serial.println("");
 }
 
 static void i2c_test_task(void* arg)
 {
-    int i = 0;
-    int ret;
-    uint32_t task_idx = (uint32_t) arg;
     uint8_t* data = (uint8_t*) malloc(DATA_LENGTH);
-    uint8_t* data_wr = (uint8_t*) malloc(DATA_LENGTH);
-    uint8_t* data_rd = (uint8_t*) malloc(DATA_LENGTH);
-    uint8_t sensor_data_h, sensor_data_l;
-    int cnt = 0;
+
     int size;
 
     while (1) {
@@ -129,7 +91,7 @@ static void i2c_test_task(void* arg)
 
       disp_buf(data, size);
 
-      vTaskDelay(( DELAY_TIME_BETWEEN_ITEMS_MS * ( task_idx + 1 ) ) / portTICK_RATE_MS);
+      vTaskDelay( 1 / portTICK_RATE_MS);
     }
 }
 
@@ -139,7 +101,15 @@ void setup()
     print_mux = xSemaphoreCreateMutex();
     i2c_example_slave_init();
     
-    xTaskCreate(i2c_test_task, "i2c_test_task_0", 1024 * 2, (void* ) 0, 10, NULL);
+    //i2c_port_t i2c_num,
+    //void (*fn)(void *),
+    //void *arg,
+    //int intr_alloc_flags; 
+
+    //intr_handle_t intr = NULL;
+
+    //i2c_isr_register(I2C_EXAMPLE_SLAVE_NUM, i2c_test_task, NULL, ESP_INTR_FLAG_LEVEL6, &intr);
+    xTaskCreatePinnedToCore(i2c_test_task, "printer", 1024 * 2, (void *)7, 1, NULL, 0);
 }
 
 void loop(){

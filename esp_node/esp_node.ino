@@ -72,7 +72,7 @@ void setup() {
   digitalWrite(M_EN, HIGH);
 
   xTaskCreatePinnedToCore(motorL, "vspi", 4096, (void *)1, 1, NULL, 0);
-  xTaskCreatePinnedToCore(motorH, "hspi", 4096, (void *)2, 1, NULL, 1);
+  //xTaskCreatePinnedToCore(motorH, "hspi", 4096, (void *)2, 1, NULL, 1);
 
   Serial.begin(115200);
 }
@@ -193,7 +193,7 @@ void motorL(void *pvParameters) {
 
 double getScaleL() {
   double scaling;
-
+    scaling = 100;
   return scaling;
 }
 

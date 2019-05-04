@@ -3,6 +3,6 @@
     "board": "esp32:esp32:esp32doit-devkit-v1",
     "output": "../build",
     "port": "/dev/ttyUSB0",
-    "sketch": "esp_old/esp_I2Cread.ino",
+    "sketch": "esp_old/esp_MagsPwm/main.ino",
     "configuration": "FlashFreq=40,UploadSpeed=115200,DebugLevel=none"
 }
