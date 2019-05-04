@@ -1,9 +1,8 @@
-#include "controller_structs.h"
-#include "template_controller.h"
+#include "controller_engine.h"
 
-class jsPosController {
+class JointSpacePosController {
   public:
-    templateController cntrllrEngine;
+    ControllerEngine controllerEngine;
 
     float *name1;
     float *name2;
@@ -52,8 +51,8 @@ class jsPosController {
     float *var19;
     float *var20;
 
-    void jsPosController();
-    templateController* getHandle();
+    void JointSpacePosController();
+    ControllerEngine* getHandle();
     void iterate();
     void run();
 }
