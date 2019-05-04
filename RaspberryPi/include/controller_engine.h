@@ -49,10 +49,10 @@ class ControllerEngine {
   ZmqSubFingerMem* zmqSubMemPtr;
 
   //20 variables that are tunable via ZMQ.
-  float* varPtrs[20];
   float var1, var2, var3, var4, var5, var6, var7, var8, var9, var10;
   float var11, var12, var13, var14, var15, var16, var17, var18, var19, var20;
-
+  float* varPtrs[20] = { &var1, &var2, &var3, &var4, &var5, &var6, &var7, &var8, &var9, &var10,
+                &var11, &var12, &var13, &var14, &var15, &var16, &var17, &var18, &var19, &var20};
   //*************EDIT THIS PART************
   //When bindToFinger() is called, these references is assigned to var1-20.
   //Give the refrences names that are meaningful to your implementation.
