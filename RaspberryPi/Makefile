@@ -8,8 +8,8 @@
 #main.o: src/main.cpp
 #	g++ -c -Wall -pthread src/main.cpp -lzmq -lpthread -lpigpio -lrt -lm -I ./include/ -I ./lib/  -L/usr/local/lib -lwiringPi -I/usr/local/include
 
-controller_engine.o: src/controller_engine.cpp
-	g++ -c -Wall -pthread src/controller_engine.cpp -I ./include/
+#controller_engine.o: src/controller_engine.cpp
+#	g++ -c -Wall -pthread src/controller_engine.cpp -I ./include/
 
 js_pos_controller.o: src/js_pos_controller.cpp
 	g++ -c -Wall src/js_pos_controller.cpp -I ./include/
