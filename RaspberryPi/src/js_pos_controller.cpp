@@ -1,5 +1,8 @@
 #include "controller_engine.h"
 
+JointSpacePosController::JointSpacePosController()
+:controllerEngine(){};
+
 ControllerEngine* JointSpacePosController::getHandle(){
   return &controllerEngine;
 }
@@ -8,7 +11,7 @@ void JointSpacePosController::run(){
 }
 
 //Customize names that fit your implementation
-void JointSpacePosController::JointSpacePosController(){
+JointSpacePosController::JointSpacePosController():controllerEngine(){};{
   controllerEngine.iterate = &iterate();
   //ZmqSub inputs
   *name1 = cntrllrEngine.data1;

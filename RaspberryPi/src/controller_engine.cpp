@@ -1,9 +1,9 @@
 #include "controller_engine.h"
 #include <iostream>
 
+ControllerEngine::ControllerEngine(){}
+
 float** ControllerEngine::getTunableVarPtr(){
-
-
   return varPtrs;
 }
 
@@ -57,6 +57,7 @@ void ControllerEngine::readTrajZmqSub(){
   pthread_mutex_unlock(zmqSubLock);
   }
 }
+
 void ControllerEngine::readPeriph(){
   jointAngle1 = periphMemPtr->jointAngle1;
   jointAngle2 = periphMemPtr->jointAngle2;
