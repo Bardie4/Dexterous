@@ -12,7 +12,7 @@ controller_engine.o: src/controller_engine.cpp
 	g++ -Wall -pthread -c src/controller_engine.cpp -I ./include/
 
 js_pos_controller.o: src/js_pos_controller.cpp
-	g++ -Wall -c src/js_pos_controller.cpp -I/include/
+	g++ -Wall -c src/js_pos_controller.cpp -I ./include/
 
 clean:
 	rm -rf *o spi_test
