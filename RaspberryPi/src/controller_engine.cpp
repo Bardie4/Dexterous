@@ -1,16 +1,8 @@
 #include "controller_engine.h"
-#include <pthread.h>
 #include <iostream>
-extern pthread_mutex_t zmqSubLock = PTHREAD_MUTEX_INITIALIZER;
-extern pthread_mutex_t periphLock = PTHREAD_MUTEX_INITIALIZER;
-extern pthread_mutex_t begin_control_iteration = PTHREAD_MUTEX_INITIALIZER;
-extern pthread_cond_t start_cond = PTHREAD_COND_INITIALIZER;
 
-/*
-void ControllerEngine::(*iterate)(void);
-*/
 float** ControllerEngine::getTunableVarPtr(){
- 
+
 
   return varPtrs;
 }
