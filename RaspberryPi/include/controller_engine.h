@@ -5,13 +5,6 @@
 class ControllerEngine {
   //This is a template of a controller, se also cpp file in src folder.
   private:
-
-  short fingerId;
-  short controllerId;
-  PeripheralFingerMem* periphMemPtr;
-  ZmqSubFingerMem* zmqSubMemPtr;
-
-
   //REQUIRED: Local copies of variables shared by zmq thread
   short controllerSelect;
   float data1;
@@ -50,6 +43,10 @@ class ControllerEngine {
   int itrCounter;
 
   public:
+  short fingerId;
+  short controllerId;
+  PeripheralFingerMem* periphMemPtr;
+  ZmqSubFingerMem* zmqSubMemPtr;
 
   //20 variables that are tunable via ZMQ.
   float* varPtrs[20];
