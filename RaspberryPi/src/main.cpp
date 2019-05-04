@@ -15,8 +15,7 @@
 #include <sstream>
 #include "generated_flattbuffers/simple_instructions_generated.h"
 #include "generated_flattbuffers/finger_broadcast_generated.h"
-#include "controller_engine.h"
-#include "controller_structs.h"
+#include "js_pos_controller.h"
 pthread_t tid[10];
 static pthread_mutex_t zmqSubLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t periphLock = PTHREAD_MUTEX_INITIALIZER;
@@ -182,8 +181,12 @@ class Finger{
 //    ZmqFingerMem* zmqFingerMem;
     ZmqSubFingerMem zmqSubSharedMem;
     PeripheralFingerMem periphSharedMem;
+
+    //Controllers
+    JointSpacePosController jsPosCntrllr;
 		//Constructor
-    Finger(int identity){
+    Finger(int identity)
+    : jsPosCntrllr(){
 			id= identity;
 			itr_counter=0;
 
