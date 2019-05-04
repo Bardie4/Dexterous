@@ -10,7 +10,7 @@ extern pthread_cond_t start_cond;
 */
 class ControllerEngine {
   //This is a template of a controller, se also cpp file in src folder.
-  private:
+  public:
   //REQUIRED: Local copies of variables shared by zmq thread
   short controllerSelect;
   float data1;
@@ -47,8 +47,6 @@ class ControllerEngine {
 */
   //OPTIONAL: Used to count iterations
   int itrCounter;
-
-  public:
   pthread_mutex_t* zmqSubLock;
   pthread_mutex_t* periphLock;
   pthread_mutex_t* begin_control_iteration;
