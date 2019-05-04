@@ -1,3 +1,6 @@
+#ifndef CONTROLLER_STRUCT
+#define CONTROLLER_STRUCT
+
 typedef struct ZmqSubFingerMem{
   bool runFlag;
   bool newMessage;
@@ -45,3 +48,5 @@ float empty2;
 float empty3;
 }FingerStates;
 */
+
+#endif

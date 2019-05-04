@@ -74,7 +74,6 @@ class ControllerEngine {
   //The controller gets access to memory updated by the spi thread and zmq thread
   //Returns addresses of tunable variables to finger
   void getTunableVarPtr();
-  void (iterate)(void);
   void readZmqSub();           //reads user inputs from zmq: controllerSelect & data1-4
   void readTrajZmqSub();       //Same as above, but also reads trajectory data
   void readPeriph();           //reads sensor data: joint angle and joint velocity
