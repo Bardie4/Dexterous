@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include "controller_engine.h"
 static pthread_mutex_t zmqSubLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t periphLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t begin_control_iteration = PTHREAD_MUTEX_INITIALIZER;
