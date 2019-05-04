@@ -183,9 +183,11 @@ class Finger{
     PeripheralFingerMem periphSharedMem;
 
     //Controllers
-    JointSpacePosController jsPosCntrllr;
+    //JointSpacePosController jsPosCntrllr;
 		//Constructor
-    Finger(int identity):jsPosCntrllr(){
+    Finger(int identity)//:jsPosCntrllr(){
+      {
+      JointSpacePosController jsPosCntrllr;
 			id= identity;
 			itr_counter=0;
     }
