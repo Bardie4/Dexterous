@@ -1,12 +1,4 @@
 #include "controllers/js_pos_controller.h"
-
-ControllerEngine* JointSpacePosController::getHandle(){
-  return &controllerEngine;
-}
-void JointSpacePosController::run(){
-  controllerEngine.run();
-}
-
 //Customize names that fit your implementation
 JointSpacePosController::JointSpacePosController():controllerEngine(){
   controllerEngine.iterate = &iterate();
@@ -62,4 +54,11 @@ JointSpacePosController::JointSpacePosController():controllerEngine(){
 void JointSpacePosController::iterate(){
   *commandedTorque1 = *name1
   *commandedTorque1 = *name2
+}
+
+ControllerEngine* JointSpacePosController::getHandle(){
+  return &controllerEngine;
+}
+void JointSpacePosController::run(){
+  controllerEngine.run();
 }

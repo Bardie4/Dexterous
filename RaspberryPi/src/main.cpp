@@ -188,7 +188,6 @@ class Finger{
     Finger(int identity):jsPosCntrllr(){
 			id= identity;
 			itr_counter=0;
-
     }
 
 		void shutdown(){
