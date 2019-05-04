@@ -201,7 +201,7 @@ class Finger{
 			pthread_mutex_unlock(&zmqSubLock);
 			}
 
-    void bindController(TemplateController* handle, short controller_id){
+    void bindController(ControllerEngine* handle, short controller_id){
         handle->zmqSubMemPtr = &zmqSubSharedMem;
         handle->periphMemPtr = &periphSharedMem;
         handle->fingerId = id;
@@ -583,7 +583,6 @@ class Finger{
 			//While finger is instructed to be active
       while( !(controller_select == 0) ){
 				//Cycle through controllers.
-        templateController.run();
           //jointspace_ijc_pid();
       //  cartesian_ijc_pid();
       }
