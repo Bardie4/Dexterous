@@ -55,4 +55,4 @@ class JointSpacePosController {
     ControllerEngine* getHandle();
     void iterate();
     void run();
-}
+};
