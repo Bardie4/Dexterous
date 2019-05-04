@@ -14,14 +14,14 @@ JointSpacePosController::JointSpacePosController():controllerEngine(){
   name8 = &controllerEngine.data8;
   name9 = &controllerEngine.data9;
   name10 = &controllerEngine.data10;
-  trajSize = controllerEngine.trajSize;
+  trajSize = &controllerEngine.trajSize;
   trajTimeStamp = controllerEngine.trajTimeStamp;
   trajPosition = controllerEngine.trajPosition;
   trajVelocity = controllerEngine.trajVelocity;
   trajAcceleration = controllerEngine.trajAcceleration;
   //Peripheral inputs
-  jointAngle1 = &controllerEngine.jointAngle;
-  jointAngle2 = &controllerEngine.jointAngle;
+  jointAngle1 = &controllerEngine.jointAngle1;
+  jointAngle2 = &controllerEngine.jointAngle2;
   angularVel1 = &controllerEngine.angularVel1;
   angularVel2 = &controllerEngine.angularVel2;
   angularAcc1 = &controllerEngine.angularAcc1;

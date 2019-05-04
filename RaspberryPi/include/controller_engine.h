@@ -33,6 +33,8 @@ class ControllerEngine {
   float jointAngle2;
   float angularVel1;
   float angularVel2;
+  float angularAcc1;
+  float angularAcc2;
   float commandedTorque1;
   float commandedTorque2;
 
