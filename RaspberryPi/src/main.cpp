@@ -185,8 +185,7 @@ class Finger{
     //Controllers
     JointSpacePosController jsPosCntrllr;
 		//Constructor
-    Finger(int identity)
-    : jsPosCntrllr(){
+    Finger(int identity):jsPosCntrllr(){
 			id= identity;
 			itr_counter=0;
 
