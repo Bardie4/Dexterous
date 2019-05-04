@@ -15,9 +15,9 @@ float* ControllerEngine::getTunableVarPtr(){
 
   return varPtrs;
 }
-
+d
 void ControllerEngine::readZmqSub(){
-  pthread_mutex_lock(&zmqlock);
+  pthread_mutex_lock(&zmqSubLock);
   if (zmqSubMemPtr->newMessage){
     controllerSelect = zmqSubMemPtr->controllerSelect;
     data1 = zmqSubMemPtr->data1;
@@ -31,12 +31,12 @@ void ControllerEngine::readZmqSub(){
     data9 = zmqSubMemPtr->data9;
     data10 = zmqSubMemPtr->data10;
   }
-  zmqMemPtr->newMessage = 0;
-  pthread_mutex_unlock(&zmqlock);
+  zmqSubMemPtr->newMessage = 0;
+  pthread_mutex_unlock(&zmqSubLock);
 }
 
 void ControllerEngine::readTrajZmqSub(){
-  pthread_mutex_lock(&zmqlock);
+  pthread_mutex_lock(&zmqSubLock);
   if (zmqSubMemPtr->newMessage){
     controllerSelect = zmqSubMemPtr->controllerSelect;
     data1 = zmqSubMemPtr->data1;
@@ -60,10 +60,10 @@ void ControllerEngine::readTrajZmqSub(){
       trajTimeStamp[i] = zmqSubMemPtr->trajTimeStamp[i];
       trajPosition[i] = zmqSubMemPtr->trajPosition[i];
       trajVelocity[i] = zmqSubMemPtr->trajVelocity[i];
-      trajAcceleration[i] = zmqSubMemPtr->Acceleration[i];
+      trajAcceleration[i] = zmqSubMemPtr->trajAcceleration[i];
     }
-    zmqMemPtr->newMessage = 0;
-  pthread_mutex_unlock(&zmqlock);
+    zmqSubMemPtr->newMessage = 0;
+  pthread_mutex_unlock(&zmqSubLock);
 }
 
 void ControllerEngine::readPeriph(){
@@ -81,7 +81,7 @@ void ControllerEngine::writeOutput(){
 void ControllerEngine::run(){
   while(1){
     //Check controller user inputs
-    ControllerEngine::readZmqSub();
+    readZmqSub();
     //Alternativly: ControllerEngine::zmqSubReadTraj;
 
     //If this is not the correct controller
@@ -96,12 +96,12 @@ void ControllerEngine::run(){
     pthread_mutex_unlock(&begin_control_iteration);
 
     //Read sensordata while spi thread is sleeping
-    ControllerEngine::readPeriph()
+    readPeriph()
 
     iterate();
 
     //Send output to spi
-    ControllerEngine::writeOutput();
+    writeOutput();
 
     //OPTIONAL: report status to terminal
     itrCounter++;
