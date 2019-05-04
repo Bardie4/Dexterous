@@ -17,4 +17,4 @@ js_pos_controller.o: src/js_pos_controller.cpp
 	g++ -Wall -c src/js_pos_controller.cpp -I ./include/
 
 clean:
-	rm -rf *o  spi_test gripper
+	rm -rf *o gripper
