@@ -1,4 +1,4 @@
-#include "controller_engine.h"
+#include "controllers/js_pos_controller.h"
 
 ControllerEngine* JointSpacePosController::getHandle(){
   return &controllerEngine;
@@ -8,8 +8,7 @@ void JointSpacePosController::run(){
 }
 
 //Customize names that fit your implementation
-JointSpacePosController::JointSpacePosController():controllerEngine()
-{
+JointSpacePosController::JointSpacePosController():controllerEngine(){
   controllerEngine.iterate = &iterate();
   //ZmqSub inputs
   *name1 = cntrllrEngine.data1;
@@ -59,8 +58,6 @@ JointSpacePosController::JointSpacePosController():controllerEngine()
   *var19 = &cntrllrEngine.var19;
   *var20 = &cntrllrEngine.var20;
 }
-
-
 
 void JointSpacePosController::iterate(){
   *commandedTorque1 = *name1
