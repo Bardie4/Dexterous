@@ -14,11 +14,11 @@ JointSpacePosController::JointSpacePosController():controllerEngine(){
   name8 = &controllerEngine.data8;
   name9 = &controllerEngine.data9;
   name10 = &controllerEngine.data10;
-  trajSize = &controllerEngine.trajSize;
-  trajTimeStamp = &controllerEngine.trajTimeStamp;
-  trajPosition = &controllerEngine.trajPosition;
-  trajVelocity = &controllerEngine.trajVelocity;
-  trajAcceleration = &controllerEngine.trajAcceleration;
+  trajSize = controllerEngine.trajSize;
+  trajTimeStamp = controllerEngine.trajTimeStamp;
+  trajPosition = controllerEngine.trajPosition;
+  trajVelocity = controllerEngine.trajVelocity;
+  trajAcceleration = controllerEngine.trajAcceleration;
   //Peripheral inputs
   jointAngle1 = &controllerEngine.jointAngle;
   jointAngle2 = &controllerEngine.jointAngle;
@@ -58,8 +58,8 @@ void JointSpacePosController::iterate(){
 }
 
 static void iterateStatic(void *controller_object){
+  return ((JointSpacePosController*)controller_object)->iterate();
 }
-return ((JointSpacePosController*)controller_object)->iterate();
 
 ControllerEngine* JointSpacePosController::getHandle(){
   return &controllerEngine;

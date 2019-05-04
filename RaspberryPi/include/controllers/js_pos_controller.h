@@ -16,10 +16,10 @@ class JointSpacePosController {
     float *name10;
 
     int *trajSize;
-    float *trajTimeStamp;
-    float *trajPosition;
-    float *trajVelocity;
-    float *trajAcceleration;
+    float trajTimeStamp;
+    float trajPosition;
+    float trajVelocity;
+    float trajAcceleration;
     //Peripheral inputs
     float *jointAngle1;
     float *jointAngle2;
