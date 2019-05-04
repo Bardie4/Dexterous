@@ -87,6 +87,6 @@ class ControllerEngine {
   void readPeriph();           //reads sensor data: joint angle and joint velocity
   void writeOutput();          //Writes commanded torque to memory shared with spi thread.
   void run();               //The actual control loop.
-  void (*iterate)(void *controller_object);
+  void (*iterate)(void*);
 };
 #endif
