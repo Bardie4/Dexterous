@@ -6,7 +6,7 @@ static void iterateStatic(void *controller_object){
 
 JointSpacePosController::JointSpacePosController():controllerEngine(){
   controllerEngine.controllerObject = this;
-  controllerEngine.iterate = &JointSpacePosController::iterateStatic;
+  controllerEngine.iterate = &iterateStatic;
   //ZmqSub inputs
   name1 = &controllerEngine.data1;
   name2 = &controllerEngine.data2;
