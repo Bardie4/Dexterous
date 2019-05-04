@@ -51,7 +51,7 @@ class JointSpacePosController {
     float *var19;
     float *var20;
 
-    static void iterateStatic(void *controller_object);
+    static void iterateStatic(void*);
     JointSpacePosController();
     ControllerEngine* getHandle();
     void iterate();
