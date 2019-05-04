@@ -1,5 +1,6 @@
 #include "controller_engine.h"
 #include <pthread.h>
+#include <iostream.h>
 extern pthread_mutex_t zmqSubLock = PTHREAD_MUTEX_INITIALIZER;
 extern pthread_mutex_t periphLock = PTHREAD_MUTEX_INITIALIZER;
 extern pthread_mutex_t begin_control_iteration = PTHREAD_MUTEX_INITIALIZER;
@@ -75,7 +76,7 @@ void ControllerEngine::readPeriph(){
 
 void ControllerEngine::writeOutput(){
   periphMemPtr->commandedTorque1 = commandedTorque1;
-  periphMemPtr->CommandedTorque2 = commandedTorque2;
+  periphMemPtr->commandedTorque2 = commandedTorque2;
 }
 
 void ControllerEngine::run(){
@@ -96,7 +97,7 @@ void ControllerEngine::run(){
     pthread_mutex_unlock(&begin_control_iteration);
 
     //Read sensordata while spi thread is sleeping
-    readPeriph()
+    readPeriph();
 
     iterate();
 
