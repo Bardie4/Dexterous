@@ -1,7 +1,8 @@
-#include "template_controller.h"
-#ifndef  "controller_structs.h"
+#ifndef CONTROLLER_ENGINE
+#define CONTROLLER_ENGINE
+#include "controller_structs.h"
 
-class TemplateController {
+class ControllerEngine {
   //This is a template of a controller, se also cpp file in src folder.
   private:
 
@@ -72,12 +73,13 @@ class TemplateController {
   //Lets the controller know which finger it runs on, and assigns it a unique number
   //The controller gets access to memory updated by the spi thread and zmq thread
   //Returns addresses of tunable variables to finger
-  void bindToFinger(int finger_id, Finger* finger);
-  static void (*setVariableNames)
+  void getTunableVarPtr();
+  void (iterate)(void);
   void readZmqSub();           //reads user inputs from zmq: controllerSelect & data1-4
   void readTrajZmqSub();       //Same as above, but also reads trajectory data
   void readPeriph();           //reads sensor data: joint angle and joint velocity
   void writeOutput();          //Writes commanded torque to memory shared with spi thread.
   void run();               //The actual control loop.
-  static void (iterate*)(TemplateController* templateController);
-}
+  void ControllerEngine::(*iterate)(void);
+};
+#endif
