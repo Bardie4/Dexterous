@@ -17,7 +17,7 @@
 #include "generated_flattbuffers/finger_broadcast_generated.h"
 #include "controller_structs.h"
 
-#include "controllers/template_controller.h"
+#include "template_controller.h"
 pthread_t tid[10];
 static pthread_mutex_t zmqSubLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t periphLock = PTHREAD_MUTEX_INITIALIZER;
