@@ -1,6 +1,7 @@
 #ifndef CONTROLLER_ENGINE
 #define CONTROLLER_ENGINE
 #include "controller_structs.h"
+#include <pthread.h>
 extern pthread_mutex_t zmqSubLock;
 extern pthread_mutex_t periphLock;
 extern pthread_mutex_t begin_control_iteration;
