@@ -82,6 +82,7 @@ void ControllerEngine::run(){
     //If this is not the correct controller
     if ( !(controllerSelect == controllerId) ){
       //Exit while loop (Try next controller)
+      std::cout <<"controller select: " << controllerSelect<< " controller ID: " << controllerId <<std::endl;
       break;
     }
 

@@ -1047,7 +1047,7 @@ main(){
   //The identity corresponds to specific SPI pins. Choose a value between 0-6.
   //Additional fingers can be added (max 7 with the amount of GPIO pins on a RaspberryPi).
 
-	int csSens1_f1 = 2;
+	int csSens1_f1 = 22;
 	int csSens2_f1 = 3;
 	int i2cEsp32_f1 = 4;
 
