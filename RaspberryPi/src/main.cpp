@@ -29,7 +29,7 @@ pthread_t tid[10];
 //Flatbuffers
 using namespace quad_double_mes; // Specified in the schema.
 using namespace quad_double_me; // Specified in the schema.
-flatbuffers::FlatBufferBuilder builder(1024);
+//flatbuffers::FlatBufferBuilder builder(1024);
 uint8_t *buffer_pointer;
 /*
 //Variables used by joint space PID function
@@ -1000,6 +1000,7 @@ class PeripheralsController{
         pthread_mutex_unlock(&begin_control_iteration);
         //Give controllers time to finish an iteration
 
+        flatbuffers::FlatBufferBuilder builder(1024);
         std::cout << "size of std vector: "<<handStates.size()<<std::endl;
         //Finish flatbuffer
         auto hand = builder.CreateVector(handStates);
