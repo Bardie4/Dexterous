@@ -1047,31 +1047,31 @@ main(){
   //Additional fingers can be added (max 7 with the amount of GPIO pins on a RaspberryPi).
 
 	int csSens1_f1 = 6;
-	int csSens2_f1 = 3;
+	int csSens2_f1 = 6;
 	int i2cEsp32_f1 = 4;
 
-  int csSens1_f2 = 2;
-	int csSens2_f2 = 3;
+  int csSens1_f2 = 6;
+	int csSens2_f2 = 6;
 	int i2cEsp32_f2 = 7;
 
-  int csSens1_f3 = 2;
-	int csSens2_f3 = 3;
+  int csSens1_f3 = 6;
+	int csSens2_f3 = 6;
 	int i2cEsp32_f3 = 14;
 
-  int csSens1_f4 = 2;
-	int csSens2_f4 = 3;
+  int csSens1_f4 = 6;
+	int csSens2_f4 = 6;
 	int i2cEsp32_f4 = 17;
 
-  int csSens1_f5 = 2;
-	int csSens2_f5 = 3;
+  int csSens1_f5 = 6;
+	int csSens2_f5 = 6;
 	int i2cEsp32_f5 = 20;
 
-  int csSens1_f6 = 2;
-	int csSens2_f6 = 3;
+  int csSens1_f6 = 6;
+	int csSens2_f6 = 6;
 	int i2cEsp32_f6 = 23;
 
-  int csSens1_f7 = 2;
-	int csSens2_f7 = 3;
+  int csSens1_f7 = 6;
+	int csSens2_f7 = 6;
 	int i2cEsp32_f7 = 26;
 
   //Chip select pins and i2c addresses is packed into array which is to be
