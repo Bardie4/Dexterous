@@ -785,6 +785,8 @@ class PeripheralsController{
     void* context ;
     void* publisher ;
 
+    uint8_t buff[1024];
+
     float readAngle8(int &cs){
       outBuf[0] = read_command_8;
 			pthread_mutex_lock(&periphLock);
@@ -1007,7 +1009,10 @@ class PeripheralsController{
         uint8_t *buf = builder.GetBufferPointer();
         int size = builder.GetSize();
         //zmq::message_t zmqHandBroadcast(buf, size, free_me_from_my_suffering);
-        zmq_send (publisher, buf, size, 0);
+        for (int i=0; i<size; i++){
+          buff[i]=buf[i];
+        }
+        zmq_send (publisher, &buff, size, 0);
         //Exit on cntrl+c
         //if ( quit.load() ){
         //  break;
