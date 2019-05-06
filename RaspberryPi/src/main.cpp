@@ -990,7 +990,7 @@ class PeripheralsController{
         usleep(ITR_DEADLINE);
 
         //Finish flatbuffer
-        //auto hand = builder.CreateVector(handStates);
+        auto hand = builder.CreateVector(handStates);
         //auto handBroadcast = CreateHandBroadcast(builder, hand);
         //FinishHandBroadcastBuffer(builder, handBroadcast);
         //Send
