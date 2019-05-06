@@ -761,7 +761,7 @@ class PeripheralsController{
     int gpioResult;
     int spiResult;
 
-    int i2cHandle;monitor memory usage script raspberry pi
+    int i2cHandle;
     unsigned i2cReg;
 
     char inBuf[4];
