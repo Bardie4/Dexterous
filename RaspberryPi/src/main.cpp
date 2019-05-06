@@ -288,7 +288,6 @@ class Finger{
 			gpioResult = gpioWrite(csAngleSensor2,1);
 		 	pthread_mutex_unlock(&periphLock);
 			theta2 = inBuf[0];
-calibration
 			printf("Before calibration: %d | %d\n", theta1 , theta2);
 			//Setting zero_angle at start position
 			//The measured angle in end position should be zero to avoid crossing from 0->255, as this will mess with the PID.
@@ -482,8 +481,8 @@ calibration
 				sleep(2);
 				update_local_zmq_mem();
 				if ( !(controller_select==1) ){
-          std::cout <<"Exiting now because controller select is: " << controller_select << std::endl;
-          break;
+            std::cout <<"Exiting now because controller select is: " << controller_select << std::endl;
+					break;
         }
       std::cout << "Finger: "<< id <<" is waiting for controller to be selected. Current selection: " << controller_select <<std::endl;
       }
@@ -745,7 +744,7 @@ class ZmqSubscriber{
         subscriber.recv(&buffer);
 
           std::cout <<"Raw address size:: "<< address->size() <<std::endl;
-          std::cout <<"Buffer size: "<< buffer->size() <<std::endl;
+          std::cout <<"Buffers of size: "<< buffer->size() <<std::endl;
         //}
         //catch(zmq::error_t& e) {
         //  std::cout << "Interrupt received" << std::endl;
