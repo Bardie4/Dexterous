@@ -1,6 +1,6 @@
 #include "controllers/js_pos_controller.h"
 //Customize names that fit your implementation
-static void JointSpacePosController::iterateStatic(void *controller_object){
+void JointSpacePosController::iterateStatic(void *controller_object){
   return ((JointSpacePosController*)controller_object)->iterate();
 }
 
