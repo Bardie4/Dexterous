@@ -110,6 +110,11 @@ typedef struct zmq_data{
 }zmq_data;
 
 */
+void my_free (void *data, void *hint)
+{
+    free (data);
+}
+
 class Finger{
   public:
 		//void update_local_zmq_mem();					//updates controller_select and data1-4
@@ -996,9 +1001,8 @@ class PeripheralsController{
         //Send
         uint8_t *buf = builder.GetBufferPointer();
         int size = builder.GetSize();
-        zmq::message_t zmqHandBroadcast(buf, size);
+        zmq::message_t zmqHandBroadcast(buf, size, my_free);
         publisher.send(zmqHandBroadcast);
-        free(buf);
         //Exit on cntrl+c
         //if ( quit.load() ){
         //  break;
