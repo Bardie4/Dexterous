@@ -684,7 +684,7 @@ class ZmqSubscriber{
     }
 
     void passOnSimpleInstructions(zmq::message_t* buffer){
-      std::cout <<"entering pass function" <<std::endl;
+      std::cout <<"entering pass function. message is of size: "<< buffer->size() <<std::endl;
       //Parse flattbuffer and store it
       auto messageObj = GetSimpleInstructionMsg(buffer->data());
         std::cout <<"created flattbuffer object" <<std::endl;
