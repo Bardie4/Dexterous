@@ -188,7 +188,6 @@ class Finger{
     //Constructor
     Finger(int identity)
       :jsPosCntrllr(){
-      {
       bindController(jsPosCntrllr);
 			id= identity;
 			itr_counter=0;
