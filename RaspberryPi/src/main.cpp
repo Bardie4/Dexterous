@@ -706,7 +706,7 @@ class ZmqSubscriber{
       fingerMem.data9 = messageObj->data9();
       fingerMem.data10 = messageObj->data10();
 
-
+      std::cout << ingerMem.fingerSelect << " " << fingerMem.controllerSelect << std::endl;
       pthread_mutex_lock(&zmqSubLock);
       //Read runflag before its overwritten
       oldRunFlag = fingerMemPtr[fingerMem.fingerSelect]->runFlag;
