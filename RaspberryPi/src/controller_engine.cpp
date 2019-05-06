@@ -102,6 +102,7 @@ void ControllerEngine::run(){
     itrCounter++;
     if ( itrCounter > 1000){
       std::cout <<"controller: " << controllerId << "is running on finger: " << fingerId << std::endl;
+      std::cout <<"Angle 1: " << jointAngle1 << "Angle 2: " << jointAngle2 << std::endl;
       itrCounter = 0;
     }
 
