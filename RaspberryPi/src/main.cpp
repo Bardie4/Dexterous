@@ -1004,7 +1004,7 @@ class PeripheralsController{
         pthread_cond_broadcast(&start_cond);
         pthread_mutex_unlock(&begin_control_iteration);
         //Give controllers time to finish an iteration
-        /*
+
         //Finish flatbuffer
         auto hand = pubBuilder.CreateVector(handStates);
         auto handBroadcast = CreateHandBroadcast(pubBuilder, hand);
@@ -1014,7 +1014,7 @@ class PeripheralsController{
         int size = pubBuilder.GetSize();
         zmq::message_t zmqPubMsg(buf, size);
         publisher.send(zmqPubMsg);
-        pubBuilder.Clear();*/
+        pubBuilder.Clear();
         usleep(ITR_DEADLINE);
 			}
     }
