@@ -996,7 +996,8 @@ class PeripheralsController{
         //Send
         uint8_t *buf = builder.GetBufferPointer();
         int size = builder.GetSize();
-        zmq::message_t zmqHandBroadcast(buf, size);
+        //zmq::message_t zmqHandBroadcast(buf, size);
+        zmq_send (publisher, buf, size, 0);
         //publisher.send(zmqHandBroadcast);
         //Exit on cntrl+c
         //if ( quit.load() ){
