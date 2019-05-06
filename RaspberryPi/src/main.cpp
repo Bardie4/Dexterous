@@ -684,8 +684,10 @@ class ZmqSubscriber{
     }
 
     void passOnSimpleInstructions(zmq::message_t* buffer){
+      std::cout <<"entering pass function" <<std::endl;
       //Parse flattbuffer and store it
       auto messageObj = GetSimpleInstructionMsg(buffer->data());
+        std::cout <<"created flattbuffer object" <<std::endl;
       fingerMem.fingerSelect = messageObj->finger_select();
       //Return if selected finger is not valid
       if ( (fingerMem.fingerSelect < 0) || (fingerMem.fingerSelect > 6) ){
@@ -697,8 +699,11 @@ class ZmqSubscriber{
       fingerMem.controllerSelect = messageObj->controller_select();;
       fingerMem.data1 = messageObj->data1();
       fingerMem.data2 = messageObj->data2();
+
+        std::cout <<"PAssing zero info" <<std::endl;
       fingerMem.data3 = messageObj->data3();
       fingerMem.data4 = messageObj->data4();
+        std::cout <<"PAssing empty info" <<std::endl;
       fingerMem.data5 = messageObj->data5();
       fingerMem.data6 = messageObj->data6();
       fingerMem.data7 = messageObj->data7();

@@ -123,6 +123,7 @@ class finger{
     zmq_send (zmq->publisher, buf, size, 0);
     std::cout << (int) zmq->identity <<" "<< (int) zmq->controller_select <<" "<< (int) zmq->data1<< " " << (int) zmq->data2 << " "<< (int) zmq->data3<< " "<< (int) zmq->data4 << std::endl;
     builder.Clear();
+    std::cout <<"size: " << size << std::endl;
   }
 
   static void update_angle1(GtkRange *range, gpointer* input_ptr) {
@@ -236,6 +237,7 @@ class finger{
     zmq_send (fing->zmq.publisher, buf, size, 0);
     std::cout << (int) fing->zmq.identity <<" "<< (int) fing->zmq.controller_select <<" "<< (int) fing->zmq.data1<< " " << (int) fing->zmq.data2 << " "<< (int) fing->zmq.data3<< " "<< (int) fing->zmq.data4 << std::endl;
     builder.Clear();
+        std::cout <<"size: " << size << std::endl;
   }
 
   finger(int id, void* context,void* publisher)
