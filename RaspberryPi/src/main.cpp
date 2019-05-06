@@ -1009,11 +1009,11 @@ class PeripheralsController{
         uint8_t *buf = builder.GetBufferPointer();
         int size = builder.GetSize();
         //zmq::message_t zmqHandBroadcast(buf, size, free_me_from_my_suffering);
-        for (int i=0; i<size; i++){
-          buff[i]=buf[i];
-        }
+        //for (int i=0; i<size; i++){
+        //  buff[i]=buf[i];
+      //  }
         std::cout << "got here. Size is: "<< size << std::endl;
-        zmq_send (publisher, &buff, size, 0);
+      //  zmq_send (publisher, &buff, size, 0);
         //Exit on cntrl+c
         //if ( quit.load() ){
         //  break;
