@@ -183,11 +183,13 @@ class Finger{
     PeripheralFingerMem periphSharedMem;
 
     //Controllers
-    //JointSpacePosController jsPosCntrllr;
-		//Constructor
-    Finger(int identity)//:jsPosCntrllr(){
+    JointSpacePosController jsPosCntrllr;
+
+    //Constructor
+    Finger(int identity)
+      :jsPosCntrllr(){
       {
-      JointSpacePosController jsPosCntrllr;
+      bindController(jsPosCntrllr);
 			id= identity;
 			itr_counter=0;
     }
@@ -620,7 +622,6 @@ class ZmqSubscriber{
   //Coloums:  run_flag, controller_select, data1, data2, data3, data4
   //double (*commands)[6];
   ZmqHandMem* zmqHandMem;
-  \
 
   //An array of pointers to the functions that starts each finger
   //void* (* finger_run [7])(void *);
