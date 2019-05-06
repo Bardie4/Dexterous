@@ -854,7 +854,7 @@ class PeripheralsController{
 		}
 
   public:
-    PeripheralsController(int cs_and_i2c_addr[7][3])
+    PeripheralsController(int cs_and_i2c_addr[7][3]){
         //:context (1), publisher (context, ZMQ_PUB){
 
       csAndI2cAddr = cs_and_i2c_addr;
