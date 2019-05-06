@@ -785,7 +785,7 @@ class PeripheralsController{
     void* context ;
     void* publisher ;
 
-    uint8_t buff[1024];
+    uint8_t buff[10024];
 
     float readAngle8(int &cs){
       outBuf[0] = read_command_8;
