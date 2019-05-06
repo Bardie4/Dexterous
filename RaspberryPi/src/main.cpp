@@ -1012,6 +1012,7 @@ class PeripheralsController{
         for (int i=0; i<size; i++){
           buff[i]=buf[i];
         }
+        std::cout << "got here" << std::endl;
         zmq_send (publisher, &buff, size, 0);
         //Exit on cntrl+c
         //if ( quit.load() ){
