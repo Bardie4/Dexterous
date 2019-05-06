@@ -1001,7 +1001,7 @@ class PeripheralsController{
         int size = pubBuilder.GetSize();
         zmq::message_t zmqPubMsg(buf, size);
         publisher.send(zmqPubMsg);
-        pubBuilder.clear();
+        pubBuilder.Clear();
         usleep(ITR_DEADLINE);
 			}
     }
