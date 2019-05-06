@@ -688,6 +688,7 @@ class ZmqSubscriber{
       //Parse flattbuffer and store it
       auto messageObj = GetSimpleInstructionMsg(buffer->data());
         std::cout <<"created flattbuffer object" <<std::endl;
+        std::cout <<"Finger selected: " << messageObj->finger_select(); <<std::endl;
       fingerMem.fingerSelect = messageObj->finger_select();
       std::cout <<"finger select assigned" << std::endl;
       //Return if selected finger is not valid
