@@ -29,7 +29,7 @@ pthread_t tid[10];
 //Flatbuffers
 using namespace quad_double_mes; // Specified in the schema.
 using namespace quad_double_me; // Specified in the schema.
-//flatbuffers::FlatBufferBuilder builder(1024);
+flatbuffers::FlatBufferBuilder pubBuilder(1024);
 uint8_t *buffer_pointer;
 /*
 //Variables used by joint space PID function
@@ -779,13 +779,9 @@ class PeripheralsController{
 		int step;
     int itr_counter;
 
-    //zmq::context_t context;
-  //  zmq::socket_t publisher;
+    zmq::context_t context;
+    zmq::socket_t publisher;
 
-    void* context ;
-    void* publisher ;
-
-    uint8_t buff[10024];
 
     float readAngle8(int &cs){
       outBuf[0] = read_command_8;
@@ -856,8 +852,8 @@ class PeripheralsController{
 		}
 
   public:
-    PeripheralsController(int cs_and_i2c_addr[7][3]){
-        //:context (1), publisher (context, ZMQ_PUB){
+    PeripheralsController(int cs_and_i2c_addr[7][3])
+        :context (1), publisher (context, ZMQ_PUB){
 
       csAndI2cAddr = cs_and_i2c_addr;
 
@@ -902,11 +898,8 @@ class PeripheralsController{
       }
 
       //ZMQ publisher
-      context = zmq_ctx_new ();
-      publisher = zmq_socket (context, ZMQ_PUB);
-      zmq_bind (publisher, "tcp://*:5564");
-    //  zmq_bind (publisher, "tcp://enp1s0f1:5563");
-  //  publisher.bind("tcp://*:5564");
+      zmq_bind (publisher, "tcp://enp1s0f1:5563");
+      publisher.bind("tcp://*:5564");
     }
 
     void bindFinger (Finger* finger){
@@ -936,8 +929,6 @@ class PeripheralsController{
 
     void* run(){
 			while(1){
-
-        flatbuffers::FlatBufferBuilder builder(1024);
 				//Find out which fingers are currently active
 				pthread_mutex_lock(&periphLock);
 				for (int i=0; i<7; i++){
@@ -980,7 +971,7 @@ class PeripheralsController{
 						//writeOutput8(csAndI2cAddr[i][3],fingerMem[i].commandedTorque1, fingerMem[i].commandedTorque2);
 
             //Load into flatbuffer struct
-            auto fingerStates= CreateFingerStates(builder,  i,  fingerMem[i].jointAngle1,       fingerMem[i].jointAngle2,
+            auto fingerStates= CreateFingerStates(pubBuilder,  i,  fingerMem[i].jointAngle1,       fingerMem[i].jointAngle2,
                                                                 fingerMem[i].angularVel1,       fingerMem[i].angularVel2,
                                                                 0,                              0,
                                                                 fingerMem[i].commandedTorque1,  fingerMem[i].commandedTorque1,
@@ -1001,16 +992,17 @@ class PeripheralsController{
         pthread_cond_broadcast(&start_cond);
         pthread_mutex_unlock(&begin_control_iteration);
         //Give controllers time to finish an iteration
-        
-        //Finish flatbuffer
-        auto hand = builder.CreateVector(handStates);
-        auto handBroadcast = CreateHandBroadcast(builder, hand);
-        FinishHandBroadcastBuffer(builder, handBroadcast);
-        //Send
-        uint8_t *buf = builder.GetBufferPointer();
-        int size = builder.GetSize();
-        zmq_send (publisher, buf, size, 0);
 
+        //Finish flatbuffer
+        auto hand = pubBuilder.CreateVector(handStates);
+        auto handBroadcast = CreateHandBroadcast(pubBuilder, hand);
+        FinishHandBroadcastBuffer(pubBuilder, handBroadcast);
+        //Send
+        uint8_t *buf = pubBuilder.GetBufferPointer();
+        int size = pubBuilder.GetSize();
+        zmq::message_t zmqPubMsg(buf, size);
+        publisher.send(zmqPubMsg);
+        pubBuilder.clear();
         usleep(ITR_DEADLINE);
 			}
     }
