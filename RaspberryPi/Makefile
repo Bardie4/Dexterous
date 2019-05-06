@@ -5,7 +5,7 @@
 #all: main.o controller_engine.o js_pos_controller.o
 #	g++ -g -Wall -pthread main.o -lzmq -lpthread -lpigpio -lrt -lm -I ./include/ -I ./lib/  -L/usr/local/lib -lwiringPi -I/usr/local/include controller_engine.o js_pos_controller.o -o gripper
 
-all: controller_engine.o js_pos_controller.o
+all: main.o controller_engine.o js_pos_controller.o
 	g++ -g -Wall -pthread main.o controller_engine.o js_pos_controller.o -o gripper
 
 main.o: src/main.cpp
