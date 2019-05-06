@@ -482,7 +482,8 @@ calibration
 				sleep(2);
 				update_local_zmq_mem();
 				if ( !(controller_select==1) ){
-					break;
+          std::cout <<"Exiting now because controller select is: " << controller_select << std::endl;
+          break;
         }
       std::cout << "Finger: "<< id <<" is waiting for controller to be selected. Current selection: " << controller_select <<std::endl;
       }
