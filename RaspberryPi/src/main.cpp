@@ -987,7 +987,7 @@ class PeripheralsController{
         pthread_cond_broadcast(&start_cond);
         pthread_mutex_unlock(&begin_control_iteration);
         //Give controllers time to finish an iteration
-        usleep(ITR_DEADLINE);
+
 
         //Finish flatbuffer
         auto hand = builder.CreateVector(handStates);
@@ -1002,7 +1002,7 @@ class PeripheralsController{
         //if ( quit.load() ){
         //  break;
         //}
-
+        usleep(ITR_DEADLINE);
 			}
     }
 
