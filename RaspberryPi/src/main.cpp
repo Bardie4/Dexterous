@@ -825,7 +825,7 @@ class PeripheralsController{
       gpioResult = gpioWrite(cs,1);
       angle16 = inBuf[0] << 8;
       angle16 = angle16 + inBuf[1];
-      std::cout <<"Raw 16 bit angle: "<< angle16 << " on chip select: "<< cs <<std::endl;
+      std::cout <<"Raw 16 bit angle: "<< angle16 << " on chip select: "<< cs <<" inbuf:"<<inBuf[0]<<inBuf[1]<<std::endl;
 			pthread_mutex_unlock(&periphLock);
       angleRad = (angle16 * 2.0*3.14159) / 65535.0;
       return angleRad;
@@ -969,8 +969,8 @@ class PeripheralsController{
 					if (fingerMem[i].runFlag){
 
 						//Read sensors (store it locally)
-						fingerMem[i].jointAngle1 = readAngle12(csAndI2cAddr[i][1]);
-						fingerMem[i].jointAngle2 = readAngle12(csAndI2cAddr[i][2]);
+						fingerMem[i].jointAngle1 = readAngle12(csAndI2cAddr[i][0]);
+						fingerMem[i].jointAngle2 = readAngle12(csAndI2cAddr[i][1]);
 
 						//Process sensor information (store it locally)
             fingerMem[i].angularVel1 = (fingerMem[i].jointAngle1 - fingerMemPrev[i].jointAngle1)/(step*1000000);
@@ -989,7 +989,7 @@ class PeripheralsController{
 						pthread_mutex_unlock(&periphLock);
 
 						//Send output to motor
-						//writeOutput8(csAndI2cAddr[i][3],fingerMem[i].commandedTorque1, fingerMem[i].commandedTorque2);
+						//writeOutput8(csAndI2cAddr[i][2],fingerMem[i].commandedTorque1, fingerMem[i].commandedTorque2);
 
             //Load into flatbuffer struct
             auto fingerStates= CreateFingerStates(pubBuilder,  i,  fingerMem[i].jointAngle1,       fingerMem[i].jointAngle2,
