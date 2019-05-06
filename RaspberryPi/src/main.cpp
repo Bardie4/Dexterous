@@ -1,4 +1,5 @@
 
+#include "globals.h"
 #include <math.h>
 //#include <zmq.h>
 //#include "zmq/zhelpers.h"
@@ -16,7 +17,6 @@
 #include "generated_flattbuffers/simple_instructions_generated.h"
 #include "generated_flattbuffers/finger_broadcast_generated.h"
 #include "controllers/js_pos_controller.h"
-#include "globals.h"
 
 /*
 static pthread_mutex_t zmqSubLock = PTHREAD_MUTEX_INITIALIZER;
