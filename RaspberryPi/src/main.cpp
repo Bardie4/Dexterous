@@ -743,8 +743,8 @@ class ZmqSubscriber{
         subscriber.recv(&address);
         subscriber.recv(&buffer);
 
-          std::cout <<"Raw address size:: "<< address->size() <<std::endl;
-          std::cout <<"Buffers of size: "<< buffer->size() <<std::endl;
+          std::cout <<"Raw address size:: "<< address.size() <<std::endl;
+          std::cout <<"Buffers of size: "<< buffer.size() <<std::endl;
         //}
         //catch(zmq::error_t& e) {
         //  std::cout << "Interrupt received" << std::endl;
