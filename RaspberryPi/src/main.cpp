@@ -110,7 +110,9 @@ typedef struct zmq_data{
 }zmq_data;
 
 */
-zmq_free_fn free_me_from_my_suffering;
+void free_me_from_my_suffering(void *data, void *hint){
+    free (data);
+}
 
 class Finger{
   public:
