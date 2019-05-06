@@ -203,7 +203,6 @@ class Finger{
     Finger(int identity)
       :jsPosCntrllr(){
       bindController(&jsPosCntrllr.controllerEngine, 2);
-      bindController(&jsPosCntrllr.controllerEngine, 3);
 			id= identity;
 			itr_counter=0;
       zmqSubSharedMem.runFlag=0;
