@@ -898,7 +898,6 @@ class PeripheralsController{
       }
 
       //ZMQ publisher
-      zmq_bind (publisher, "tcp://enp1s0f1:5563");
       publisher.bind("tcp://*:5564");
     }
 
