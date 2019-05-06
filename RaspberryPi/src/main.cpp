@@ -594,7 +594,9 @@ class Finger{
 			//While finger is instructed to be active
       while( !(controller_select == 0) ){
 				//Cycle through controllers.
+         std::cout <<"trying to run jsPosController" << std::endl;
           jsPosCntrllr.run();
+          std::cout <<"moved on" << std::endl;
       //  cartesian_ijc_pid();
       }
 			//Tell spi and zmq thread we are finished
