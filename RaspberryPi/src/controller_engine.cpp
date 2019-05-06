@@ -8,7 +8,7 @@ float** ControllerEngine::getTunableVarPtr(){
 }
 
 void ControllerEngine::readZmqSub(){
-  pthread_mutex_lock(zmqSubLock);
+  pthread_mutex_lock(&zmqSubLock);
   if (zmqSubMemPtr->newMessage){
     controllerSelect = zmqSubMemPtr->controllerSelect;
     data1 = zmqSubMemPtr->data1;
@@ -23,11 +23,11 @@ void ControllerEngine::readZmqSub(){
     data10 = zmqSubMemPtr->data10;
   }
   zmqSubMemPtr->newMessage = 0;
-  pthread_mutex_unlock(zmqSubLock);
+  pthread_mutex_unlock(&zmqSubLock);
 }
 
 void ControllerEngine::readTrajZmqSub(){
-  pthread_mutex_lock(zmqSubLock);
+  pthread_mutex_lock(&zmqSubLock);
   if (zmqSubMemPtr->newMessage){
     controllerSelect = zmqSubMemPtr->controllerSelect;
     data1 = zmqSubMemPtr->data1;
@@ -54,11 +54,12 @@ void ControllerEngine::readTrajZmqSub(){
       trajAcceleration[i] = zmqSubMemPtr->trajAcceleration[i];
     }
     zmqSubMemPtr->newMessage = 0;
-  pthread_mutex_unlock(zmqSubLock);
+  pthread_mutex_unlock(&zmqSubLock);
   }
 }
 
 void ControllerEngine::readPeriph(){
+  std::cout << "maybe we need periph lock" << std::endl;
   jointAngle1 = periphMemPtr->jointAngle1;
   jointAngle2 = periphMemPtr->jointAngle2;
   angularVel1 = periphMemPtr->angularVel1;
@@ -71,6 +72,7 @@ void ControllerEngine::writeOutput(){
 }
 
 void ControllerEngine::run(){
+  std::cout <<"controller engine run" << std::endl;
   while(1){
     //Check controller user inputs
     readZmqSub();
@@ -83,9 +85,9 @@ void ControllerEngine::run(){
     }
 
     //Wait for spi thread to finish reading sensors and enter sleeping mode
-    pthread_mutex_lock(begin_control_iteration);
-    pthread_cond_wait(start_cond, begin_control_iteration);
-    pthread_mutex_unlock(begin_control_iteration);
+    pthread_mutex_lock(&begin_control_iteration);
+    pthread_cond_wait(&start_cond, &begin_control_iteration);
+    pthread_mutex_unlock(&begin_control_iteration);
 
     //Read sensordata while spi thread is sleeping
     readPeriph();

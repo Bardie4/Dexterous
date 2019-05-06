@@ -66,5 +66,6 @@ ControllerEngine* JointSpacePosController::getHandle(){
 }
 
 void JointSpacePosController::run(){
+  std::cout <<"controller bootstrap run" << std::endl;
   controllerEngine.run();
 }
