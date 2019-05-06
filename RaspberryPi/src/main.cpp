@@ -1000,7 +1000,7 @@ class PeripheralsController{
         pthread_mutex_unlock(&begin_control_iteration);
         //Give controllers time to finish an iteration
 
-
+        std::cout << "size of std vector: "<<handStates.size()<<std::endl;
         //Finish flatbuffer
         auto hand = builder.CreateVector(handStates);
         auto handBroadcast = CreateHandBroadcast(builder, hand);
