@@ -992,10 +992,10 @@ class PeripheralsController{
         //Finish flatbuffer
         //auto hand = builder.CreateVector(handStates);
         //auto handBroadcast = CreateHandBroadcast(builder, hand);
-        FinishHandBroadcastBuffer(builder, handBroadcast);
+        //FinishHandBroadcastBuffer(builder, handBroadcast);
         //Send
-        uint8_t *buf = builder.GetBufferPointer();
-        int size = builder.GetSize();
+        //uint8_t *buf = builder.GetBufferPointer();
+        //int size = builder.GetSize();
         //zmq::message_t zmqHandBroadcast(buf, size);
         //publisher.send(zmqHandBroadcast);
         //Exit on cntrl+c
