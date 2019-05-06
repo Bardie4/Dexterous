@@ -640,7 +640,7 @@ class ZmqSubscriber{
     ZmqSubscriber()
       :context(1) , subscriber(context, ZMQ_SUB){
       //ZMQ setup: http://zguide.zeromq.org/cpp:wuclient
-      const char *filter = "10001 ";
+      const char *filter = "B";
       subscriber.setsockopt(ZMQ_SUBSCRIBE, filter, strlen (filter));
       subscriber.connect("tcp://169.254.27.157:5563");
 
