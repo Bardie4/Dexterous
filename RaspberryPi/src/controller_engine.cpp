@@ -60,7 +60,6 @@ void ControllerEngine::readTrajZmqSub(){
 }
 
 void ControllerEngine::readPeriph(){
-  std::cout << "maybe we need periph lock" << std::endl;
   jointAngle1 = periphMemPtr->jointAngle1;
   jointAngle2 = periphMemPtr->jointAngle2;
   angularVel1 = periphMemPtr->angularVel1;
