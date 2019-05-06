@@ -18,7 +18,7 @@ js_pos_controller.o: src/js_pos_controller.cpp
 	g++ -c -Wall src/js_pos_controller.cpp -I ./include/
 
 globals.o: src/globals.cpp
-		g++ -c -Wall -pthread src/globals.cpp -I ./include/
+	g++ -c -Wall -pthread src/globals.cpp -I ./include/
 
 clean:
 	rm -rf *o gripper
