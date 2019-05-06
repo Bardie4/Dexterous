@@ -16,11 +16,14 @@
 #include "generated_flattbuffers/simple_instructions_generated.h"
 #include "generated_flattbuffers/finger_broadcast_generated.h"
 #include "controllers/js_pos_controller.h"
+#include "globals.h"
 
+/*
 static pthread_mutex_t zmqSubLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t periphLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t begin_control_iteration = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t start_cond = PTHREAD_COND_INITIALIZER;
+*/
 pthread_t tid[10];
 //micro seconds between sensor reads.
 //(the process of reading adds additional time to the total step length)
