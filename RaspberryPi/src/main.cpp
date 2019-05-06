@@ -936,6 +936,8 @@ class PeripheralsController{
 
     void* run(){
 			while(1){
+
+                flatbuffers::FlatBufferBuilder builder(1024);
 				//Find out which fingers are currently active
 				pthread_mutex_lock(&periphLock);
 				for (int i=0; i<7; i++){
@@ -1000,7 +1002,6 @@ class PeripheralsController{
         pthread_mutex_unlock(&begin_control_iteration);
         //Give controllers time to finish an iteration
 
-        flatbuffers::FlatBufferBuilder builder(1024);
         std::cout << "size of std vector: "<<handStates.size()<<std::endl;
         //Finish flatbuffer
         auto hand = builder.CreateVector(handStates);
