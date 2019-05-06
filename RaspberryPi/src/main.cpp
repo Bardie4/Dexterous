@@ -185,6 +185,13 @@ class Finger{
     //Controllers
     JointSpacePosController jsPosCntrllr;
 
+    void bindController(ControllerEngine* handle, short controller_id){
+        handle->zmqSubMemPtr = &zmqSubSharedMem;
+        handle->periphMemPtr = &periphSharedMem;
+        handle->fingerId = id;
+        handle->controllerId = controller_id;
+    }
+
     //Constructor
     Finger(int identity)
       :jsPosCntrllr(){
@@ -204,13 +211,6 @@ class Finger{
       zmqSubSharedMem.runFlag = 0;
 			pthread_mutex_unlock(&zmqSubLock);
 			}
-
-    void bindController(ControllerEngine* handle, short controller_id){
-        handle->zmqSubMemPtr = &zmqSubSharedMem;
-        handle->periphMemPtr = &periphSharedMem;
-        handle->fingerId = id;
-        handle->controllerId = controller_id;
-    }
 
 		void update_local_zmq_mem(){
 			pthread_mutex_lock(&zmqSubLock);
