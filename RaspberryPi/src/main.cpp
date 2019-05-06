@@ -937,7 +937,7 @@ class PeripheralsController{
     void* run(){
 			while(1){
 
-                flatbuffers::FlatBufferBuilder builder(1024);
+        flatbuffers::FlatBufferBuilder builder(1024);
 				//Find out which fingers are currently active
 				pthread_mutex_lock(&periphLock);
 				for (int i=0; i<7; i++){
@@ -1001,8 +1001,7 @@ class PeripheralsController{
         pthread_cond_broadcast(&start_cond);
         pthread_mutex_unlock(&begin_control_iteration);
         //Give controllers time to finish an iteration
-
-        std::cout << "size of std vector: "<<handStates.size()<<std::endl;
+        
         //Finish flatbuffer
         auto hand = builder.CreateVector(handStates);
         auto handBroadcast = CreateHandBroadcast(builder, hand);
@@ -1010,16 +1009,8 @@ class PeripheralsController{
         //Send
         uint8_t *buf = builder.GetBufferPointer();
         int size = builder.GetSize();
-        //zmq::message_t zmqHandBroadcast(buf, size, free_me_from_my_suffering);
-        //for (int i=0; i<size; i++){
-        //  buff[i]=buf[i];
-      //  }
-        std::cout << "got here. Size is: "<< size << std::endl;
-      //  zmq_send (publisher, &buff, size, 0);
-        //Exit on cntrl+c
-        //if ( quit.load() ){
-        //  break;
-        //}
+        zmq_send (publisher, buf, size, 0);
+
         usleep(ITR_DEADLINE);
 			}
     }
