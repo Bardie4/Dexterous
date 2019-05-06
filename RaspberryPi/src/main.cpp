@@ -963,7 +963,7 @@ class PeripheralsController{
 						pthread_mutex_unlock(&periphLock);
 
 						//Send output to motor
-						writeOutput8(csAndI2cAddr[i][3],fingerMem[i].commandedTorque1, fingerMem[i].commandedTorque2);
+						//writeOutput8(csAndI2cAddr[i][3],fingerMem[i].commandedTorque1, fingerMem[i].commandedTorque2);
 
             //Load into flatbuffer struct
             auto fingerStates= CreateFingerStates(builder,  i,  fingerMem[i].jointAngle1,       fingerMem[i].jointAngle2,
