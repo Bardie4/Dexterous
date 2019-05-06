@@ -902,7 +902,7 @@ class PeripheralsController{
       //ZMQ publisher
       context = zmq_ctx_new ();
       publisher = zmq_socket (context, ZMQ_PUB);
-      zmq_bind (publisher, "tcp://*:5564"");
+      zmq_bind (publisher, "tcp://*:5564");
     //  zmq_bind (publisher, "tcp://enp1s0f1:5563");
   //  publisher.bind("tcp://*:5564");
     }
