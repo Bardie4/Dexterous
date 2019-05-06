@@ -9,7 +9,7 @@ all: main.o controller_engine.o js_pos_controller.o
 	g++ -g -Wall -pthread main.o controller_engine.o js_pos_controller.o -o gripper -lzmq -lpthread -lpigpio -lrt -lm -I ./include/ -I ./lib/  -L/usr/local/lib -lwiringPi -I/usr/local/include
 
 main.o: src/main.cpp
-	g++ -c -Wall -pthread src/main.cpp
+	g++ -c -Wall -pthread src/main.cpp -lzmq -lpthread -lpigpio -lrt -lm -I ./include/ -I ./lib/  -L/usr/local/lib -lwiringPi -I/usr/local/include
 
 controller_engine.o: src/controller_engine.cpp
 	g++ -c -Wall -pthread src/controller_engine.cpp -I ./include/
