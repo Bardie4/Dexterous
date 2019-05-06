@@ -203,6 +203,8 @@ class Finger{
       bindController(&jsPosCntrllr.controllerEngine, 3);
 			id= identity;
 			itr_counter=0;
+      zmqSubSharedMem.runFlag=0;
+      periphSharedMem.runFlag=0;
     }
 
 		void shutdown(){
@@ -556,7 +558,7 @@ class Finger{
 				pid_ijc_cs.gamma = atan2(pid_ijc_cs.k2,pid_ijc_cs.k1);
 				pid_ijc_cs.theta1_setpoint = atan2( *(pid_ijc_cs.y), *(pid_ijc_cs.x) ) - pid_ijc_cs.gamma;
 				//Run controller
-				pid_ijc_cs.error1 = pid_ijc_cs.theta1_setpoint - theta1;
+				pid_ijc_cs.errorfingerMemPtr1 = pid_ijc_cs.theta1_setpoint - theta1;
 				torque1 = pid_ijc_cs.error1*pid_ijc_cs.kp1;
 				pid_ijc_cs.error2 = pid_ijc_cs.theta2_setpoint - theta2;
 				torque2 = pid_ijc_cs.error2*pid_ijc_cs.kp2;
