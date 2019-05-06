@@ -779,8 +779,11 @@ class PeripheralsController{
 		int step;
     int itr_counter;
 
-    zmq::context_t context;
-    zmq::socket_t publisher;
+    //zmq::context_t context;
+  //  zmq::socket_t publisher;
+
+    void* context ;
+    void* publisher ;
 
     float readAngle8(int &cs){
       outBuf[0] = read_command_8;
@@ -852,7 +855,7 @@ class PeripheralsController{
 
   public:
     PeripheralsController(int cs_and_i2c_addr[7][3])
-        :context (1), publisher (context, ZMQ_PUB){
+        //:context (1), publisher (context, ZMQ_PUB){
 
       csAndI2cAddr = cs_and_i2c_addr;
 
@@ -897,8 +900,11 @@ class PeripheralsController{
       }
 
       //ZMQ publisher
-
-    publisher.bind("tcp://*:5564");
+      context = zmq_ctx_new ();
+      publisher = zmq_socket (context, ZMQ_PUB);
+      zmq_bind (publisher, "tcp://*:5564"");
+    //  zmq_bind (publisher, "tcp://enp1s0f1:5563");
+  //  publisher.bind("tcp://*:5564");
     }
 
     void bindFinger (Finger* finger){
@@ -1000,8 +1006,8 @@ class PeripheralsController{
         //Send
         uint8_t *buf = builder.GetBufferPointer();
         int size = builder.GetSize();
-        zmq::message_t zmqHandBroadcast(buf, size, free_me_from_my_suffering);
-        publisher.send(zmqHandBroadcast);
+        //zmq::message_t zmqHandBroadcast(buf, size, free_me_from_my_suffering);
+        zmq_send (publisher, buf, size, 0);
         //Exit on cntrl+c
         //if ( quit.load() ){
         //  break;
