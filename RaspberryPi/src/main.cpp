@@ -736,6 +736,8 @@ class ZmqSubscriber{
         std::cout <<"zmq.run, ran "<< std::endl;
         zmq::message_t buffer;
         //try {
+        zmq::message_t address;
+        subscriber.recv(&address);
         subscriber.recv(&buffer);
         //}
         //catch(zmq::error_t& e) {
