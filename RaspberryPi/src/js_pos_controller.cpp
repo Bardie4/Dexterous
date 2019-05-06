@@ -4,9 +4,11 @@ static void iterateStatic(void *controller_object){
   return ((JointSpacePosController*)controller_object)->iterate();
 }
 
+//    static void iterateStatic(void *controller_object);
+
 JointSpacePosController::JointSpacePosController():controllerEngine(){
   controllerEngine.controllerObject = this;
-  controllerEngine.iterate = &iterateStatic;
+  controllerEngine.iterate = &JointSpacePosController::iterateStatic;
   //ZmqSub inputss
   name1 = &controllerEngine.data1;
   name2 = &controllerEngine.data2;
