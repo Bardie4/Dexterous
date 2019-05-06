@@ -992,7 +992,7 @@ class PeripheralsController{
         //Finish flatbuffer
         auto hand = builder.CreateVector(handStates);
         auto handBroadcast = CreateHandBroadcast(builder, hand);
-        //FinishHandBroadcastBuffer(builder, handBroadcast);
+        FinishHandBroadcastBuffer(builder, handBroadcast);
         //Send
         //uint8_t *buf = builder.GetBufferPointer();
         //int size = builder.GetSize();
