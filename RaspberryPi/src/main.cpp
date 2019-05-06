@@ -723,6 +723,7 @@ class ZmqSubscriber{
       while(1){
         //Listen for messages
         //From guide: http://zguide.zeromq.org/cpp:interrupt
+        std::cout <<"zmq.run, ran "<< std::endl;
         zmq::message_t buffer;
         //try {
         subscriber.recv(&buffer);
@@ -760,7 +761,7 @@ class PeripheralsController{
     int gpioResult;
     int spiResult;
 
-    int i2cHandle;
+    int i2cHandle;monitor memory usage script raspberry pi
     unsigned i2cReg;
 
     char inBuf[4];
