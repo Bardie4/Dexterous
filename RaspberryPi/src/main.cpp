@@ -1051,8 +1051,8 @@ main(){
 	int csSens2_f1 = 16;
 	int i2cEsp32_f1 = 4;
 
-  int csSens1_f2 = 6;
-	int csSens2_f2 = 6;
+  int csSens1_f2 = 21;
+	int csSens2_f2 = 23;
 	int i2cEsp32_f2 = 7;
 
   int csSens1_f3 = 6;
