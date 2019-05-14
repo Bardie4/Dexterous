@@ -48,7 +48,10 @@
 #define PWM_FRQ 300000
 #define PWM_RES 8
 
-bool DEBUG = true;
+#define I2C_SLAVE_ADDR 0x29
+
+bool I2C_DEBUG = true;
+bool PWM_DEBUG = false;
 
 //uninitalised pointers to SPI objects
 SPIClass * vspi = NULL;
@@ -56,9 +59,13 @@ SPIClass * hspi = NULL;
 
 static const int spiClk = 20*1000*1000; // 20 MHz
 
+// i2c packet
 typedef struct{
   uint8_t commandbyte, m1_torque, m2_torque;
 } cmd_t;
+
+// Global queuhandles
+QueueHandle_t qScaleL, qDirL, qScaleH, qDirH;
 
 // Lookup table
 const uint8_t pwmSin[] = {128,131,134,137,140,143,146,149,152,155,158,162,165,167,170,173,176,179,182,185,188,190,193,196,198,201,203,206,208,211,213,215,218,220,222,224,226,228,230,232,234,235,237,238,240,241,243,244,245,246,248,249,250,250,251,252,253,253,254,254,254,255,255,255,255,255,255,255,254,254,254,253,253,252,251,250,250,249,248,246,245,244,243,241,240,238,237,235,234,232,230,228,226,224,222,220,218,215,213,211,208,206,203,201,198,196,193,190,188,185,182,179,176,173,170,167,165,162,158,155,152,149,146,143,140,137,134,131,128,124,121,118,115,112,109,106,103,100,97,93,90,88,85,82,79,76,73,70,67,65,62,59,57,54,52,49,47,44,42,40,37,35,33,31,29,27,25,23,21,20,18,17,15,14,12,11,10,9,7,6,5,5,4,3,2,2,1,1,1,0,0,0,0,0,0,0,1,1,1,2,2,3,4,5,5,6,7,9,10,11,12,14,15,17,18,20,21,23,25,27,29,31,33,35,37,40,42,44,47,49,52,54,57,59,62,65,67,70,73,76,79,82,85,88,90,93,97,100,103,106,109,112,115,118,121,124};
@@ -76,8 +83,13 @@ void setup() {
   pinMode(M_EN, OUTPUT);
   digitalWrite(M_EN, HIGH);
 
+  qScaleL = xQueueCreate( 1, sizeof( uint8_t ) );
+  qDirL = xQueueCreate( 1, sizeof( bool ) );
+  qScaleH = xQueueCreate( 1, sizeof( uint8_t ) );
+  qDirH = xQueueCreate( 1, sizeof( bool ) );
+
   xTaskCreatePinnedToCore(motorLTask, "motorL", 4096, (void *)1, 1, NULL, 0);
-  xTaskCreatePinnedToCore(getScaleLTask, "getscaleL", 4096, (void *)1, 1, NULL, 0);
+  xTaskCreatePinnedToCore(masterCom, "getscaleL", 4096, (void *)1, 1, NULL, 0);
   //xTaskCreatePinnedToCore(motorH, "hspi", 4096, (void *)2, 1, NULL, 1);
 
   Serial.begin(115200);
@@ -180,7 +192,7 @@ void motorLTask(void *pvParameters) {
     TIMERG0.wdt_feed = 1;
     TIMERG0.wdt_wprotect = 0;
 
-    if (DEBUG)
+    if (PWM_DEBUG)
     {
       Serial.print("Theta: ");
       Serial.print(theta_raw);
@@ -193,7 +205,6 @@ void motorLTask(void *pvParameters) {
       Serial.print(" ");
       Serial.print(pwmW);
     }
-    
   }
 }
 
@@ -211,16 +222,17 @@ uint8_t readMagnetL() {
   return uiAngle;
 }
 
-void getScaleLTask(void *pvParameters) {
-  i2c_slave i2c_s;
+void masterCom(void *pvParameters) {
+  i2c_slave i2c_s(I2C_SLAVE_ADDR);
   i2c_packet i2c_received;
 
   cmd_t command;
+  bool direction;
 
   while (1)
   {
     i2c_received = i2c_s.read();
-    Serial.print("tick");
+
     if (i2c_received.size){
       // for (int i = i2c_received.size - 3; i < i2c_received.size; i++){ // Latest values
       //   Serial.print(i);
@@ -228,17 +240,32 @@ void getScaleLTask(void *pvParameters) {
       //   Serial.print(i2c_received.data[i]);
       //   Serial.print(" ");
       // }
+
+      // Read three latest
       command.commandbyte = i2c_received.data[i2c_received.size - 3];
       command.m1_torque = i2c_received.data[i2c_received.size - 2];
       command.m2_torque = i2c_received.data[i2c_received.size - 1];
-      Serial.print(command.commandbyte);
-      Serial.print(" ");
-      Serial.print(command.m1_torque);
-      Serial.print(" ");
-      Serial.print(command.m2_torque);
-      Serial.println();
+
+      // bitmask
+      m1_direction = (command.commandbyte & ( 1 << 0 )) >> 0; // LSB
+      m2_direction = (command.commandbyte & ( 1 << 1 )) >> 1; // LSB - 1
+
+      xQueueOverwrite(qScaleL, &command.m1_torque);
+      xQueueOverwrite(qDirL, &command.commandbyte);
+      xQueueOverwrite(qScaleH, &command.m2_torque);
+      xQueueOverwrite(qDirH, &command.m2_torque);
+
+      if (I2C_DEBUG)
+      {
+        Serial.print("I2C: ");
+        Serial.print(command.commandbyte);
+        Serial.print(" ");
+        Serial.print(command.m1_torque);
+        Serial.print(" ");
+        Serial.print(command.m2_torque);
+        Serial.println();
+      }
     }
     vTaskDelay(100 / portTICK_RATE_MS);
   }
-    
 }

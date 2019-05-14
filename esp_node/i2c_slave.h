@@ -17,7 +17,7 @@
 #define I2C_EXAMPLE_SLAVE_TX_BUF_LEN       (2*DATA_LENGTH)  /*!<I2C slave tx buffer size */
 #define I2C_EXAMPLE_SLAVE_RX_BUF_LEN       (2*DATA_LENGTH)  /*!<I2C slave rx buffer size */
 
-#define ESP_SLAVE_ADDR                     0x28             /*!< ESP32 slave address, you can set any 7bit value */
+//#define ESP_SLAVE_ADDR                     0x29             /*!< ESP32 slave address, you can set any 7bit value */
 //#define WRITE_BIT                          I2C_MASTER_WRITE /*!< I2C master write */
 //#define ACK_CHECK_EN                       0x1              /*!< I2C master will check ack from slave*/
 
@@ -28,13 +28,15 @@ struct i2c_packet{
 
 class i2c_slave
 {
-private:
+    private:
 
-public:
-    i2c_packet incoming;
-    i2c_slave();
-    //~i2c_slave();
-    i2c_packet read();
+    public:
+        uint16_t slave_addr;
+
+        i2c_packet incoming;
+        i2c_slave(uint16_t slave_addr);
+        //~i2c_slave();
+        i2c_packet read();
 };
 
 
