@@ -1,12 +1,13 @@
 #include "controllers/js_pos_controller.h"
+#include <iostream>
 //Customize names that fit your implementation
-static void iterateStatic(void *controller_object){
+void JointSpacePosController::iterateStatic(void *controller_object){
   return ((JointSpacePosController*)controller_object)->iterate();
 }
 
 JointSpacePosController::JointSpacePosController():controllerEngine(){
   controllerEngine.controllerObject = this;
-  controllerEngine.iterate = &iterateStatic;
+  controllerEngine.iterate = &JointSpacePosController::iterateStatic;
   //ZmqSub inputss
   name1 = &controllerEngine.data1;
   name2 = &controllerEngine.data2;
@@ -66,5 +67,6 @@ ControllerEngine* JointSpacePosController::getHandle(){
 }
 
 void JointSpacePosController::run(){
+  std::cout <<"controller bootstrap run" << std::endl;
   controllerEngine.run();
 }

@@ -1,4 +1,5 @@
 #include "controller_engine.h"
+#include "globals.h"
 #include <iostream>
 
 ControllerEngine::ControllerEngine(){}
@@ -8,7 +9,7 @@ float** ControllerEngine::getTunableVarPtr(){
 }
 
 void ControllerEngine::readZmqSub(){
-  pthread_mutex_lock(zmqSubLock);
+  pthread_mutex_lock(&zmqSubLock);
   if (zmqSubMemPtr->newMessage){
     controllerSelect = zmqSubMemPtr->controllerSelect;
     data1 = zmqSubMemPtr->data1;
@@ -23,11 +24,11 @@ void ControllerEngine::readZmqSub(){
     data10 = zmqSubMemPtr->data10;
   }
   zmqSubMemPtr->newMessage = 0;
-  pthread_mutex_unlock(zmqSubLock);
+  pthread_mutex_unlock(&zmqSubLock);
 }
 
 void ControllerEngine::readTrajZmqSub(){
-  pthread_mutex_lock(zmqSubLock);
+  pthread_mutex_lock(&zmqSubLock);
   if (zmqSubMemPtr->newMessage){
     controllerSelect = zmqSubMemPtr->controllerSelect;
     data1 = zmqSubMemPtr->data1;
@@ -54,7 +55,7 @@ void ControllerEngine::readTrajZmqSub(){
       trajAcceleration[i] = zmqSubMemPtr->trajAcceleration[i];
     }
     zmqSubMemPtr->newMessage = 0;
-  pthread_mutex_unlock(zmqSubLock);
+  pthread_mutex_unlock(&zmqSubLock);
   }
 }
 
@@ -71,6 +72,7 @@ void ControllerEngine::writeOutput(){
 }
 
 void ControllerEngine::run(){
+  std::cout <<"controller engine run" << std::endl;
   while(1){
     //Check controller user inputs
     readZmqSub();
@@ -79,13 +81,14 @@ void ControllerEngine::run(){
     //If this is not the correct controller
     if ( !(controllerSelect == controllerId) ){
       //Exit while loop (Try next controller)
+      std::cout <<"controller select: " << controllerSelect<< " controller ID: " << controllerId <<std::endl;
       break;
     }
 
     //Wait for spi thread to finish reading sensors and enter sleeping mode
-    pthread_mutex_lock(begin_control_iteration);
-    pthread_cond_wait(start_cond, begin_control_iteration);
-    pthread_mutex_unlock(begin_control_iteration);
+    pthread_mutex_lock(&begin_control_iteration);
+    pthread_cond_wait(&start_cond, &begin_control_iteration);
+    pthread_mutex_unlock(&begin_control_iteration);
 
     //Read sensordata while spi thread is sleeping
     readPeriph();
@@ -99,6 +102,7 @@ void ControllerEngine::run(){
     itrCounter++;
     if ( itrCounter > 1000){
       std::cout <<"controller: " << controllerId << "is running on finger: " << fingerId << std::endl;
+      std::cout <<"Angle 1: " << jointAngle1 << "Angle 2: " << jointAngle2 << std::endl;
       itrCounter = 0;
     }
 

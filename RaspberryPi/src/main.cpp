@@ -1,4 +1,5 @@
 
+#include "globals.h"
 #include <math.h>
 //#include <zmq.h>
 //#include "zmq/zhelpers.h"
@@ -17,10 +18,12 @@
 #include "generated_flattbuffers/finger_broadcast_generated.h"
 #include "controllers/js_pos_controller.h"
 
+/*
 static pthread_mutex_t zmqSubLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t periphLock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t begin_control_iteration = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t start_cond = PTHREAD_COND_INITIALIZER;
+*/
 pthread_t tid[10];
 //micro seconds between sensor reads.
 //(the process of reading adds additional time to the total step length)
@@ -29,7 +32,7 @@ pthread_t tid[10];
 //Flatbuffers
 using namespace quad_double_mes; // Specified in the schema.
 using namespace quad_double_me; // Specified in the schema.
-flatbuffers::FlatBufferBuilder builder(1024);
+flatbuffers::FlatBufferBuilder pubBuilder(1024);
 uint8_t *buffer_pointer;
 /*
 //Variables used by joint space PID function
@@ -110,6 +113,10 @@ typedef struct zmq_data{
 }zmq_data;
 
 */
+void free_me_from_my_suffering(void *data, void *hint){
+    free (data);
+}
+
 class Finger{
   public:
 		//void update_local_zmq_mem();					//updates controller_select and data1-4
@@ -183,13 +190,23 @@ class Finger{
     PeripheralFingerMem periphSharedMem;
 
     //Controllers
-    //JointSpacePosController jsPosCntrllr;
-		//Constructor
-    Finger(int identity)//:jsPosCntrllr(){
-      {
-      JointSpacePosController jsPosCntrllr;
+    JointSpacePosController jsPosCntrllr;
+
+    void bindController(ControllerEngine* handle, short controller_id){
+        handle->zmqSubMemPtr = &zmqSubSharedMem;
+        handle->periphMemPtr = &periphSharedMem;
+        handle->fingerId = id;
+        handle->controllerId = controller_id;
+    }
+
+    //Constructor
+    Finger(int identity)
+      :jsPosCntrllr(){
+      bindController(&jsPosCntrllr.controllerEngine, 2);
 			id= identity;
 			itr_counter=0;
+      zmqSubSharedMem.runFlag=0;
+      periphSharedMem.runFlag=0;
     }
 
 		void shutdown(){
@@ -203,13 +220,6 @@ class Finger{
       zmqSubSharedMem.runFlag = 0;
 			pthread_mutex_unlock(&zmqSubLock);
 			}
-
-    void bindController(ControllerEngine* handle, short controller_id){
-        handle->zmqSubMemPtr = &zmqSubSharedMem;
-        handle->periphMemPtr = &periphSharedMem;
-        handle->fingerId = id;
-        handle->controllerId = controller_id;
-    }
 
 		void update_local_zmq_mem(){
 			pthread_mutex_lock(&zmqSubLock);
@@ -280,7 +290,6 @@ class Finger{
 			gpioResult = gpioWrite(csAngleSensor2,1);
 		 	pthread_mutex_unlock(&periphLock);
 			theta2 = inBuf[0];
-
 			printf("Before calibration: %d | %d\n", theta1 , theta2);
 			//Setting zero_angle at start position
 			//The measured angle in end position should be zero to avoid crossing from 0->255, as this will mess with the PID.
@@ -474,10 +483,12 @@ class Finger{
 				sleep(2);
 				update_local_zmq_mem();
 				if ( !(controller_select==1) ){
+            std::cout <<"Exiting now because controller select is: " << controller_select << std::endl;
 					break;
         }
       std::cout << "Finger: "<< id <<" is waiting for controller to be selected. Current selection: " << controller_select <<std::endl;
       }
+      //
 		}
 /*
     void jointspace_ijc_pid(){
@@ -550,7 +561,7 @@ class Finger{
 				pid_ijc_cs.gamma = atan2(pid_ijc_cs.k2,pid_ijc_cs.k1);
 				pid_ijc_cs.theta1_setpoint = atan2( *(pid_ijc_cs.y), *(pid_ijc_cs.x) ) - pid_ijc_cs.gamma;
 				//Run controller
-				pid_ijc_cs.error1 = pid_ijc_cs.theta1_setpoint - theta1;
+				pid_ijc_cs.errorfingerMemPtr1 = pid_ijc_cs.theta1_setpoint - theta1;
 				torque1 = pid_ijc_cs.error1*pid_ijc_cs.kp1;
 				pid_ijc_cs.error2 = pid_ijc_cs.theta2_setpoint - theta2;
 				torque2 = pid_ijc_cs.error2*pid_ijc_cs.kp2;
@@ -586,7 +597,9 @@ class Finger{
 			//While finger is instructed to be active
       while( !(controller_select == 0) ){
 				//Cycle through controllers.
-          //jointspace_ijc_pid();
+         std::cout <<"trying to run jsPosController" << std::endl;
+          jsPosCntrllr.run();
+          std::cout <<"moved on" << std::endl;
       //  cartesian_ijc_pid();
       }
 			//Tell spi and zmq thread we are finished
@@ -620,7 +633,6 @@ class ZmqSubscriber{
   //Coloums:  run_flag, controller_select, data1, data2, data3, data4
   //double (*commands)[6];
   ZmqHandMem* zmqHandMem;
-  \
 
   //An array of pointers to the functions that starts each finger
   //void* (* finger_run [7])(void *);
@@ -636,7 +648,7 @@ class ZmqSubscriber{
     ZmqSubscriber()
       :context(1) , subscriber(context, ZMQ_SUB){
       //ZMQ setup: http://zguide.zeromq.org/cpp:wuclient
-      const char *filter = "10001 ";
+      const char *filter = "B";
       subscriber.setsockopt(ZMQ_SUBSCRIBE, filter, strlen (filter));
       subscriber.connect("tcp://169.254.27.157:5563");
 
@@ -677,9 +689,13 @@ class ZmqSubscriber{
     }
 
     void passOnSimpleInstructions(zmq::message_t* buffer){
+      std::cout <<"entering pass function. message is of size: "<< buffer->size() <<std::endl;
       //Parse flattbuffer and store it
       auto messageObj = GetSimpleInstructionMsg(buffer->data());
+        std::cout <<"created flattbuffer object" <<std::endl;
+        std::cout <<"Finger selected: " << messageObj->finger_select() <<std::endl;
       fingerMem.fingerSelect = messageObj->finger_select();
+      std::cout <<"finger select assigned" << std::endl;
       //Return if selected finger is not valid
       if ( (fingerMem.fingerSelect < 0) || (fingerMem.fingerSelect > 6) ){
         return;
@@ -690,8 +706,11 @@ class ZmqSubscriber{
       fingerMem.controllerSelect = messageObj->controller_select();;
       fingerMem.data1 = messageObj->data1();
       fingerMem.data2 = messageObj->data2();
+
+        std::cout <<"PAssing zero info" <<std::endl;
       fingerMem.data3 = messageObj->data3();
       fingerMem.data4 = messageObj->data4();
+        std::cout <<"PAssing empty info" <<std::endl;
       fingerMem.data5 = messageObj->data5();
       fingerMem.data6 = messageObj->data6();
       fingerMem.data7 = messageObj->data7();
@@ -699,7 +718,7 @@ class ZmqSubscriber{
       fingerMem.data9 = messageObj->data9();
       fingerMem.data10 = messageObj->data10();
 
-
+      std::cout << fingerMem.fingerSelect << " " << fingerMem.controllerSelect << std::endl;
       pthread_mutex_lock(&zmqSubLock);
       //Read runflag before its overwritten
       oldRunFlag = fingerMemPtr[fingerMem.fingerSelect]->runFlag;
@@ -719,9 +738,15 @@ class ZmqSubscriber{
       while(1){
         //Listen for messages
         //From guide: http://zguide.zeromq.org/cpp:interrupt
+        std::cout <<"zmq.run, ran "<< std::endl;
         zmq::message_t buffer;
         //try {
+        zmq::message_t address;
+        subscriber.recv(&address);
         subscriber.recv(&buffer);
+
+          std::cout <<"Raw address size:: "<< address.size() <<std::endl;
+          std::cout <<"Buffers of size: "<< buffer.size() <<std::endl;
         //}
         //catch(zmq::error_t& e) {
         //  std::cout << "Interrupt received" << std::endl;
@@ -778,6 +803,7 @@ class PeripheralsController{
     zmq::context_t context;
     zmq::socket_t publisher;
 
+
     float readAngle8(int &cs){
       outBuf[0] = read_command_8;
 			pthread_mutex_lock(&periphLock);
@@ -799,6 +825,7 @@ class PeripheralsController{
       gpioResult = gpioWrite(cs,1);
       angle16 = inBuf[0] << 8;
       angle16 = angle16 + inBuf[1];
+      //std::cout <<"Raw 16 bit angle: "<< angle16 << " on chip select: "<< cs <<" inbuf:"<<unsigned(inBuf[0])<<unsigned(inBuf[1])<<std::endl;
 			pthread_mutex_unlock(&periphLock);
       angleRad = (angle16 * 2.0*3.14159) / 65535.0;
       return angleRad;
@@ -893,8 +920,7 @@ class PeripheralsController{
       }
 
       //ZMQ publisher
-
-    publisher.bind("tcp://*:5564");
+      publisher.bind("tcp://*:5564");
     }
 
     void bindFinger (Finger* finger){
@@ -943,8 +969,8 @@ class PeripheralsController{
 					if (fingerMem[i].runFlag){
 
 						//Read sensors (store it locally)
-						fingerMem[i].jointAngle1 = readAngle12(csAndI2cAddr[i][1]);
-						fingerMem[i].jointAngle2 = readAngle12(csAndI2cAddr[i][2]);
+						fingerMem[i].jointAngle1 = readAngle12(csAndI2cAddr[i][0]);
+						fingerMem[i].jointAngle2 = readAngle12(csAndI2cAddr[i][1]);
 
 						//Process sensor information (store it locally)
             fingerMem[i].angularVel1 = (fingerMem[i].jointAngle1 - fingerMemPrev[i].jointAngle1)/(step*1000000);
@@ -963,10 +989,10 @@ class PeripheralsController{
 						pthread_mutex_unlock(&periphLock);
 
 						//Send output to motor
-						writeOutput8(csAndI2cAddr[i][3],fingerMem[i].commandedTorque1, fingerMem[i].commandedTorque2);
+						//writeOutput8(csAndI2cAddr[i][2],fingerMem[i].commandedTorque1, fingerMem[i].commandedTorque2);
 
             //Load into flatbuffer struct
-            auto fingerStates= CreateFingerStates(builder,  i,  fingerMem[i].jointAngle1,       fingerMem[i].jointAngle2,
+            auto fingerStates= CreateFingerStates(pubBuilder,  i,  fingerMem[i].jointAngle1,       fingerMem[i].jointAngle2,
                                                                 fingerMem[i].angularVel1,       fingerMem[i].angularVel2,
                                                                 0,                              0,
                                                                 fingerMem[i].commandedTorque1,  fingerMem[i].commandedTorque1,
@@ -987,22 +1013,18 @@ class PeripheralsController{
         pthread_cond_broadcast(&start_cond);
         pthread_mutex_unlock(&begin_control_iteration);
         //Give controllers time to finish an iteration
-        usleep(ITR_DEADLINE);
 
         //Finish flatbuffer
-        auto hand = builder.CreateVector(handStates);
-        auto handBroadcast = CreateHandBroadcast(builder, hand);
-        FinishHandBroadcastBuffer(builder, handBroadcast);
+        auto hand = pubBuilder.CreateVector(handStates);
+        auto handBroadcast = CreateHandBroadcast(pubBuilder, hand);
+        FinishHandBroadcastBuffer(pubBuilder, handBroadcast);
         //Send
-        uint8_t *buf = builder.GetBufferPointer();
-        int size = builder.GetSize();
-        zmq::message_t zmqHandBroadcast(buf, size);
-        publisher.send(zmqHandBroadcast);
-        //Exit on cntrl+c
-        //if ( quit.load() ){
-        //  break;
-        //}
-
+        uint8_t *buf = pubBuilder.GetBufferPointer();
+        int size = pubBuilder.GetSize();
+        zmq::message_t zmqPubMsg(buf, size);
+        publisher.send(zmqPubMsg);
+        pubBuilder.Clear();
+        usleep(ITR_DEADLINE);
 			}
     }
 
@@ -1025,32 +1047,32 @@ main(){
   //The identity corresponds to specific SPI pins. Choose a value between 0-6.
   //Additional fingers can be added (max 7 with the amount of GPIO pins on a RaspberryPi).
 
-	int csSens1_f1 = 2;
-	int csSens2_f1 = 3;
+	int csSens1_f1 = 6;
+	int csSens2_f1 = 16;
 	int i2cEsp32_f1 = 4;
 
-  int csSens1_f2 = 2;
-	int csSens2_f2 = 3;
+  int csSens1_f2 = 21;
+	int csSens2_f2 = 23;
 	int i2cEsp32_f2 = 7;
 
-  int csSens1_f3 = 2;
-	int csSens2_f3 = 3;
+  int csSens1_f3 = 6;
+	int csSens2_f3 = 6;
 	int i2cEsp32_f3 = 14;
 
-  int csSens1_f4 = 2;
-	int csSens2_f4 = 3;
+  int csSens1_f4 = 6;
+	int csSens2_f4 = 6;
 	int i2cEsp32_f4 = 17;
 
-  int csSens1_f5 = 2;
-	int csSens2_f5 = 3;
+  int csSens1_f5 = 6;
+	int csSens2_f5 = 6;
 	int i2cEsp32_f5 = 20;
 
-  int csSens1_f6 = 2;
-	int csSens2_f6 = 3;
+  int csSens1_f6 = 6;
+	int csSens2_f6 = 6;
 	int i2cEsp32_f6 = 23;
 
-  int csSens1_f7 = 2;
-	int csSens2_f7 = 3;
+  int csSens1_f7 = 6;
+	int csSens2_f7 = 6;
 	int i2cEsp32_f7 = 26;
 
   //Chip select pins and i2c addresses is packed into array which is to be

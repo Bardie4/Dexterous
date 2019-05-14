@@ -49,10 +49,6 @@ class ControllerEngine {
 */
   //OPTIONAL: Used to count iterations
   int itrCounter;
-  pthread_mutex_t* zmqSubLock;
-  pthread_mutex_t* periphLock;
-  pthread_mutex_t* begin_control_iteration;
-  pthread_cond_t* start_cond;
 
   short fingerId;
   short controllerId;

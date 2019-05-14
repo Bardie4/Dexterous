@@ -17,7 +17,13 @@ struct SimpleInstructionMsg FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table
     VT_DATA1 = 8,
     VT_DATA2 = 10,
     VT_DATA3 = 12,
-    VT_DATA4 = 14
+    VT_DATA4 = 14,
+    VT_DATA5 = 16,
+    VT_DATA6 = 18,
+    VT_DATA7 = 20,
+    VT_DATA8 = 22,
+    VT_DATA9 = 24,
+    VT_DATA10 = 26
   };
   int16_t finger_select() const {
     return GetField<int16_t>(VT_FINGER_SELECT, 0);
@@ -25,26 +31,50 @@ struct SimpleInstructionMsg FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table
   int16_t controller_select() const {
     return GetField<int16_t>(VT_CONTROLLER_SELECT, 0);
   }
-  double data1() const {
-    return GetField<double>(VT_DATA1, 0.0);
+  float data1() const {
+    return GetField<float>(VT_DATA1, 0.0f);
   }
-  double data2() const {
-    return GetField<double>(VT_DATA2, 0.0);
+  float data2() const {
+    return GetField<float>(VT_DATA2, 0.0f);
   }
-  double data3() const {
-    return GetField<double>(VT_DATA3, 0.0);
+  float data3() const {
+    return GetField<float>(VT_DATA3, 0.0f);
   }
-  double data4() const {
-    return GetField<double>(VT_DATA4, 0.0);
+  float data4() const {
+    return GetField<float>(VT_DATA4, 0.0f);
+  }
+  float data5() const {
+    return GetField<float>(VT_DATA5, 0.0f);
+  }
+  float data6() const {
+    return GetField<float>(VT_DATA6, 0.0f);
+  }
+  float data7() const {
+    return GetField<float>(VT_DATA7, 0.0f);
+  }
+  float data8() const {
+    return GetField<float>(VT_DATA8, 0.0f);
+  }
+  float data9() const {
+    return GetField<float>(VT_DATA9, 0.0f);
+  }
+  float data10() const {
+    return GetField<float>(VT_DATA10, 0.0f);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<int16_t>(verifier, VT_FINGER_SELECT) &&
            VerifyField<int16_t>(verifier, VT_CONTROLLER_SELECT) &&
-           VerifyField<double>(verifier, VT_DATA1) &&
-           VerifyField<double>(verifier, VT_DATA2) &&
-           VerifyField<double>(verifier, VT_DATA3) &&
-           VerifyField<double>(verifier, VT_DATA4) &&
+           VerifyField<float>(verifier, VT_DATA1) &&
+           VerifyField<float>(verifier, VT_DATA2) &&
+           VerifyField<float>(verifier, VT_DATA3) &&
+           VerifyField<float>(verifier, VT_DATA4) &&
+           VerifyField<float>(verifier, VT_DATA5) &&
+           VerifyField<float>(verifier, VT_DATA6) &&
+           VerifyField<float>(verifier, VT_DATA7) &&
+           VerifyField<float>(verifier, VT_DATA8) &&
+           VerifyField<float>(verifier, VT_DATA9) &&
+           VerifyField<float>(verifier, VT_DATA10) &&
            verifier.EndTable();
   }
 };
@@ -58,17 +88,35 @@ struct SimpleInstructionMsgBuilder {
   void add_controller_select(int16_t controller_select) {
     fbb_.AddElement<int16_t>(SimpleInstructionMsg::VT_CONTROLLER_SELECT, controller_select, 0);
   }
-  void add_data1(double data1) {
-    fbb_.AddElement<double>(SimpleInstructionMsg::VT_DATA1, data1, 0.0);
+  void add_data1(float data1) {
+    fbb_.AddElement<float>(SimpleInstructionMsg::VT_DATA1, data1, 0.0f);
   }
-  void add_data2(double data2) {
-    fbb_.AddElement<double>(SimpleInstructionMsg::VT_DATA2, data2, 0.0);
+  void add_data2(float data2) {
+    fbb_.AddElement<float>(SimpleInstructionMsg::VT_DATA2, data2, 0.0f);
   }
-  void add_data3(double data3) {
-    fbb_.AddElement<double>(SimpleInstructionMsg::VT_DATA3, data3, 0.0);
+  void add_data3(float data3) {
+    fbb_.AddElement<float>(SimpleInstructionMsg::VT_DATA3, data3, 0.0f);
   }
-  void add_data4(double data4) {
-    fbb_.AddElement<double>(SimpleInstructionMsg::VT_DATA4, data4, 0.0);
+  void add_data4(float data4) {
+    fbb_.AddElement<float>(SimpleInstructionMsg::VT_DATA4, data4, 0.0f);
+  }
+  void add_data5(float data5) {
+    fbb_.AddElement<float>(SimpleInstructionMsg::VT_DATA5, data5, 0.0f);
+  }
+  void add_data6(float data6) {
+    fbb_.AddElement<float>(SimpleInstructionMsg::VT_DATA6, data6, 0.0f);
+  }
+  void add_data7(float data7) {
+    fbb_.AddElement<float>(SimpleInstructionMsg::VT_DATA7, data7, 0.0f);
+  }
+  void add_data8(float data8) {
+    fbb_.AddElement<float>(SimpleInstructionMsg::VT_DATA8, data8, 0.0f);
+  }
+  void add_data9(float data9) {
+    fbb_.AddElement<float>(SimpleInstructionMsg::VT_DATA9, data9, 0.0f);
+  }
+  void add_data10(float data10) {
+    fbb_.AddElement<float>(SimpleInstructionMsg::VT_DATA10, data10, 0.0f);
   }
   explicit SimpleInstructionMsgBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -86,11 +134,23 @@ inline flatbuffers::Offset<SimpleInstructionMsg> CreateSimpleInstructionMsg(
     flatbuffers::FlatBufferBuilder &_fbb,
     int16_t finger_select = 0,
     int16_t controller_select = 0,
-    double data1 = 0.0,
-    double data2 = 0.0,
-    double data3 = 0.0,
-    double data4 = 0.0) {
+    float data1 = 0.0f,
+    float data2 = 0.0f,
+    float data3 = 0.0f,
+    float data4 = 0.0f,
+    float data5 = 0.0f,
+    float data6 = 0.0f,
+    float data7 = 0.0f,
+    float data8 = 0.0f,
+    float data9 = 0.0f,
+    float data10 = 0.0f) {
   SimpleInstructionMsgBuilder builder_(_fbb);
+  builder_.add_data10(data10);
+  builder_.add_data9(data9);
+  builder_.add_data8(data8);
+  builder_.add_data7(data7);
+  builder_.add_data6(data6);
+  builder_.add_data5(data5);
   builder_.add_data4(data4);
   builder_.add_data3(data3);
   builder_.add_data2(data2);
