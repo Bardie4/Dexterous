@@ -119,6 +119,8 @@ class Finger{
 			uint16_t zero_point;
 			int gpioResult;
 			int spiResult;
+      int theta1;
+      int theta2;
 
 			//******DRIVE MOTORS TO END POSITION*******
 			//*****************************************
