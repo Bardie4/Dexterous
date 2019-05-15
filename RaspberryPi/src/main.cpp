@@ -633,6 +633,8 @@ class PeripheralsController{
     int size;
     uint8_t *buf;
 
+    //boost::asio::deadline_timer timer;
+
     float readAngle8(unsigned &cs){
       outBuf[0] = read_command_8;
 			pthread_mutex_lock(&periphLock);
@@ -693,7 +695,7 @@ class PeripheralsController{
       /*
       if ( ( i2cHandle = i2cOpen(1, i2cAddress, 0) ) < 0 ){
         std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
-      }*//*
+      }*/
       i2cWriteDevice(i2c_handle, outBuf, 3);
       i2cReadDevice(i2c_handle, outBuf, 3);
       /*
@@ -797,6 +799,7 @@ class PeripheralsController{
 
     void* run(){
 			while(1){
+        //timer.expires_from_now(boost::posix_time::milliseconds(1));
 				//Load run flag of fingers that are bound
         //Also load commanded torque if runflag is active
 				pthread_mutex_lock(&periphLock);
@@ -858,6 +861,7 @@ class PeripheralsController{
           itr_counter=0;
         }
 
+        //timer.wait();
         //Allow fingers to do another iteration on the active controller
         pthread_mutex_lock(&begin_control_iteration);
         pthread_cond_broadcast(&start_cond);
