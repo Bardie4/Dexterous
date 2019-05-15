@@ -45,7 +45,8 @@ class Finger{
 
 		//count controller cycles
 		int itr_counter;
-		int id;
+		short id;
+    short controllerSelect;
 
 		//SPI variables(Used only for calibration)
 		int csAngleSensor1;
@@ -344,13 +345,13 @@ class Finger{
 			while(1){
 				sleep(2);
         pthread_mutex_lock(&zmqSubLock);
-        controller_select = zmqSubSharedMem.controllerSelect;
+        controllerSelect = zmqSubSharedMem.controllerSelect;
         pthread_mutex_unlock(&zmqSubLock);
-				if ( !(controller_select==1) ){
-            std::cout <<"Exiting now because controller select is: " << controller_select << std::endl;
+				if ( !(controllerSelect==1) ){
+            std::cout <<"Exiting now because controller select is: " << controllerSelect << std::endl;
 					break;
         }
-      std::cout << "Finger: "<< id <<" is waiting for controller to be selected. Current selection: " << controller_select <<std::endl;
+      std::cout << "Finger: "<< id <<" is waiting for controller to be selected. Current selection: " << controllerSelect <<std::endl;
       }
       //
 		}
@@ -457,11 +458,11 @@ class Finger{
     void* run(){
 			std::cout << "i am thread: "<< id << "  >:O" << std::endl;
       pthread_mutex_lock(&zmqSubLock);
-      controller_select = zmqSubSharedMem.controllerSelect;
+      controllerSelect = zmqSubSharedMem.controllerSelect;
       pthread_mutex_unlock(&zmqSubLock);
 			calibration();
 			//While finger is instructed to be active
-      while( !(controller_select == 0) ){
+      while( !(controllerSelect == 0) ){
           jsPosCntrllr.run();
           usleep(500);
       }
