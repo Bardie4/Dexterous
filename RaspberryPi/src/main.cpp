@@ -701,8 +701,8 @@ class PeripheralsController{
       }
       pthread_mutex_unlock(&periphLock);
 
-      torque1 = outBuf[1] * maxTorqLink1;
-      torque2 = outBuf[2] * maxTorqLink2;
+      torque1 = outBuf[1];// * maxTorqLink1;
+      torque2 = outBuf[2];// * maxTorqLink2;
       if (outBuf[0] && 0b000000001){
         torque1 = -1.0*torque1;
       }
