@@ -55,7 +55,7 @@ class JointSpacePosController {
     int itrCounter;
     int time1;
     int step;
-    int time;
+    int time0;
 
     //Controller specific variables
     float error1;
