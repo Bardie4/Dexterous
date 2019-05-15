@@ -813,7 +813,6 @@ class PeripheralsController{
         step=time1-time0;
         time0=micros();
         handStates.clear();
-        std::cout << "capacity: "<<handStates.capacity() << std::endl;
 				for (int i=0; i<7; i++){
 					//If finger is active
 					if (fingerMem[i].runFlag){
@@ -854,7 +853,7 @@ class PeripheralsController{
         //Diagnostics
         itr_counter++;
         if (itr_counter >5000){
-          std::cout << "Peripherals thread used: "<< step <<" microseconds on one iteration. (Including "<< (int)ITR_DEADLINE << " us delay)"<<std::endl;
+          std::cout << "Peripherals thread used: "<< step <<" microseconds on one iteration. (Including "<< (int)ITR_DEADLINE << " us delay). Max elements: "<<handStates.capacity() << " elements: "<< handStates.size() <<std::endl;
           itr_counter=0;
         }
 
@@ -875,7 +874,6 @@ class PeripheralsController{
         publisher.send(zmqPubMsg);
         pubBuilder.Clear();
 
-        std::cout << "capacity2: "<<handStates.capacity() << std::endl;
         usleep(ITR_DEADLINE);
 			}
     }
