@@ -870,8 +870,10 @@ class PeripheralsController{
         //Send
         uint8_t *buf = pubBuilder.GetBufferPointer();
         int size = pubBuilder.GetSize();
+        /*
         zmq::message_t zmqPubMsg(buf, size);
         publisher.send(zmqPubMsg);
+        */
         pubBuilder.Clear();
 
         usleep(ITR_DEADLINE);
