@@ -780,7 +780,7 @@ class PeripheralsController{
     zmq::socket_t publisher;
 
 
-    float readAngle8(int &cs){
+    float readAngle8(unsigned &cs){
       outBuf[0] = read_command_8;
 			pthread_mutex_lock(&periphLock);
       gpioResult = gpioWrite(cs,0);
@@ -792,7 +792,7 @@ class PeripheralsController{
       return angleRad;
     }
 
-    float readAngle12(int &cs){
+    float readAngle12(unsigned &cs){
       outBuf[0] = read_command_16[0];
       outBuf[1] = read_command_16[1];
 			pthread_mutex_lock(&periphLock);
@@ -807,7 +807,7 @@ class PeripheralsController{
       return angleRad;
     }
 
-		void writeOutput8(int &i2cAddress, float &output1, float &output2){
+		void writeOutput8(unsigned &i2cAddress, float &output1, float &output2){
       //Sends 3 bytes. first byte carries flags for direction
       //2nd. byte carries absolute value of torque for link1
       //3rd. byte carries absolute value of torque for link2
@@ -851,7 +851,7 @@ class PeripheralsController{
 		}
 
   public:
-    PeripheralsController(int cs_and_i2c_addr[7][3])
+    PeripheralsController(unsigned cs_and_i2c_addr[7][3])
         :context (1), publisher (context, ZMQ_PUB){
 
       csAndI2cAddr = cs_and_i2c_addr;
