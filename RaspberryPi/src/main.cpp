@@ -455,6 +455,9 @@ class Finger{
 			//While finger is instructed to be active
       while( !(controllerSelect == 0) ){
           jsPosCntrllr.run();
+          pthread_mutex_lock(&zmqSubLock);
+          controllerSelect = zmqSubSharedMem.controllerSelect;
+          pthread_mutex_unlock(&zmqSubLock);
           usleep(500);
       }
 			shutdown();
