@@ -631,9 +631,12 @@ class PeripheralsController{
 		int time1;
 		int step;
     int itr_counter;
-
+    /*
     zmq::context_t context;
     zmq::socket_t publisher;
+    */
+    void* context;
+    void* publisher;
 
     float torque1;
     float torque2;
@@ -722,8 +725,8 @@ class PeripheralsController{
 		}
 
   public:
-    PeripheralsController(unsigned cs_and_i2c_addr[7][3])
-        :context (1), publisher (context, ZMQ_PUB){
+    PeripheralsController(unsigned cs_and_i2c_addr[7][3]){
+      //   :context (1), publisher (context, ZMQ_PUB){
 
       csAndI2cAddr = cs_and_i2c_addr;
 
@@ -768,9 +771,13 @@ class PeripheralsController{
       }
 
       //ZMQ publisher
+      /*
       publisher.bind("tcp://*:5564");
+      handStates.reserve(7);*/
+      context = zmq_ctx_new ();
+      publisher = zmq_socket (context, ZMQ_PUB);
+      zmq_bind (publisher, "tcp://*:5564");
 
-      handStates.reserve(7);
     }
 
     void bindFinger (Finger* finger){
@@ -871,11 +878,13 @@ class PeripheralsController{
         //Send
         buf = pubBuilder.GetBufferPointer();
         size = pubBuilder.GetSize();
-
-        zmq::message_t zmqPubMsg(buf, size);
         /*
+        zmq::message_t zmqPubMsg(buf, size);
         publisher.send(zmqPubMsg);
         */
+        zmq_send (publisher, buf, size, 0);
+
+
         pubBuilder.Clear();
 
         usleep(ITR_DEADLINE);
