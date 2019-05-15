@@ -111,7 +111,6 @@ class Finger{
 			torque_cmd[1]=(uint8_t) 20;
 			torque_cmd[2]=(uint8_t) 20;
 
-      std::cout << "about to use spi " << std::endl;
 			pthread_mutex_lock(&periphLock);
       if ( ( i2cHandle = i2cOpen(1, i2cAddress, 0) ) < 0 ){
         std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
@@ -319,10 +318,14 @@ class Finger{
 			torque_cmd[0]=(uint8_t) 0;
 			torque_cmd[1]=(uint8_t) 0;
 			torque_cmd[2]=(uint8_t) 0;
-			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_output,0);
-			spiResult = spiXfer(spiHandle, torque_cmd, inBuf, 3);
-			gpioResult = gpioWrite(cs_output,1);
+      pthread_mutex_lock(&periphLock);
+      if ( ( i2cHandle = i2cOpen(1, i2cAddress, 0) ) < 0 ){
+        std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
+      }
+      i2cWriteDevice(i2cHandle, torque_cmd, 3);
+      if ( i2cClose( i2cHandle ) < 0 ){
+        std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
+      }
 			pthread_mutex_unlock(&periphLock);
 
 			//Tell SPI thread to include sensors in measurement loop
