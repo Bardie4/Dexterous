@@ -56,10 +56,16 @@ void CartesianPosController::iterate(){
   //Inverse kinematics. Source: http://www.hessmer.org/uploads/RobotArm/Inverse%2520Kinematics%2520for%2520Robot%2520Arm.pdf
   temp = ( pow((*x), 2) + pow((*y), 2) - pow(l1, 2)-pow(l2, 2)) / (2.0*l1*l2);
   jointAngle2Setpoint = atan2( sqrt( 1.0 - pow(temp, 2) ), temp );
+  if (jointAngle2Setpoint == NAN){
+    return;
+  }
   k1 = l1 + l2 * cos(jointAngle2Setpoint);
   k2 = l2 * sin(jointAngle2Setpoint);
   gamma = atan2(k2, k1);
   jointAngle1Setpoint = atan2( (*y), (*x) ) - gamma;
+  if (jointAngle1Setpoint == NAN){
+    return;
+  }
 
   //Joint space controller
   error1 = jointAngle1Setpoint - (*jointAngle1);
