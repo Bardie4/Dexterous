@@ -919,24 +919,24 @@ main(){
 	unsigned i2cEsp32_f2 = 0x29;
 
   unsigned csSens1_f3 = 6;
-	unsigned csSens2_f3 = 6;
-	unsigned i2cEsp32_f3 = 14;
+	unsigned csSens2_f3 = 16;
+	unsigned i2cEsp32_f3 = 0x29;
 
   unsigned csSens1_f4 = 6;
-	unsigned csSens2_f4 = 6;
-	unsigned i2cEsp32_f4 = 17;
+	unsigned csSens2_f4 = 16;
+	unsigned i2cEsp32_f4 = 0x29;
 
   unsigned csSens1_f5 = 6;
-	unsigned csSens2_f5 = 6;
-	unsigned i2cEsp32_f5 = 20;
+	unsigned csSens2_f5 = 16;
+	unsigned i2cEsp32_f5 = 0x29;
 
   unsigned csSens1_f6 = 6;
-	unsigned csSens2_f6 = 6;
-	unsigned i2cEsp32_f6 = 23;
+	unsigned csSens2_f6 = 16;
+	unsigned i2cEsp32_f6 = 0x29;
 
   unsigned csSens1_f7 = 6;
-	unsigned csSens2_f7 = 6;
-	unsigned i2cEsp32_f7 = 26;
+	unsigned csSens2_f7 = 16;
+	unsigned i2cEsp32_f7 = 0x29;
 
   //Chip select pins and i2c addresses is packed into array which is to be
   //passed to the "pheripherals" object.
