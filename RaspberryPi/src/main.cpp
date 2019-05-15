@@ -833,7 +833,7 @@ class PeripheralsController{
 				Output2Scaled8 = 255.0;
 			}
       std::cout << "Output1: " << output1  << " output2: " << output2<< std::endl;
-      std::cout << "Outputscaled1: " << output1  << " outputscaled2: " << output2<< std::endl;
+      std::cout << "Outputscaled1: " << Output1Scaled8  << " outputscaled2: " << Output2Scaled8<< std::endl;
       //Cast to unsigned 8 bit, and put into output buffer
 			outBuf[1] =  (uint8_t) Output1Scaled8;
 			outBuf[2] =  (uint8_t) Output2Scaled8;
