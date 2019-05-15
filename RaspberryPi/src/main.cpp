@@ -698,7 +698,7 @@ class PeripheralsController{
       if ( i2cClose( i2cHandle ) < 0 ){
         std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
       }
-      i2cReadDevice(i2cHandle, outBuf, 3)
+      i2cReadDevice(i2cHandle, outBuf, 3);
       pthread_mutex_unlock(&periphLock);
 
       torque1 = outBuf[1] * maxTorqLink1;
