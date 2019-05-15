@@ -748,7 +748,7 @@ class PeripheralsController{
         std::cout << "SPI is open. Hande: " << spiHandle << std::endl;
       }
 
-      for (i=0; i<7; i++){
+      for (int i=0; i<7; i++){
         i2cHandles[i] = i2cOpen(1, csAndI2cAddr[i][2], 0);
       }
 
