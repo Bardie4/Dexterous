@@ -63,7 +63,7 @@ void JointSpacePosController::iterate(){
   error2 = *(jointAngle2Setpoint) - (*jointAngle2);
   integral2 += error2 * (step/1000000.0) * (*ki2);
   *commandedTorque2 = error2 * (*kp2) + integral2 + (*angularVel2) * (*kd2);
-
+  std::cout  << integral2 << "   " << *angularVel2" << "  "<< (*angularVel2) * (*kd2)<< std::endl;
   //Print status every 10000 cycles
   itrCounter++;
   if ( itrCounter > 10000){
