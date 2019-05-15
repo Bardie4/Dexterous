@@ -793,7 +793,7 @@ class PeripheralsController{
       finger->spiHandle = spiHandle;
       finger->csAngleSensor1 = csAndI2cAddr[finger->id][0];
       finger->csAngleSensor2 = csAndI2cAddr[finger->id][1];
-      finger->ic2Handle = i2cHandles[finger->id];
+      finger->i2cHandle = i2cHandles[finger->id];
     }
 
     void* run(){
