@@ -60,7 +60,7 @@ void JointSpacePosController::iterate(){
   integral1 += error1 * (step/1000000.0) * (*ki1);
   if (integral1 > 0.1){
     integral1 = 0.1;
-  }else if (integral1 < 0.1){
+  }else if (integral1 < -0.1){
     integral1 = -0.1;
   }
   *commandedTorque1 = error1 * (*kp1) + integral1 + (*angularVel1) * (*kd1);
@@ -69,7 +69,7 @@ void JointSpacePosController::iterate(){
   integral2 += error2 * (step/1000000.0) * (*ki2);
   if (integral2 > 0.1){
     integral2 = 0.1;
-  }else if (integral2 < 0.1){
+  }else if (integral2 < -0.1){
     integral2 = -0.1;
   }
   *commandedTorque2 = error2 * (*kp2) + integral2 + (*angularVel2) * (*kd2);
