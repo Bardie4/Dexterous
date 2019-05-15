@@ -80,8 +80,13 @@ void ControllerEngine::run(){
 
     //If this is not the correct controller
     if ( !(controllerSelect == controllerId) ){
-      //Exit while loop (Try next controller)
+      //Mark the message as unread
+      pthread_mutex_lock(&zmqSubLock);
+      zmqSubMemPtr->newMessage = 1;
+      pthread_mutex_unlock(&zmqSubLock);
+
       std::cout <<"controller select: " << controllerSelect<< " controller ID: " << controllerId <<std::endl;
+      //Exit while loop (Try next controller)
       break;
     }
 
