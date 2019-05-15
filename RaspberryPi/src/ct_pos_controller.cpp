@@ -1,4 +1,5 @@
 #include "controllers/ct_pos_controller.h"
+#include <math.h>
 #include <wiringPi.h>
 #include <iostream>
 //Customize names that fit your implementation
@@ -43,7 +44,7 @@ CartesianPosController::CartesianPosController():controllerEngine(){
   (*kd1) = 0;
   (*kd2) = 0;
 
-  l1 = 0.053:
+  l1 = 0.053;
   l2 = 0.049;
 }
 
