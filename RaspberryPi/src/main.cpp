@@ -34,158 +34,27 @@ using namespace quad_double_mes; // Specified in the schema.
 using namespace quad_double_me; // Specified in the schema.
 flatbuffers::FlatBufferBuilder pubBuilder(1024);
 uint8_t *buffer_pointer;
-/*
-//Variables used by joint space PID function
-typedef struct jointspace_pid_var {
-   double error1;
-   double error2;
-   double* theta1_setpoint;
-   double* theta2_setpoint;
-   double kp1;
-	 double ki1;
-	 double kd1;
-   double kp2;
-	 double ki2;
-	 double kd2;
-}jointspace_pid_var;
 
-//Variables used by cartesian PID function
-typedef struct cartesian_pid_var {
-   double error1;
-   double error2;
-   double theta1_setpoint;
-   double theta2_setpoint;
-	 double kp1;
-	 double ki1;
-	 double kd1;
-   double kp2;
-	 double ki2;
-	 double kd2;
-	 double temp;
-	 double k1;
-	 double k2;
-	 double gamma;
-	 double l1;
-	 double l2;
-	 double* x;
-	 double* y;
-}cartesian_pid_var;
-
-typedef struct controller_variables{
-	cartesian_pid_var	 cs;
-	jointspace_pid_var js;
-}controller_variables;
-/*
-/*
-typedef struct zmq_payload{
-	short data1;
-	short data2;
-	short data3;
-	short data4;
-	short data5;
-}zmq_payload;
-
-typedef struct zmq_instructions{
-	void (*controller)(void*, void*, void*);
-	zmq_payload payload;
-}zmq_instructions;
-
-typedef struct finger_data{
-	zmq_instructions*  zmq;		             //ptr to shared memory
-	zmq_instructions   zmq_local;	   		   //work memory
-	controller_variables controller_var;	 //variables used by controllers                        //Constants used for SPI
-}finger_data;
-
-typedef struct zmq_data{
-	char* address;
-	char* contents;
-	void* context;
-	void* subscriber;
-	char function_flag;
-	zmq_instructions instr_finger1;
-	zmq_instructions instr_finger2;
-	zmq_instructions instr_finger3;
-	zmq_instructions instr_finger4;
-	zmq_instructions instr_finger5;
-	int finger_select;
-	int controller_select;
-  void* controller_ptr[4];
-}zmq_data;
-
-*/
 void free_me_from_my_suffering(void *data, void *hint){
     free (data);
 }
 
 class Finger{
+
   public:
-		//void update_local_zmq_mem();					//updates controller_select and data1-4
-	//	void update_local_spi_mem();					//updates theta1/2 and angular_vel1/2
-	//	void update_shared_spi_mem();					//updates torque1/2 on shared spi memory
-	//	void shutdown();											//sets runflag to zero for both spi and zmq on shared memory
-
-		//Runs on startup. Sets zero angle on sensors.
-		//void calibration();
-
-		//Controllers
-	//	void cartesian_ijc_pid();							 //Independant joint controller with cartesian input
-	//	void jointspace_ijc_pid();						 //Independant joint controller with joint_angle input
-
-		//Main loop
-	//	void run();
-
-		//Define a set of variables used by the PID idependant joint controller
-		//with cartesian coordinates as input
-		//cartesian_pid_var pid_ijc_cs;
-		//Define a set of variables used by the PID idependant joint controller
-		//with joint angle set point as input
-	//	jointspace_pid_var pid_ijc_js;
-
- 		//MEMORY SHARED WITH ZMQ Thread
-		double* zmq_mem_shared;
-		//LOCAL BUFFER OF SHARED ZMQ Memory
-		bool runflag_zmq;
-		short controller_select;
-		float data1;
-		float data2;
-		float data3;
-		float data4;
-
-		//Memory shared with spi thread
-		double* spi_mem_shared;
-		//Local buffer of shared spi memory
-		double runflag_spi;
-		float theta1;
-		float theta2;
-
-		float angular_vel1;
-		float angular_vel2;
-		float torque1;
-		float torque2;
 
 		//count controller cycles
-		int itr_counter;
-		int id;
+		short id;
+    short controllerSelect;
 
 		//SPI variables(Used only for calibration)
-		int csAngleSensor1;
-		int csAngleSensor2;
-		int cs_output;
-		int spiHandle;
-		char inBuf[4];
-		char outBuf[4];
-    int i2cReg;
-    int i2cAddress;
+    int spiHandle;
+		unsigned csAngleSensor1;
+		unsigned csAngleSensor2;
+    unsigned i2cAddress;
+    unsigned i2cReg;
 
-
-    //Timing
-    //Timing
-    int time0;
-    int time1;
-    int step;
-
-//    SpiFingerMem* spiFingerMem
-//    ZmqFingerMem* zmqFingerMem;
+    //Shared memory
     ZmqSubFingerMem zmqSubSharedMem;
     PeripheralFingerMem periphSharedMem;
 
@@ -202,9 +71,8 @@ class Finger{
     //Constructor
     Finger(int identity)
       :jsPosCntrllr(){
+      id= identity;
       bindController(&jsPosCntrllr.controllerEngine, 2);
-			id= identity;
-			itr_counter=0;
       zmqSubSharedMem.runFlag=0;
       periphSharedMem.runFlag=0;
     }
@@ -221,32 +89,6 @@ class Finger{
 			pthread_mutex_unlock(&zmqSubLock);
 			}
 
-		void update_local_zmq_mem(){
-			pthread_mutex_lock(&zmqSubLock);
-			controller_select = zmqSubSharedMem.controllerSelect;
-			data1 = zmqSubSharedMem.data1;
-			data2 = zmqSubSharedMem.data2;
-			data3 = zmqSubSharedMem.data3;
-			data4 = zmqSubSharedMem.data4;
-      pthread_mutex_unlock(&zmqSubLock);
-		}
-/*
-		void update_local_spi_mem(){
-			pthread_mutex_lock(&periphLock);
-			theta1 = periphSharedMem.jointAngle1;
-			theta2 = periphSharedMem.jointAngle2;
-			angular_vel1 = periphSharedMem.angularVel1;
-			angular_vel2 = periphSharedMem.angularVel2;
-			pthread_mutex_unlock(&periphLock);
-		}
-
-		void update_shared_spi_mem(){
-			pthread_mutex_lock(&periphLock);
-			periphhSharedMem.commandedTorque1 = torque1;
-			periphSharedMem.commandedTorque2 = torque2;
-			pthread_mutex_unlock(&periphLock);
-		}
-*/
 		void calibration(){
 
 			std::cout << "Hold on, im calibrating finger " << id << std::endl;
@@ -256,6 +98,11 @@ class Finger{
 			uint16_t zero_point;
 			int gpioResult;
 			int spiResult;
+      int theta1;
+      int theta2;
+      char inBuf[4];
+      char outBuf[4];
+      int i2cHandle;
 
 			//******DRIVE MOTORS TO END POSITION*******
 			//*****************************************
@@ -264,11 +111,14 @@ class Finger{
 			torque_cmd[1]=(uint8_t) 20;
 			torque_cmd[2]=(uint8_t) 20;
 
-      std::cout << "about to use spi " << std::endl;
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_output,0);
-			spiResult = spiXfer(spiHandle, torque_cmd, inBuf, 3);
-			gpioResult = gpioWrite(cs_output,1);
+      if ( ( i2cHandle = i2cOpen(1, i2cAddress, 0) ) < 0 ){
+        std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
+      }
+      i2cWriteDevice(i2cHandle, torque_cmd, 3);
+      if ( i2cClose( i2cHandle ) < 0 ){
+        std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
+      }
 			pthread_mutex_unlock(&periphLock);
 
 			printf("Driving to endpoint\n");
@@ -468,10 +318,14 @@ class Finger{
 			torque_cmd[0]=(uint8_t) 0;
 			torque_cmd[1]=(uint8_t) 0;
 			torque_cmd[2]=(uint8_t) 0;
-			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_output,0);
-			spiResult = spiXfer(spiHandle, torque_cmd, inBuf, 3);
-			gpioResult = gpioWrite(cs_output,1);
+      pthread_mutex_lock(&periphLock);
+      if ( ( i2cHandle = i2cOpen(1, i2cAddress, 0) ) < 0 ){
+        std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
+      }
+      i2cWriteDevice(i2cHandle, torque_cmd, 3);
+      if ( i2cClose( i2cHandle ) < 0 ){
+        std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
+      }
 			pthread_mutex_unlock(&periphLock);
 
 			//Tell SPI thread to include sensors in measurement loop
@@ -481,12 +335,14 @@ class Finger{
 			//Wait for a controller to be selected
 			while(1){
 				sleep(2);
-				update_local_zmq_mem();
-				if ( !(controller_select==1) ){
-            std::cout <<"Exiting now because controller select is: " << controller_select << std::endl;
+        pthread_mutex_lock(&zmqSubLock);
+        controllerSelect = zmqSubSharedMem.controllerSelect;
+        pthread_mutex_unlock(&zmqSubLock);
+				if ( !(controllerSelect==1) ){
+            std::cout <<"Exiting now because controller select is: " << controllerSelect << std::endl;
 					break;
         }
-      std::cout << "Finger: "<< id <<" is waiting for controller to be selected. Current selection: " << controller_select <<std::endl;
+      std::cout << "Finger: "<< id <<" is waiting for controller to be selected. Current selection: " << controllerSelect <<std::endl;
       }
       //
 		}
@@ -592,27 +448,21 @@ class Finger{
 
     void* run(){
 			std::cout << "i am thread: "<< id << "  >:O" << std::endl;
-      update_local_zmq_mem();
+      pthread_mutex_lock(&zmqSubLock);
+      controllerSelect = zmqSubSharedMem.controllerSelect;
+      pthread_mutex_unlock(&zmqSubLock);
 			calibration();
 			//While finger is instructed to be active
-      while( !(controller_select == 0) ){
-				//Cycle through controllers.
-         //std::cout <<"trying to run jsPosController" << std::endl;
+      while( !(controllerSelect == 0) ){
           jsPosCntrllr.run();
-        //  std::cout <<"moved on" << std::endl;
-      //  cartesian_ijc_pid();
-      usleep(500);
+          pthread_mutex_lock(&zmqSubLock);
+          controllerSelect = zmqSubSharedMem.controllerSelect;
+          pthread_mutex_unlock(&zmqSubLock);
+          usleep(500);
       }
-			//Tell spi and zmq thread we are finished
 			shutdown();
     }
 
-			//A static function is needed to create a separate thread.
-			//This function starts the run() function.
-		static void *init_finger(void *finger_object){
-			std::cout << "i am static bootstrap of thread" << std::endl;
-			return ((Finger*)finger_object)->run();
-		}
 };
 
 class ZmqSubscriber{
@@ -779,6 +629,9 @@ class PeripheralsController{
     zmq::context_t context;
     zmq::socket_t publisher;
 
+    float torque1;
+    float torque2;
+
 
     float readAngle8(unsigned &cs){
       outBuf[0] = read_command_8;
@@ -832,24 +685,31 @@ class PeripheralsController{
 			if (Output2Scaled8 > 255.0){
 				Output2Scaled8 = 255.0;
 			}
-      std::cout << "Output1: " << output1  << " output2: " << output2<< std::endl;
-      std::cout << "Outputscaled1: " << Output1Scaled8  << " outputscaled2: " << Output2Scaled8<< std::endl;
       //Cast to unsigned 8 bit, and put into output buffer
 			outBuf[1] =  (uint8_t) Output1Scaled8;
 			outBuf[2] =  (uint8_t) Output2Scaled8;
-      std::cout << "Output8bit1: " << unsigned(outBuf[1])  << " output8bit2: " << unsigned(outBuf[2]) << std::endl;
 
+      pthread_mutex_lock(&periphLock);
       //Send
       if ( ( i2cHandle = i2cOpen(1, i2cAddress, 0) ) < 0 ){
         std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
       }
       i2cWriteDevice(i2cHandle, outBuf, 3);
-      //if ( i2cBlockProcessCall(i2cHandle, i2cReg, outBuf, 3) < 0 ){
-      //  std::cout << "i2cBlockProcessCall() failed. Handle: " << i2cHandle << " Address: "<< i2cAddress << std::endl;
-      //}
+      i2cReadDevice(i2cHandle, outBuf, 3);
       if ( i2cClose( i2cHandle ) < 0 ){
         std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
       }
+      pthread_mutex_unlock(&periphLock);
+
+      torque1 = outBuf[1];// * maxTorqLink1;
+      torque2 = outBuf[2];// * maxTorqLink2;
+      if (outBuf[0] & 0b000000001){
+        torque1 = -1.0*torque1;
+      }
+      if (outBuf[0] & 0b00000010){
+        torque2 = -1.0*torque2;
+      }
+      std::cout << "Torque1: "<<torque1<<" Torque2: " <<torque2 <<std::endl;
 		}
 
   public:
@@ -890,7 +750,7 @@ class PeripheralsController{
       //Maximum torque output allowed.
       //Must be set to same value in ESP32 and Raspberry, or it will also
       //act as a gain
-      maxTorqLink1= 0.2;         //The maximum torque capability link1
+      maxTorqLink1= 0.1;         //The maximum torque capability link1
       maxTorqLink2= 0.1;         //The maximum torque capability link2
 
       //
