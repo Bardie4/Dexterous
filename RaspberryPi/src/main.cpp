@@ -640,7 +640,8 @@ class PeripheralsController{
 
 
     std::vector<flatbuffers::Offset<FingerStates>> handStates;
-
+    int size;
+    uint8_t *buf;
 
     float readAngle8(unsigned &cs){
       outBuf[0] = read_command_8;
@@ -868,8 +869,8 @@ class PeripheralsController{
         auto handBroadcast = CreateHandBroadcast(pubBuilder, hand);
         FinishHandBroadcastBuffer(pubBuilder, handBroadcast);
         //Send
-        uint8_t *buf = pubBuilder.GetBufferPointer();
-        int size = pubBuilder.GetSize();
+        buf = pubBuilder.GetBufferPointer();
+        size = pubBuilder.GetSize();
 
         zmq::message_t zmqPubMsg(buf, size);
         /*
