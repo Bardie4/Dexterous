@@ -37,8 +37,8 @@ CartesianPosController::CartesianPosController():controllerEngine(){
   kd2 = &controllerEngine.var6;
 
   //Iitial values:
-  (*kp1) = 0.1 /(3.0/8.0) ;   //0.1 N/m at max possible error
-  (*kp2) = 0.1 /(3.0/8.0) ;   //0.1 N/m at max possible error
+  (*kp1) = 0.1 /(2*3.14*3.0/8.0) ;   //0.1 N/m at max possible error
+  (*kp2) = 0.1 /(2*3.14*3.0/8.0) ;   //0.1 N/m at max possible error
   (*ki1) = 0;
   (*ki2) = 0;
   (*kd1) = 0;
@@ -64,24 +64,18 @@ void CartesianPosController::iterate(){
   //Joint space controller
   error1 = jointAngle1Setpoint - (*jointAngle1);
   integral1 += error1 * (step/1000000.0) * (*ki1);
-  (*commandedTorque1) = error1 * (*kp1) + integral1 + (*angularVel1) * (*kd1);
+  *commandedTorque1 = error1 * (*kp1) + integral1 + (*angularVel1) * (*kd1);
 
-  error2 = jointAngle1Setpoint - (*jointAngle2);
+  error2 = jointAngle2Setpoint - (*jointAngle2);
   integral2 += error2 * (step/1000000.0) * (*ki2);
-  (*commandedTorque2) = error2 * (*kp2) + integral2 + (*angularVel2) * (*kd2);
-
-  //Print status every 1000 cycles
-
-  time1=micros();
-  step=time1-time0;
-  time0=micros();
+  *commandedTorque2 = error2 * (*kp2) + integral2 + (*angularVel2) * (*kd2);
 
   //Print status every 10000 cycles
   itrCounter++;
   if ( itrCounter > 10000){
     std::cout << "Finger "<< controllerEngine.fingerId << " controller: " << controllerEngine.controllerId << " iteration time: " << step << std::endl;
     std::cout << "setpoint1: " << jointAngle1Setpoint << " error1: " << error1 <<" output1: " << *commandedTorque1 << std::endl;
-    std::cout << "setpoint2: " << jointAngle2Setpoint << " error1: " << error2 <<" output2: " << *commandedTorque2 << std::endl;
+    std::cout << "setpoint2: " << jointAngle2Setpoint << " error2: " << error2 <<" output2: " << *commandedTorque2 << std::endl;
     itrCounter=0;
   }
 }
