@@ -639,6 +639,9 @@ class PeripheralsController{
     float torque2;
 
 
+    std::vector<flatbuffers::Offset<FingerStates>> handStates;
+
+
     float readAngle8(unsigned &cs){
       outBuf[0] = read_command_8;
 			pthread_mutex_lock(&periphLock);
@@ -765,6 +768,8 @@ class PeripheralsController{
 
       //ZMQ publisher
       publisher.bind("tcp://*:5564");
+
+      handStates.reserve(7);
     }
 
     void bindFinger (Finger* finger){
@@ -807,7 +812,8 @@ class PeripheralsController{
         time1=micros();
         step=time1-time0;
         time0=micros();
-        std::vector<flatbuffers::Offset<FingerStates>> handStates;
+        handStates.clear();
+        std::cout << "capacity: "<<handStates.capacity() << std::endl;
 				for (int i=0; i<7; i++){
 					//If finger is active
 					if (fingerMem[i].runFlag){
@@ -868,6 +874,8 @@ class PeripheralsController{
         zmq::message_t zmqPubMsg(buf, size);
         publisher.send(zmqPubMsg);
         pubBuilder.Clear();
+
+        std::cout << "capacity2: "<<handStates.capacity() << std::endl;
         usleep(ITR_DEADLINE);
 			}
     }
