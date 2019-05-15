@@ -97,15 +97,5 @@ void ControllerEngine::run(){
 
     //Send output to spi
     writeOutput();
-
-    //OPTIONAL: report status to terminal
-    itrCounter++;
-    if ( itrCounter > 1000){
-      std::cout <<"controller: " << controllerId << "is running on finger: " << fingerId << std::endl;
-      std::cout <<"Angle 1: " << jointAngle1 << "Angle 2: " << jointAngle2 << std::endl;
-      std::cout <<"Data 1: " << data1 << "Data 2: " << data2 << std::endl;
-      itrCounter = 0;
-    }
-
   }
 }

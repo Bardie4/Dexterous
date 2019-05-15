@@ -1,11 +1,11 @@
 #include "controller_engine.h"
 
-class JointSpacePosController {
+class ControllerTemplate {
   public:
     ControllerEngine controllerEngine;
 
-    float *jointAngle1Setpoint;
-    float *jointAngle2Setpoint;
+    float *name1;
+    float *name2;
     float *name3;
     float *name4;
     float *name5;
@@ -30,12 +30,12 @@ class JointSpacePosController {
     float *commandedTorque1;
     float *commandedTorque2;
 
-    float *kp1;
-    float *ki1;
-    float *kd1;
-    float *kp2;
-    float *ki2;
-    float *kd2;
+    float *var1;
+    float *var2;
+    float *var3;
+    float *var4;
+    float *var5;
+    float *var6;
     float *var7;
     float *var8;
     float *var9;
@@ -51,20 +51,9 @@ class JointSpacePosController {
     float *var19;
     float *var20;
 
-    //Printing
-    int itrCounter;
-    int time1;
-    int step;
-    int time;
-
-    //Controller specific variables
-    float error1;
-    float integral1;
-    float error2;
-    float integral2;
 
     static void iterateStatic(void *controller_object);
-    JointSpacePosController();
+    ControllerTemplate();
     ControllerEngine* getHandle();
     void iterate();
     void run();

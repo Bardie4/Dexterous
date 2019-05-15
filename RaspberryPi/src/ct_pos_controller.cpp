@@ -1,19 +1,16 @@
-#include "controllers/js_pos_controller.h"
+#include "controllers/ct_pos_controller.h"
 #include <iostream>
 //Customize names that fit your implementation
-void JointSpacePosController::iterateStatic(void *controller_object){
+void CartesianPosController::iterateStatic(void *controller_object){
   return ((JointSpacePosController*)controller_object)->iterate();
 }
 
-JointSpacePosController::JointSpacePosController():controllerEngine(){
+CartesianPosController::CartesianPosController():controllerEngine(){
   controllerEngine.controllerObject = this;
   controllerEngine.iterate = &JointSpacePosController::iterateStatic;
-
-  //********RENAMING VARIABLES FROM ENGINE*******************
   //ZmqSub inputss
-  jointAngle1Setpoint = &controllerEngine.data1;
-  jointAngle2Setpoint = &controllerEngine.data2;
-
+  x = &controllerEngine.data1;
+  y = &controllerEngine.data2;
   trajSize = &controllerEngine.trajSize;
   trajTimeStamp = controllerEngine.trajTimeStamp;
   trajPosition = controllerEngine.trajPosition;
@@ -29,14 +26,13 @@ JointSpacePosController::JointSpacePosController():controllerEngine(){
   //Controller output
   commandedTorque1 = &controllerEngine.commandedTorque1;
   commandedTorque2 = &controllerEngine.commandedTorque2;
-
   //Run time adjustable variables (example: Kp, Ki and so on..)
   kp1 = &controllerEngine.var1;
   ki1 = &controllerEngine.var2;
   kd1 = &controllerEngine.var3;
-  kp1 = &controllerEngine.var4;
-  ki1 = &controllerEngine.var5;
-  kd1 = &controllerEngine.var6;
+  kp2 = &controllerEngine.var4;
+  ki2 = &controllerEngine.var5;
+  kd2 = &controllerEngine.var6;
 
   //Iitial values:
   (*kp1) = 0.1 /(3.0/8.0) ;   //0.1 N/m at max possible error
@@ -45,39 +41,54 @@ JointSpacePosController::JointSpacePosController():controllerEngine(){
   (*ki2) = 0;
   (*kd1) = 0;
   (*kd2) = 0;
+
+  l1 = 0.053:
+  l2 = 0.049;
 }
 
-void JointSpacePosController::iterate(){
-  //Step length
+void CartesianPosController::iterate(){
   time1=micros();
   step=time1-time0;
   time0=micros();
 
+  //Inverse kinematics. Source: http://www.hessmer.org/uploads/RobotArm/Inverse%2520Kinematics%2520for%2520Robot%2520Arm.pdf
+  temp = ( pow((*x), 2) + pow((*y), 2) - pow(l1, 2)-pow(l2, 2)) / (2.0*l1*l2);
+  jointAngle2Setpoint = atan2( sqrt( 1.0 - pow(temp, 2) ), temp );
+  k1 = l1 + l2 * cos(jointAngle2Setpoint);
+  k2 = l2 * sin(jointAngle2Setpoint);
+  gamma = atan2(k2, k1);
+  jointAngle1Setpoint = atan2( (*y), (*x) ) - gamma;
 
-  //PID controller
-  error1 = (*jointAngle1Setpoint) - (*jointAngle1);
+  //Joint space controller
+  error1 = jointAngle1Setpoint - (*jointAngle1);
   integral1 += error1 * (step/1000000.0) * (*ki1);
-  *commandedTorque1 = error1 * (*kp1) + integral1 + angularVel1 * (kd1);
+  (*commandedTorque1)= error1 * (*kp1) + integral1 + angularVel1 * (kd1);
 
-  error2 = *(jointAngle2Setpoint) - (*jointAngle2);
+  error2 = jointAngle1Setpoint - (*jointAngle2);
   integral2 += error2 * (step/1000000.0) * (*ki2);
-  *commandedTorque2 = error2 * (*kp2) + integral2 + angularVel2 * (kd2);
+  (*commandedTorque2) = error2 * (*kp2) + integral2 + angularVel2 * (kd2);
+
+  //Print status every 1000 cycles
+
+  time1=micros();
+  step=time1-time0;
+  time0=micros();
 
   //Print status every 10000 cycles
   itr_counter++;
   if ( itr_counter > 10000){
     std::cout << "Finger "<< controllerEngine.fingerId << " controller: " << controllerEngine.controllerId << " iteration time: " << step << std::endl;
-    std::cout << "setpoint1: " << *jointAngle1Setpoint << " error1: " << error1 <<" output1: " << *commandedTorque1 << std::endl;
-    std::cout << "setpoint2: " << *jointAngle2Setpoint << " error1: " << error2 <<" output2: " << *commandedTorque2 << std::endl;
+    std::cout << "setpoint1: " << jointAngle1Setpoint << " error1: " << error1 <<" output1: " << *commandedTorque1 << std::endl;
+    std::cout << "setpoint2: " << jointAngle2Setpoint << " error1: " << error2 <<" output2: " << *commandedTorque2 << std::endl;
     itr_counter=0;
   }
 }
 
-ControllerEngine* JointSpacePosController::getHandle(){
+ControllerEngine* CartesianPosController::getHandle(){
   return &controllerEngine;
 }
 
-void JointSpacePosController::run(){
+void CartesianPosController::run(){
   std::cout <<"controller bootstrap run" << std::endl;
   controllerEngine.run();
 }

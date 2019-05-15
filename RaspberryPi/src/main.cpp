@@ -17,6 +17,8 @@
 #include "generated_flattbuffers/simple_instructions_generated.h"
 #include "generated_flattbuffers/finger_broadcast_generated.h"
 #include "controllers/js_pos_controller.h"
+#include "controllers/cs_pos_controller.h"
+
 
 /*
 static pthread_mutex_t zmqSubLock = PTHREAD_MUTEX_INITIALIZER;
@@ -60,6 +62,7 @@ class Finger{
 
     //Controllers
     JointSpacePosController jsPosCntrllr;
+    CartesianPosController ctPosCntrllr;
 
     void bindController(ControllerEngine* handle, short controller_id){
         handle->zmqSubMemPtr = &zmqSubSharedMem;
@@ -70,9 +73,10 @@ class Finger{
 
     //Constructor
     Finger(int identity)
-      :jsPosCntrllr(){
+      :jsPosCntrllr(), ctPosCntrllr(){
       id= identity;
       bindController(&jsPosCntrllr.controllerEngine, 2);
+      bindController(&ctPosCntrllr.controllerEngine, 3);
       zmqSubSharedMem.runFlag=0;
       periphSharedMem.runFlag=0;
     }
@@ -701,8 +705,8 @@ class PeripheralsController{
       }
       pthread_mutex_unlock(&periphLock);
 
-      torque1 = outBuf[1];// * maxTorqLink1;
-      torque2 = outBuf[2];// * maxTorqLink2;
+      torque1 = outBuf[1] * maxTorqLink1;
+      torque2 = outBuf[2] * maxTorqLink2;
       if (outBuf[0] & 0b000000001){
         torque1 = -1.0*torque1;
       }

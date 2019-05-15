@@ -17,6 +17,12 @@ controller_engine.o: src/controller_engine.cpp
 js_pos_controller.o: src/js_pos_controller.cpp
 	g++ -c -Wall src/js_pos_controller.cpp -I ./include/
 
+cs_pos_controller.o: src/cs_pos_controller.cpp
+	g++ -c -Wall src/cs_pos_controller.cpp -I ./include/
+
+controller_template.o: src/controller_template.cpp
+	g++ -c -Wall src/controller_template.cpp -I ./include/
+
 globals.o: src/globals.cpp
 	g++ -c -Wall -pthread src/globals.cpp -I ./include/
 

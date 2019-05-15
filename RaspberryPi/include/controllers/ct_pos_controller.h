@@ -1,19 +1,11 @@
 #include "controller_engine.h"
 
-class JointSpacePosController {
+class CartesianPosController {
   public:
     ControllerEngine controllerEngine;
 
-    float *jointAngle1Setpoint;
-    float *jointAngle2Setpoint;
-    float *name3;
-    float *name4;
-    float *name5;
-    float *name6;
-    float *name7;
-    float *name8;
-    float *name9;
-    float *name10;
+    float *x;
+    float *y;
 
     int *trajSize;
     float* trajTimeStamp;
@@ -36,20 +28,6 @@ class JointSpacePosController {
     float *kp2;
     float *ki2;
     float *kd2;
-    float *var7;
-    float *var8;
-    float *var9;
-    float *var10;
-    float *var11;
-    float *var12;
-    float *var13;
-    float *var14;
-    float *var15;
-    float *var16;
-    float *var17;
-    float *var18;
-    float *var19;
-    float *var20;
 
     //Printing
     int itrCounter;
@@ -58,13 +36,21 @@ class JointSpacePosController {
     int time;
 
     //Controller specific variables
+    float jointAngle2Setpoint;
+    float jointAngle1Setpoint;
+    float l1;
+    float l2;
+    float temp;
+    float k1;
+    float k2;
+    float gamma;
     float error1;
-    float integral1;
     float error2;
-    float integral2;
+    float integral1;
+    flaot integral2;
 
     static void iterateStatic(void *controller_object);
-    JointSpacePosController();
+    CartesianPosController();
     ControllerEngine* getHandle();
     void iterate();
     void run();
