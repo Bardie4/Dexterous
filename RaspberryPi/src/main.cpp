@@ -688,7 +688,6 @@ class PeripheralsController{
 			outBuf[1] =  (uint8_t) Output1Scaled8;
 			outBuf[2] =  (uint8_t) Output2Scaled8;
 
-      pthread_mutex_lock(&periphLock);
       //Send
       /*
       if ( ( i2cHandle = i2cOpen(1, i2cAddress, 0) ) < 0 ){
@@ -700,7 +699,6 @@ class PeripheralsController{
       if ( i2cClose( i2cHandle ) < 0 ){
         std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
       }*/
-      pthread_mutex_unlock(&periphLock);
 
       torque1 = outBuf[1] * maxTorqLink1;
       torque2 = outBuf[2] * maxTorqLink2;
