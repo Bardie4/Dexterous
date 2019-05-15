@@ -102,6 +102,7 @@ class Finger{
       int theta2;
       char inBuf[4];
       char outBuf[4];
+      int i2cHandle;
 
 			//******DRIVE MOTORS TO END POSITION*******
 			//*****************************************
