@@ -703,10 +703,10 @@ class PeripheralsController{
 
       torque1 = outBuf[1];// * maxTorqLink1;
       torque2 = outBuf[2];// * maxTorqLink2;
-      if (outBuf[0] && 0b000000001){
+      if (outBuf[0] & 0b000000001){
         torque1 = -1.0*torque1;
       }
-      if (outBuf[0] && 0b00000010){
+      if (outBuf[0] & 0b00000010){
         torque2 = -1.0*torque2;
       }
       std::cout << "Torque1: "<<torque1<<" Torque2: " <<torque2 <<std::endl;
