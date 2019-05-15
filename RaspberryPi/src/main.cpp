@@ -701,14 +701,14 @@ class PeripheralsController{
       //Cast to unsigned 8 bit, and put into output buffer
 			outBuf[1] =  (uint8_t) Output1Scaled8;
 			outBuf[2] =  (uint8_t) Output2Scaled8;
-      
+
       pthread_mutex_lock(&periphLock);
       //Send
       if ( ( i2cHandle = i2cOpen(1, i2cAddress, 0) ) < 0 ){
         std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
       }
       i2cWriteDevice(i2cHandle, outBuf, 3);
-      i2cReadDevice(i2cHandle, outBuf, 3);
+      //i2cReadDevice(i2cHandle, outBuf, 3);
       if ( i2cClose( i2cHandle ) < 0 ){
         std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
       }
