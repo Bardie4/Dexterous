@@ -692,9 +692,7 @@ class PeripheralsController{
         std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
       }
       i2cWriteDevice(i2cHandle, outBuf, 3);
-      //if ( i2cBlockProcessCall(i2cHandle, i2cReg, outBuf, 3) < 0 ){
-      //  std::cout << "i2cBlockProcessCall() failed. Handle: " << i2cHandle << " Address: "<< i2cAddress << std::endl;
-      //}
+      i2cReadDevice(i2cHandle, outBuf, 3);
       if ( i2cClose( i2cHandle ) < 0 ){
         std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
       }
