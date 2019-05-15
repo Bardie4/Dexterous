@@ -64,7 +64,7 @@ void CartesianPosController::iterate(){
   //Joint space controller
   error1 = jointAngle1Setpoint - (*jointAngle1);
   integral1 += error1 * (step/1000000.0) * (*ki1);
-  (*commandedTorque1) = error1 * (*kp1) + integral1 + (angularVel1) * (*kd1);
+  (*commandedTorque1) = error1 * (*kp1) + integral1 + (*angularVel1) * (*kd1);
 
   error2 = jointAngle1Setpoint - (*jointAngle2);
   integral2 += error2 * (step/1000000.0) * (*ki2);
