@@ -1,4 +1,5 @@
 #include "controllers/js_pos_controller.h"
+#include <wiringPi.h>
 #include <iostream>
 //Customize names that fit your implementation
 void JointSpacePosController::iterateStatic(void *controller_object){
@@ -57,11 +58,11 @@ void JointSpacePosController::iterate(){
   //PID controller
   error1 = (*jointAngle1Setpoint) - (*jointAngle1);
   integral1 += error1 * (step/1000000.0) * (*ki1);
-  *commandedTorque1 = error1 * (*kp1) + integral1 + angularVel1 * (kd1);
+  *commandedTorque1 = error1 * (*kp1) + integral1 + angularVel1 * (*kd1);
 
   error2 = *(jointAngle2Setpoint) - (*jointAngle2);
   integral2 += error2 * (step/1000000.0) * (*ki2);
-  *commandedTorque2 = error2 * (*kp2) + integral2 + angularVel2 * (kd2);
+  *commandedTorque2 = error2 * (*kp2) + integral2 + angularVel2 * (*kd2);
 
   //Print status every 10000 cycles
   itr_counter++;
