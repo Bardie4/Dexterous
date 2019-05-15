@@ -555,7 +555,7 @@ class ZmqSubscriber{
       fingerMem.data9 = messageObj->data9();
       fingerMem.data10 = messageObj->data10();
 
-      std::cout << fingerMem.fingerSelect << " " << fingerMem.controllerSelect << std::endl;
+      //std::cout << fingerMem.fingerSelect << " " << fingerMem.controllerSelect << std::endl;
       pthread_mutex_lock(&zmqSubLock);
       //Read runflag before its overwritten
       oldRunFlag = fingerMemPtr[fingerMem.fingerSelect]->runFlag;
@@ -852,7 +852,7 @@ class PeripheralsController{
 
         //Diagnostics
         itr_counter++;
-        if (itr_counter >5000){
+        if (itr_counter >10000){
           std::cout << "Peripherals thread used: "<< step <<" microseconds on one iteration. (Including "<< (int)ITR_DEADLINE << " us delay). Max elements: "<<handStates.capacity() << " elements: "<< handStates.size() <<std::endl;
           itr_counter=0;
         }
