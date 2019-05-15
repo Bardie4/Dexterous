@@ -597,10 +597,11 @@ class Finger{
 			//While finger is instructed to be active
       while( !(controller_select == 0) ){
 				//Cycle through controllers.
-         std::cout <<"trying to run jsPosController" << std::endl;
+         //std::cout <<"trying to run jsPosController" << std::endl;
           jsPosCntrllr.run();
-          std::cout <<"moved on" << std::endl;
+        //  std::cout <<"moved on" << std::endl;
       //  cartesian_ijc_pid();
+      usleep(500);
       }
 			//Tell spi and zmq thread we are finished
 			shutdown();
@@ -679,7 +680,6 @@ class ZmqSubscriber{
         std::cout <<"created flattbuffer object" <<std::endl;
         std::cout <<"Finger selected: " << messageObj->finger_select() <<std::endl;
       fingerMem.fingerSelect = messageObj->finger_select();
-      std::cout <<"finger select assigned" << std::endl;
       //Return if selected finger is not valid
       if ( (fingerMem.fingerSelect < 0) || (fingerMem.fingerSelect > 6) ){
         return;
@@ -966,7 +966,7 @@ class PeripheralsController{
 						pthread_mutex_unlock(&periphLock);
 
 						//Send output to motor
-						//writeOutput8(csAndI2cAddr[i][2],fingerMem[i].commandedTorque1, fingerMem[i].commandedTorque2);
+						writeOutput8(csAndI2cAddr[i][2],fingerMem[i].commandedTorque1, fingerMem[i].commandedTorque2);
 
             //Load into flatbuffer struct
             auto fingerStates= CreateFingerStates(pubBuilder,  i,  fingerMem[i].jointAngle1,       fingerMem[i].jointAngle2,
