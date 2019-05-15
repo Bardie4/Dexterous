@@ -47,7 +47,7 @@ class CartesianPosController {
     float error1;
     float error2;
     float integral1;
-    flaot integral2;
+    float integral2;
 
     static void iterateStatic(void *controller_object);
     CartesianPosController();
