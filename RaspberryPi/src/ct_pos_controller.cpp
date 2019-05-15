@@ -8,7 +8,7 @@ void CartesianPosController::iterateStatic(void *controller_object){
 
 CartesianPosController::CartesianPosController():controllerEngine(){
   controllerEngine.controllerObject = this;
-  controllerEngine.iterate = &JointSpacePosController::iterateStatic;
+  controllerEngine.iterate = &CartesianPosController::iterateStatic;
   //ZmqSub inputss
   x = &controllerEngine.data1;
   y = &controllerEngine.data2;
