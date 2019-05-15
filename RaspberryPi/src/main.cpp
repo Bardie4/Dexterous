@@ -52,7 +52,7 @@ class Finger{
 		unsigned csAngleSensor1;
 		unsigned csAngleSensor2;
     unsigned i2cAddress;
-    //unsigned i2cReg;
+    unsigned i2cReg;
 
     //Shared memory
     ZmqSubFingerMem zmqSubSharedMem;
@@ -73,7 +73,6 @@ class Finger{
       :jsPosCntrllr(){
       id= identity;
       bindController(&jsPosCntrllr.controllerEngine, 2);
-			itr_counter=0;
       zmqSubSharedMem.runFlag=0;
       periphSharedMem.runFlag=0;
     }
@@ -113,9 +112,13 @@ class Finger{
 
       std::cout << "about to use spi " << std::endl;
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(cs_output,0);
-			spiResult = spiXfer(spiHandle, torque_cmd, inBuf, 3);
-			gpioResult = gpioWrite(cs_output,1);
+      if ( ( i2cHandle = i2cOpen(1, i2cAddress, 0) ) < 0 ){
+        std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
+      }
+      i2cWriteDevice(i2cHandle, torque_cmd, 3);
+      if ( i2cClose( i2cHandle ) < 0 ){
+        std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
+      }
 			pthread_mutex_unlock(&periphLock);
 
 			printf("Driving to endpoint\n");
@@ -676,6 +679,7 @@ class PeripheralsController{
 			outBuf[1] =  (uint8_t) Output1Scaled8;
 			outBuf[2] =  (uint8_t) Output2Scaled8;
 
+      pthread_mutex_lock(&periphLock);
       //Send
       if ( ( i2cHandle = i2cOpen(1, i2cAddress, 0) ) < 0 ){
         std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
@@ -687,6 +691,7 @@ class PeripheralsController{
       if ( i2cClose( i2cHandle ) < 0 ){
         std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
       }
+      pthread_mutex_unlock(&periphLock);
 		}
 
   public:
