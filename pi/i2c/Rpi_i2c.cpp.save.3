@@ -1,0 +1,52 @@
+#include <pigpio.h>
+#include <iostream>
+#include <atomic>
+#include <signal.h>
+#include <string.h>
+#include <unistd.h>
+
+using namespace std;
+
+//g++ -Wall -pthread -o test test.cpp -lpigpio -lrt
+
+//std::atomic<bool> Quit = ATOMIC_VAR_INIT(false);
+
+//void quit(int sig)
+//{
+//    Quit = true; //will require handler quit too
+//}
+
+int main(int argc, char** argv)
+{
+//    signal(SIGINT, quit);
+
+//    bsc_xfer_t xfer;
+    gpioInitialise();
+
+    
+    unsigned i2cBus = 1;
+    unsigned i2cAddr = 0x28;
+    unsigned i2cFlags = 0;
+
+    int i2cHandle = i2cOpen(i2cBus, i2cAddr, i2cFlags);
+    int i2cHandl2e = i2cOpen(i2cBus, 0x29, i2cFlags);
+    char buf[3] = {0x01, 0x02, 0x03};
+    int count = 3;
+
+    int i2cHandle2 = i2cOpen(i2cBus, 0x29, i2cFlags);
+
+
+
+    for(int i = 0; i < 10; i++){
+//         i2cWriteDevice(i2cHandle, buf, sizeof(buf));
+         i2i2cWriteDevice(0x29, buf, sizeof(buf));
+cWriteDevice(0x29, buf, sizeof(buf));
+         cout << i2cHandle << endl;
+         cout << i2cHandle2 << endl;
+        // sleep(1);
+    }
+
+    i2cClose(i2cHandle);
+    gpioTerminate();
+    return 0;
+}
