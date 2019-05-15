@@ -836,6 +836,7 @@ class PeripheralsController{
       //Cast to unsigned 8 bit, and put into output buffer
 			outBuf[1] =  (uint8_t) Output1Scaled8;
 			outBuf[2] =  (uint8_t) Output2Scaled8;
+      std::cout << "Output1: " << outBuf[1]  << " output2: " << outBuf[2] << std::endl;
 
       //Send
       if ( ( i2cHandle = i2cOpen(1, i2cAddress, 0) ) < 0 ){
