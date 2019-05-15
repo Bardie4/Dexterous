@@ -98,7 +98,7 @@ class Finger{
       zmqSubSharedMem.runFlag = 0;
 			pthread_mutex_unlock(&zmqSubLock);
 			}
-
+/*
 		void update_local_zmq_mem(){
 			pthread_mutex_lock(&zmqSubLock);
 			controller_select = zmqSubSharedMem.controllerSelect;
@@ -108,7 +108,7 @@ class Finger{
 			data4 = zmqSubSharedMem.data4;
       pthread_mutex_unlock(&zmqSubLock);
 		}
-
+*/
 		void calibration(){
 
 			std::cout << "Hold on, im calibrating finger " << id << std::endl;
@@ -343,7 +343,9 @@ class Finger{
 			//Wait for a controller to be selected
 			while(1){
 				sleep(2);
-				update_local_zmq_mem();
+        pthread_mutex_lock(&zmqSubLock);
+        controller_select = zmqSubSharedMem.controllerSelect;
+        pthread_mutex_unlock(&zmqSubLock);
 				if ( !(controller_select==1) ){
             std::cout <<"Exiting now because controller select is: " << controller_select << std::endl;
 					break;
@@ -454,7 +456,9 @@ class Finger{
 
     void* run(){
 			std::cout << "i am thread: "<< id << "  >:O" << std::endl;
-      update_local_zmq_mem();
+      pthread_mutex_lock(&zmqSubLock);
+      controller_select = zmqSubSharedMem.controllerSelect;
+      pthread_mutex_unlock(&zmqSubLock);
 			calibration();
 			//While finger is instructed to be active
       while( !(controller_select == 0) ){
