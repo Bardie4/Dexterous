@@ -640,7 +640,7 @@ class PeripheralsController{
 
     float torque1;
     float torque2;
-
+    int i2cHandles[7];
 
     std::vector<flatbuffers::Offset<FingerStates>> handStates;
     int size;
@@ -673,7 +673,7 @@ class PeripheralsController{
       return angleRad;
     }
 
-		void writeOutput8(unsigned &i2cAddress, float &output1, float &output2){
+		void writeOutput8(int &i2c_handle, float &output1, float &output2){
       //Sends 3 bytes. first byte carries flags for direction
       //2nd. byte carries absolute value of torque for link1
       //3rd. byte carries absolute value of torque for link2
@@ -704,14 +704,16 @@ class PeripheralsController{
 
       pthread_mutex_lock(&periphLock);
       //Send
+      /*
       if ( ( i2cHandle = i2cOpen(1, i2cAddress, 0) ) < 0 ){
         std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
-      }
-      i2cWriteDevice(i2cHandle, outBuf, 3);
+      }*/
+      i2cWriteDevice(i2c_handle, outBuf, 3);
       //i2cReadDevice(i2cHandle, outBuf, 3);
+      /*
       if ( i2cClose( i2cHandle ) < 0 ){
         std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
-      }
+      }*/
       pthread_mutex_unlock(&periphLock);
 
       torque1 = outBuf[1] * maxTorqLink1;
@@ -744,6 +746,10 @@ class PeripheralsController{
         std::cout << "spiOpen() failed" << std::endl;
       } else {
         std::cout << "SPI is open. Hande: " << spiHandle << std::endl;
+      }
+
+      for (i=0; i<7; i++){
+        i2cHandles[i] = i2cOpen(1, csAndI2cAddr[i][2], 0);
       }
 
       //Data is not transmitted on SPI when cs is high.
@@ -846,7 +852,7 @@ class PeripheralsController{
 						pthread_mutex_unlock(&periphLock);
 
 						//Send output to motor
-						writeOutput8(csAndI2cAddr[i][2],fingerMem[i].commandedTorque1, fingerMem[i].commandedTorque2);
+						writeOutput8(i2cHandles[i], fingerMem[i].commandedTorque1, fingerMem[i].commandedTorque2);
 
             //Load into flatbuffer struct
             auto fingerStates= CreateFingerStates(pubBuilder,  i,  fingerMem[i].jointAngle1,       fingerMem[i].jointAngle2,
