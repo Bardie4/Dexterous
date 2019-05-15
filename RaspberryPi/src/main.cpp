@@ -715,7 +715,6 @@ class PeripheralsController{
       if (outBuf[0] & 0b00000010){
         torque2 = -1.0*torque2;
       }
-      std::cout << "Torque1: "<<torque1<<" Torque2: " <<torque2 <<std::endl;
 		}
 
   public:
