@@ -61,7 +61,7 @@ class Finger{
     PeripheralFingerMem periphSharedMem;
 
     //Controllers
-    //JointSpacePosController jsPosCntrllr;
+    JointSpacePosController jsPosCntrllr;
     //CartesianPosController ctPosCntrllr;
 
     void bindController(ControllerEngine* handle, short controller_id){
