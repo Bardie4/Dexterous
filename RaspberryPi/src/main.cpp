@@ -61,8 +61,8 @@ class Finger{
     PeripheralFingerMem periphSharedMem;
 
     //Controllers
-    JointSpacePosController jsPosCntrllr;
-    CartesianPosController ctPosCntrllr;
+    //JointSpacePosController jsPosCntrllr;
+    //CartesianPosController ctPosCntrllr;
 
     void bindController(ControllerEngine* handle, short controller_id){
         handle->zmqSubMemPtr = &zmqSubSharedMem;
@@ -460,7 +460,7 @@ class Finger{
 			calibration();
 			//While finger is instructed to be active
       while( !(controllerSelect == 0) ){
-          jsPosCntrllr.run();
+          //jsPosCntrllr.run();
           pthread_mutex_lock(&zmqSubLock);
           controllerSelect = zmqSubSharedMem.controllerSelect;
           pthread_mutex_unlock(&zmqSubLock);
