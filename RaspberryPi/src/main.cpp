@@ -44,27 +44,17 @@ class Finger{
   public:
 
 		//count controller cycles
-		int itr_counter;
 		short id;
     short controllerSelect;
 
 		//SPI variables(Used only for calibration)
-		int csAngleSensor1;
-		int csAngleSensor2;
-		int cs_output;
-		int spiHandle;
-		char inBuf[4];
-		char outBuf[4];
-    int i2cReg;
-    int i2cAddress;
+    int spiHandle;
+		unsigned csAngleSensor1;
+		unsigned csAngleSensor2;
+    unsigned i2cAddress;
+    //unsigned i2cReg;
 
-
-
-    //Timing
-    int time0;
-    int time1;
-    int step;
-
+    //Shared memory
     ZmqSubFingerMem zmqSubSharedMem;
     PeripheralFingerMem periphSharedMem;
 
@@ -99,17 +89,7 @@ class Finger{
       zmqSubSharedMem.runFlag = 0;
 			pthread_mutex_unlock(&zmqSubLock);
 			}
-/*
-		void update_local_zmq_mem(){
-			pthread_mutex_lock(&zmqSubLock);
-			controller_select = zmqSubSharedMem.controllerSelect;
-			data1 = zmqSubSharedMem.data1;
-			data2 = zmqSubSharedMem.data2;
-			data3 = zmqSubSharedMem.data3;
-			data4 = zmqSubSharedMem.data4;
-      pthread_mutex_unlock(&zmqSubLock);
-		}
-*/
+
 		void calibration(){
 
 			std::cout << "Hold on, im calibrating finger " << id << std::endl;
@@ -121,6 +101,8 @@ class Finger{
 			int spiResult;
       int theta1;
       int theta2;
+      char inBuf[4];
+      char outBuf[4];
 
 			//******DRIVE MOTORS TO END POSITION*******
 			//*****************************************
@@ -470,13 +452,7 @@ class Finger{
       }
 			shutdown();
     }
-/*
-			//A static function is needed to create a separate thread.
-			//This function starts the run() function.
-		static void *init_finger(void *finger_object){
-			std::cout << "i am static bootstrap of thread" << std::endl;
-			return ((Finger*)finger_object)->run();
-		}*/
+
 };
 
 class ZmqSubscriber{
