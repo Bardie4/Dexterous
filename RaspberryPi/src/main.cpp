@@ -60,11 +60,9 @@ class Finger{
     ZmqSubFingerMem zmqSubSharedMem;
     PeripheralFingerMem periphSharedMem;
 
-
-    std::cout << "Creating controllers" << std::endl;
     //Controllers
-    //JointSpacePosController jsPosCntrllr;
-    //CartesianPosController ctPosCntrllr;
+    JointSpacePosController jsPosCntrllr;
+    CartesianPosController ctPosCntrllr;
 
     void bindController(ControllerEngine* handle, short controller_id){
         handle->zmqSubMemPtr = &zmqSubSharedMem;
@@ -75,10 +73,11 @@ class Finger{
 
     //Constructor
     Finger(int identity)
-      //:jsPosCntrllr(), ctPosCntrllr(){
+      :jsPosCntrllr(), ctPosCntrllr(){
       id= identity;
-      //bindController(&jsPosCntrllr.controllerEngine, 2);
-      //bindController(&ctPosCntrllr.controllerEngine, 3);
+      std::cout << "binding controllers" <<std::endl;
+      bindController(&jsPosCntrllr.controllerEngine, 2);
+      bindController(&ctPosCntrllr.controllerEngine, 3);
       zmqSubSharedMem.runFlag=0;
       periphSharedMem.runFlag=0;
     }
