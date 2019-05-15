@@ -37,6 +37,7 @@ class i2c_slave
         i2c_slave(uint16_t slave_addr);
         //~i2c_slave();
         i2c_packet read();
+        void write(uint8_t* data_o);
 };
 
 

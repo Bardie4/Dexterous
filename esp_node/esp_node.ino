@@ -48,7 +48,7 @@
 #define PWM_FRQ 300000
 #define PWM_RES 8
 
-#define I2C_SLAVE_ADDR 0x29
+#define I2C_SLAVE_ADDR 0x28
 
 bool I2C_DEBUG = true;
 bool PWM_DEBUG = false;
@@ -227,7 +227,7 @@ void masterCom(void *pvParameters) {
   i2c_packet i2c_received;
 
   cmd_t command;
-  bool direction;
+  bool directionL, directionH;
 
   while (1)
   {
@@ -247,13 +247,16 @@ void masterCom(void *pvParameters) {
       command.m2_torque = i2c_received.data[i2c_received.size - 1];
 
       // bitmask
-      m1_direction = (command.commandbyte & ( 1 << 0 )) >> 0; // LSB
-      m2_direction = (command.commandbyte & ( 1 << 1 )) >> 1; // LSB - 1
+      directionL = (command.commandbyte & ( 1 << 0 )) >> 0; // LSB
+      directionH = (command.commandbyte & ( 1 << 1 )) >> 1; // LSB - 1
+
+      uint8_t buf[] = {command.commandbyte, command.m1_torque, command.m2_torque};
+      i2c_s.write(command.commandbyte);
 
       xQueueOverwrite(qScaleL, &command.m1_torque);
-      xQueueOverwrite(qDirL, &command.commandbyte);
+      xQueueOverwrite(qDirL, &directionL);
       xQueueOverwrite(qScaleH, &command.m2_torque);
-      xQueueOverwrite(qDirH, &command.m2_torque);
+      xQueueOverwrite(qDirH, &directionH);
 
       if (I2C_DEBUG)
       {

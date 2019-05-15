@@ -21,7 +21,11 @@ i2c_slave::i2c_slave(uint16_t slave_addr){
 }
 
 i2c_packet i2c_slave::read(){
-  incoming.size = i2c_slave_read_buffer( I2C_EXAMPLE_SLAVE_NUM, incoming.data, RW_TEST_LENGTH, 1000 / portTICK_RATE_MS);
+  incoming.size = i2c_slave_read_buffer( I2C_NUM_0, incoming.data, RW_TEST_LENGTH, 1000 / portTICK_RATE_MS);
   
   return incoming;
+}
+
+void i2c_slave::write(uint8_t* data_o){
+  i2c_slave_write_buffer( I2C_NUM_0, data_o, sizeof(data_o), 1000 / portTICK_RATE_MS);
 }
