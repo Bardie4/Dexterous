@@ -56,24 +56,40 @@ void CartesianPosController::iterate(){
   //Inverse kinematics. Source: http://www.hessmer.org/uploads/RobotArm/Inverse%2520Kinematics%2520for%2520Robot%2520Arm.pdf
   temp = ( pow((*x), 2) + pow((*y), 2) - pow(l1, 2)-pow(l2, 2)) / (2.0*l1*l2);
   jointAngle2Setpoint = atan2( sqrt( 1.0 - pow(temp, 2) ), temp );
-  if (jointAngle2Setpoint == NAN){
-    return;
-  }
   k1 = l1 + l2 * cos(jointAngle2Setpoint);
   k2 = l2 * sin(jointAngle2Setpoint);
   gamma = atan2(k2, k1);
   jointAngle1Setpoint = atan2( (*y), (*x) ) - gamma;
-  if (jointAngle1Setpoint == NAN){
+
+
+  if (jointAngle1Setpoint != jointAngle1Setpoint){
+    *commandedTorque1 = 0.0;
+    *commandedTorque2 = 0.0;
+    return;
+  }
+  if (jointAngle2Setpoint != jointAngle2Setpoint){
+    *commandedTorque1 = 0.0;
+    *commandedTorque2 = 0.0;
     return;
   }
 
   //Joint space controller
   error1 = jointAngle1Setpoint - (*jointAngle1);
   integral1 += error1 * (step/1000000.0) * (*ki1);
+  if (integral1 > 0.1){
+    integral1 = 0.1;
+  }else if (integral1 < 0.1){
+    integral1 = -0.1;
+  }
   *commandedTorque1 = error1 * (*kp1) + integral1 + (*angularVel1) * (*kd1);
 
   error2 = jointAngle2Setpoint - (*jointAngle2);
   integral2 += error2 * (step/1000000.0) * (*ki2);
+  if (integral2 > 0.1){
+    integral2 = 0.1;
+  }else if (integral2 < 0.1){
+    integral2 = -0.1;
+  }
   *commandedTorque2 = error2 * (*kp2) + integral2 + (*angularVel2) * (*kd2);
 
   //Print status every 10000 cycles
