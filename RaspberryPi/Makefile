@@ -5,8 +5,8 @@
 #all: main.o controller_engine.o js_pos_controller.o
 #	g++ -g -Wall -pthread main.o -lzmq -lpthread -lpigpio -lrt -lm -I ./include/ -I ./lib/  -L/usr/local/lib -lwiringPi -I/usr/local/include controller_engine.o js_pos_controller.o -o gripper
 
-all: main.o globals.o controller_engine.o js_pos_controller.o cs_pos_controller.o
-	g++ -g -Wall -pthread main.o globals.o controller_engine.o js_pos_controller.o cs_pos_controller.o -o gripper -lzmq -lpthread -lpigpio -lrt -lm -I ./include/ -I ./lib/  -L/usr/local/lib -lwiringPi -I/usr/local/include
+all: main.o globals.o controller_engine.o js_pos_controller.o ct_pos_controller.o
+	g++ -g -Wall -pthread main.o globals.o controller_engine.o js_pos_controller.o ct_pos_controller.o -o gripper -lzmq -lpthread -lpigpio -lrt -lm -I ./include/ -I ./lib/  -L/usr/local/lib -lwiringPi -I/usr/local/include
 
 main.o: src/main.cpp
 	g++ -c -Wall -pthread src/main.cpp -lzmq -lpthread -lpigpio -lrt -lm -I ./include/ -I ./lib/  -L/usr/local/lib -lwiringPi -I/usr/local/include
@@ -17,8 +17,8 @@ controller_engine.o: src/controller_engine.cpp
 js_pos_controller.o: src/js_pos_controller.cpp
 	g++ -c -Wall src/js_pos_controller.cpp -I ./include/
 
-cs_pos_controller.o: src/cs_pos_controller.cpp
-	g++ -c -Wall src/cs_pos_controller.cpp -I ./include/
+ct_pos_controller.o: src/ct_pos_controller.cpp
+	g++ -c -Wall src/ct_pos_controller.cpp -I ./include/
 
 controller_template.o: src/controller_template.cpp
 	g++ -c -Wall src/controller_template.cpp -I ./include/
