@@ -20,8 +20,8 @@ js_pos_controller.o: src/js_pos_controller.cpp
 ct_pos_controller.o: src/ct_pos_controller.cpp
 	g++ -c -Wall src/ct_pos_controller.cpp -I ./include/
 
-controller_template.o: src/controller_template.cpp
-	g++ -c -Wall src/controller_template.cpp -I ./include/
+#controller_template.o: src/controller_template.cpp
+#	g++ -c -Wall src/controller_template.cpp -I ./include/
 
 globals.o: src/globals.cpp
 	g++ -c -Wall -pthread src/globals.cpp -I ./include/
