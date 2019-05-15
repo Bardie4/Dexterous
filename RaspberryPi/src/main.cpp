@@ -27,6 +27,7 @@ static pthread_mutex_t begin_control_iteration = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t start_cond = PTHREAD_COND_INITIALIZER;
 */
 pthread_t tid[10];
+pthread_t i2c_threads[7];
 //micro seconds between sensor reads.
 //(the process of reading adds additional time to the total step length)
 #define ITR_DEADLINE 300
@@ -694,7 +695,7 @@ class PeripheralsController{
         std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
       }*/
       i2cWriteDevice(i2c_handle, outBuf, 3);
-      //i2cReadDevice(i2cHandle, outBuf, 3);
+      i2cReadDevice(i2cHandle, outBuf, 3);
       /*
       if ( i2cClose( i2cHandle ) < 0 ){
         std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
@@ -796,11 +797,16 @@ class PeripheralsController{
 
     void* run(){
 			while(1){
-				//Find out which fingers are currently active
+				//Load run flag of fingers that are bound
+        //Also load commanded torque if runflag is active
 				pthread_mutex_lock(&periphLock);
 				for (int i=0; i<7; i++){
             if (fingerMemPtr[i] != NULL){
 						        fingerMem[i].runFlag = fingerMemPtr[i]->runFlag;
+                    if (fingerMem[i].runFlag == 1){
+                      fingerMem[i].commandedTorque1 = fingerMemPtr[i]->commandedTorque1;
+                      fingerMem[i].commandedTorque2 = fingerMemPtr[i]->commandedTorque2;
+                    }
             }
 				}
 				pthread_mutex_unlock(&periphLock);
@@ -810,6 +816,7 @@ class PeripheralsController{
         step=time1-time0;
         time0=micros();
         handStates.clear();
+
 				for (int i=0; i<7; i++){
 					//If finger is active
 					if (fingerMem[i].runFlag){
@@ -829,9 +836,6 @@ class PeripheralsController{
 						fingerMemPtr[i]->jointAngle2 = fingerMem[i].jointAngle2;
 						fingerMemPtr[i]->angularVel1 = fingerMem[i].angularVel1;
 						fingerMemPtr[i]->angularVel2 = fingerMem[i].angularVel2;
-						//Read output from memory of finger
-						fingerMem[i].commandedTorque1 = fingerMemPtr[i]->commandedTorque1;
-						fingerMem[i].commandedTorque2 = fingerMemPtr[i]->commandedTorque2;
 						pthread_mutex_unlock(&periphLock);
 
 						//Send output to motor
