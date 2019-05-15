@@ -58,19 +58,19 @@ void JointSpacePosController::iterate(){
   //PID controller
   error1 = (*jointAngle1Setpoint) - (*jointAngle1);
   integral1 += error1 * (step/1000000.0) * (*ki1);
-  *commandedTorque1 = error1 * (*kp1) + integral1 + angularVel1 * (*kd1);
+  *commandedTorque1 = error1 * (*kp1) + integral1 + (*angularVel1) * (*kd1);
 
   error2 = *(jointAngle2Setpoint) - (*jointAngle2);
   integral2 += error2 * (step/1000000.0) * (*ki2);
-  *commandedTorque2 = error2 * (*kp2) + integral2 + angularVel2 * (*kd2);
+  *commandedTorque2 = error2 * (*kp2) + integral2 + (*angularVel2) * (*kd2);
 
   //Print status every 10000 cycles
-  itr_counter++;
-  if ( itr_counter > 10000){
+  itrCounter++;
+  if ( itrCounter > 10000){
     std::cout << "Finger "<< controllerEngine.fingerId << " controller: " << controllerEngine.controllerId << " iteration time: " << step << std::endl;
     std::cout << "setpoint1: " << *jointAngle1Setpoint << " error1: " << error1 <<" output1: " << *commandedTorque1 << std::endl;
     std::cout << "setpoint2: " << *jointAngle2Setpoint << " error1: " << error2 <<" output2: " << *commandedTorque2 << std::endl;
-    itr_counter=0;
+    itrCounter=0;
   }
 }
 
