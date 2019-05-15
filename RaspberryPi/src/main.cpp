@@ -710,7 +710,7 @@ class ZmqSubscriber{
       if (oldRunFlag == 0){
         //Start the finger on a new thread.
         std::cout << "Attempting to create thread"<< (2+fingerMem.fingerSelect) << std::endl;
-        pthread_create(&(tid[2+fingerSelect]), NULL, &initFinger, fingerPtrs[fingerMem.fingerSelect]);
+        pthread_create(&(tid[2+fingerMem.fingerSelect]), NULL, &initFinger, fingerPtrs[fingerMem.fingerSelect]);
       }
       pthread_mutex_unlock(&zmqSubLock);
     }
@@ -727,7 +727,7 @@ class ZmqSubscriber{
         subscriber.recv(&address);
         subscriber.recv(&buffer);
 
-        std::cout <<"Message type: " <<f latbuffers::GetBufferIdentifier(buffer.data()) << std::endl;
+        std::cout <<"Message type: " <<flatbuffers::GetBufferIdentifier(buffer.data()) << std::endl;
 
         if ( SimpleInstructionMsgBufferHasIdentifier( buffer.data() ) ){
           passOnSimpleInstructions(&buffer);
