@@ -619,30 +619,14 @@ class ZmqSubscriber{
   private:
   ZmqSubFingerMem* fingerMemPtr[7];
   ZmqSubFingerMem fingerMem;
-  //ZMQ
-  char* address[255];
-  char* contents;
-
-  //Input data (payload)
-  double data1, data2, data3, data4, data5, data6, data7, data8, data9, data10;
-  short fingerSelect;
-  short controllerSelect;
-
-  //Memory shared by controllers and ZMQ_cleint.
-  //Rows:     Finger 1-7  (There is only enough GPIO pins for 7 fingers)
-  //Coloums:  run_flag, controller_select, data1, data2, data3, data4
-  //double (*commands)[6];
-  ZmqHandMem* zmqHandMem;
-
-  //An array of pointers to the functions that starts each finger
-  //void* (* finger_run [7])(void *);
   Finger* fingerPtrs[7];
-  //char buffer[1000];
 
   bool oldRunFlag;
 
+  //ZMQ
   zmq::context_t context;
   zmq::socket_t subscriber;
+  char* address[5];
   public:
 
     ZmqSubscriber()
@@ -706,11 +690,8 @@ class ZmqSubscriber{
       fingerMem.controllerSelect = messageObj->controller_select();;
       fingerMem.data1 = messageObj->data1();
       fingerMem.data2 = messageObj->data2();
-
-        std::cout <<"PAssing zero info" <<std::endl;
       fingerMem.data3 = messageObj->data3();
       fingerMem.data4 = messageObj->data4();
-        std::cout <<"PAssing empty info" <<std::endl;
       fingerMem.data5 = messageObj->data5();
       fingerMem.data6 = messageObj->data6();
       fingerMem.data7 = messageObj->data7();
@@ -729,34 +710,29 @@ class ZmqSubscriber{
       if (oldRunFlag == 0){
         //Start the finger on a new thread.
         std::cout << "Attempting to create thread"<< (2+fingerMem.fingerSelect) << std::endl;
-        pthread_create(&(tid[2+fingerSelect]), NULL, &initFinger, fingerPtrs[fingerMem.fingerSelect]);
+        pthread_create(&(tid[2+fingerMem.fingerSelect]), NULL, &initFinger, fingerPtrs[fingerMem.fingerSelect]);
       }
       pthread_mutex_unlock(&zmqSubLock);
+    }
+
+    void passOnTrajectoryMsg(zmq::message_t* buffer){
     }
 
     void* run(){
       while(1){
         //Listen for messages
         //From guide: http://zguide.zeromq.org/cpp:interrupt
-        std::cout <<"zmq.run, ran "<< std::endl;
         zmq::message_t buffer;
-        //try {
         zmq::message_t address;
         subscriber.recv(&address);
         subscriber.recv(&buffer);
-
-          std::cout <<"Raw address size:: "<< address.size() <<std::endl;
-          std::cout <<"Buffers of size: "<< buffer.size() <<std::endl;
-        //}
-        //catch(zmq::error_t& e) {
-        //  std::cout << "Interrupt received" << std::endl;
-        //  break;
-        //}
 
         std::cout <<"Message type: " <<flatbuffers::GetBufferIdentifier(buffer.data()) << std::endl;
 
         if ( SimpleInstructionMsgBufferHasIdentifier( buffer.data() ) ){
           passOnSimpleInstructions(&buffer);
+        }else if (0){ //TrajectoryMsgBufferHasIdentifier( buffer.data() )) {
+          passOnTrajectoryMsg(&buffer);
         }
       }
     }
