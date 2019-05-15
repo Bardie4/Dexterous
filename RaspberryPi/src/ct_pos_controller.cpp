@@ -76,12 +76,12 @@ void CartesianPosController::iterate(){
   time0=micros();
 
   //Print status every 10000 cycles
-  itr_counter++;
-  if ( itr_counter > 10000){
+  itrCounter++;
+  if ( itrCounter > 10000){
     std::cout << "Finger "<< controllerEngine.fingerId << " controller: " << controllerEngine.controllerId << " iteration time: " << step << std::endl;
     std::cout << "setpoint1: " << jointAngle1Setpoint << " error1: " << error1 <<" output1: " << *commandedTorque1 << std::endl;
     std::cout << "setpoint2: " << jointAngle2Setpoint << " error1: " << error2 <<" output2: " << *commandedTorque2 << std::endl;
-    itr_counter=0;
+    itrCounter=0;
   }
 }
 
