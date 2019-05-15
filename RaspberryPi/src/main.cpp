@@ -53,8 +53,7 @@ class Finger{
     int spiHandle;
 		unsigned csAngleSensor1;
 		unsigned csAngleSensor2;
-    unsigned i2cAddress;
-    unsigned i2cReg;
+    int i2cHandle;
 
     //Shared memory
     ZmqSubFingerMem zmqSubSharedMem;
@@ -107,7 +106,6 @@ class Finger{
       int theta2;
       char inBuf[4];
       char outBuf[4];
-      int i2cHandle;
 
 			//******DRIVE MOTORS TO END POSITION*******
 			//*****************************************
@@ -117,13 +115,7 @@ class Finger{
 			torque_cmd[2]=(uint8_t) 20;
 
 			pthread_mutex_lock(&periphLock);
-      if ( ( i2cHandle = i2cOpen(1, i2cAddress, 0) ) < 0 ){
-        std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
-      }
       i2cWriteDevice(i2cHandle, torque_cmd, 3);
-      if ( i2cClose( i2cHandle ) < 0 ){
-        std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
-      }
 			pthread_mutex_unlock(&periphLock);
 
 			printf("Driving to endpoint\n");
@@ -324,13 +316,7 @@ class Finger{
 			torque_cmd[1]=(uint8_t) 0;
 			torque_cmd[2]=(uint8_t) 0;
       pthread_mutex_lock(&periphLock);
-      if ( ( i2cHandle = i2cOpen(1, i2cAddress, 0) ) < 0 ){
-        std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
-      }
       i2cWriteDevice(i2cHandle, torque_cmd, 3);
-      if ( i2cClose( i2cHandle ) < 0 ){
-        std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
-      }
 			pthread_mutex_unlock(&periphLock);
 
 			//Tell SPI thread to include sensors in measurement loop
@@ -807,8 +793,7 @@ class PeripheralsController{
       finger->spiHandle = spiHandle;
       finger->csAngleSensor1 = csAndI2cAddr[finger->id][0];
       finger->csAngleSensor2 = csAndI2cAddr[finger->id][1];
-      finger->i2cAddress = csAndI2cAddr[finger->id][2];
-      finger->i2cReg = i2cReg;
+      finger->ic2Handle = i2cHandles[finger->id];
     }
 
     void* run(){
