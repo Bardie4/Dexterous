@@ -626,6 +626,9 @@ class PeripheralsController{
     zmq::context_t context;
     zmq::socket_t publisher;
 
+    float torque1;
+    float torque2;
+
 
     float readAngle8(unsigned &cs){
       outBuf[0] = read_command_8;
@@ -695,7 +698,18 @@ class PeripheralsController{
       if ( i2cClose( i2cHandle ) < 0 ){
         std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
       }
+      i2cReadDevice(i2cHandle, outBuf, 3)
       pthread_mutex_unlock(&periphLock);
+
+      torque1 = outBuf[1] * maxTorqLink1;
+      torque2 = outBuf[2] * maxTorqLink2;
+      if (outBuf[0] && 0b000000001){
+        torque1 = -1.0*torque1;
+      }
+      if (outBuf[0] && 0b00000010){
+        torque2 = -1.0*torque2;
+      }
+      std::cout << "Torque1: "<<torque1<<" Torque2: " <<torque2 <<std::endl;
 		}
 
   public:
