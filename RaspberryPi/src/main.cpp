@@ -17,7 +17,7 @@
 #include "generated_flattbuffers/simple_instructions_generated.h"
 #include "generated_flattbuffers/finger_broadcast_generated.h"
 #include "controllers/js_pos_controller.h"
-#include "controllers/cs_pos_controller.h"
+#include "controllers/ct_pos_controller.h"
 
 
 /*
