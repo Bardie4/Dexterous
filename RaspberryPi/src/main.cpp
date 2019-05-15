@@ -75,6 +75,7 @@ class Finger{
     Finger(int identity)
       :jsPosCntrllr(), ctPosCntrllr(){
       id= identity;
+      std::cout << "binding controllers" << std::endl;
       bindController(&jsPosCntrllr.controllerEngine, 2);
       bindController(&ctPosCntrllr.controllerEngine, 3);
       zmqSubSharedMem.runFlag=0;
