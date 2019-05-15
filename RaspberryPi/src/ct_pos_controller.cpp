@@ -3,7 +3,7 @@
 #include <iostream>
 //Customize names that fit your implementation
 void CartesianPosController::iterateStatic(void *controller_object){
-  return ((JointSpacePosController*)controller_object)->iterate();
+  return ((CartesianPosController*)controller_object)->iterate();
 }
 
 CartesianPosController::CartesianPosController():controllerEngine(){
