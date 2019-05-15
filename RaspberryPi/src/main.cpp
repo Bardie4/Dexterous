@@ -749,7 +749,7 @@ class PeripheralsController{
     PeripheralFingerMem fingerMem[7];
     PeripheralFingerMem fingerMemPrev[7];
 
-    int (*csAndI2cAddr)[3];
+    unsigned (*csAndI2cAddr)[3];
 
     unsigned spiFrequency;
     unsigned spiChannel;
