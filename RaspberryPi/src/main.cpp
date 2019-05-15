@@ -838,12 +838,13 @@ class PeripheralsController{
 			outBuf[2] =  (uint8_t) Output2Scaled8;
 
       //Send
-      if ( ( i2cHandle = i2cOpen(0, i2cAddress, 0) ) < 0 ){
+      if ( ( i2cHandle = i2cOpen(1, i2cAddress, 0) ) < 0 ){
         std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
       }
-      if ( i2cBlockProcessCall(i2cHandle, i2cReg, outBuf, 3) < 0 ){
-        std::cout << "i2cBlockProcessCall() failed. Handle: " << i2cHandle << " Address: "<< i2cAddress << std::endl;
-      }
+      i2cWriteDevice(i2cHandle, outBuf, 3);
+      //if ( i2cBlockProcessCall(i2cHandle, i2cReg, outBuf, 3) < 0 ){
+      //  std::cout << "i2cBlockProcessCall() failed. Handle: " << i2cHandle << " Address: "<< i2cAddress << std::endl;
+      //}
       if ( i2cClose( i2cHandle ) < 0 ){
         std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
       }
@@ -1023,43 +1024,43 @@ main(){
   //The identity corresponds to specific SPI pins. Choose a value between 0-6.
   //Additional fingers can be added (max 7 with the amount of GPIO pins on a RaspberryPi).
 
-	int csSens1_f1 = 6;
-	int csSens2_f1 = 16;
-	int i2cEsp32_f1 = 4;
+	unsigned csSens1_f1 = 6;
+	unsigned csSens2_f1 = 16;
+	unsigned i2cEsp32_f1 = 0x28;
 
-  int csSens1_f2 = 21;
-	int csSens2_f2 = 23;
-	int i2cEsp32_f2 = 7;
+  unsigned csSens1_f2 = 21;
+	unsigned csSens2_f2 = 23;
+	unsigned i2cEsp32_f2 = 0x29;
 
-  int csSens1_f3 = 6;
-	int csSens2_f3 = 6;
-	int i2cEsp32_f3 = 14;
+  unsigned csSens1_f3 = 6;
+	unsigned csSens2_f3 = 6;
+	unsigned i2cEsp32_f3 = 14;
 
-  int csSens1_f4 = 6;
-	int csSens2_f4 = 6;
-	int i2cEsp32_f4 = 17;
+  unsigned csSens1_f4 = 6;
+	unsigned csSens2_f4 = 6;
+	unsigned i2cEsp32_f4 = 17;
 
-  int csSens1_f5 = 6;
-	int csSens2_f5 = 6;
-	int i2cEsp32_f5 = 20;
+  unsigned csSens1_f5 = 6;
+	unsigned csSens2_f5 = 6;
+	unsigned i2cEsp32_f5 = 20;
 
-  int csSens1_f6 = 6;
-	int csSens2_f6 = 6;
-	int i2cEsp32_f6 = 23;
+  unsigned csSens1_f6 = 6;
+	unsigned csSens2_f6 = 6;
+	unsigned i2cEsp32_f6 = 23;
 
-  int csSens1_f7 = 6;
-	int csSens2_f7 = 6;
-	int i2cEsp32_f7 = 26;
+  unsigned csSens1_f7 = 6;
+	unsigned csSens2_f7 = 6;
+	unsigned i2cEsp32_f7 = 26;
 
   //Chip select pins and i2c addresses is packed into array which is to be
   //passed to the "pheripherals" object.
-	int csAndI2cAddr[7][3] = 	{{csSens1_f1, csSens2_f1, i2cEsp32_f1}
-							 	 			      ,{csSens1_f2, csSens2_f2, i2cEsp32_f2}
-								 			      ,{csSens1_f3, csSens2_f3, i2cEsp32_f3}
-    									 			,{csSens1_f4, csSens2_f4, i2cEsp32_f4}
-    									 			,{csSens1_f5, csSens2_f5, i2cEsp32_f5}
-    									 			,{csSens1_f6, csSens2_f6, i2cEsp32_f6}
-    									 			,{csSens1_f7, csSens2_f7, i2cEsp32_f7}};
+	unsigned csAndI2cAddr[7][3] = 	{{csSens1_f1, csSens2_f1, i2cEsp32_f1}
+						 	 			             ,{csSens1_f2, csSens2_f2, i2cEsp32_f2}
+      							 			      ,{csSens1_f3, csSens2_f3, i2cEsp32_f3}
+        									 			,{csSens1_f4, csSens2_f4, i2cEsp32_f4}
+        									 			,{csSens1_f5, csSens2_f5, i2cEsp32_f5}
+        									 			,{csSens1_f6, csSens2_f6, i2cEsp32_f6}
+        									 			,{csSens1_f7, csSens2_f7, i2cEsp32_f7}};
 
 
   PeripheralsController periphContrl( csAndI2cAddr );

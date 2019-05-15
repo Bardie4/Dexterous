@@ -58,8 +58,8 @@ JointSpacePosController::JointSpacePosController():controllerEngine(){
 }
 
 void JointSpacePosController::iterate(){
-  *commandedTorque1 = *name1;
-  *commandedTorque1 = *name2;
+  *commandedTorque1 = *name1*0.1;
+  *commandedTorque1 = *name2*0.1;
 }
 
 ControllerEngine* JointSpacePosController::getHandle(){
