@@ -7,8 +7,8 @@ void JointSpacePosController::iterateStatic(void *controller_object){
 }
 
 JointSpacePosController::JointSpacePosController():controllerEngine(){
-  controllerEngine.controllerObject = this;
-  controllerEngine.iterate = &JointSpacePosController::iterateStatic;
+  //controllerEngine.controllerObject = this;
+  //controllerEngine.iterate = &JointSpacePosController::iterateStatic;
 
   //********RENAMING VARIABLES FROM ENGINE*******************
   //ZmqSub inputss
