@@ -751,7 +751,7 @@ class PeripheralsController{
             auto fingerStates= CreateFingerStates(pubBuilder,  i,  fingerMem[i].jointAngle1,       fingerMem[i].jointAngle2,
                                                                 fingerMem[i].angularVel1,       fingerMem[i].angularVel2,
                                                                 0,                              0,
-                                                                fingerMem[i].commandedTorque1,  fingerMem[i].commandedTorque1,
+                                                                fingerMem[i].commandedTorque1,  fingerMem[i].commandedTorque2,
                                                                 0,0,0,0);
             handStates.push_back(fingerStates);
 					}
