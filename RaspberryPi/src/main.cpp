@@ -668,7 +668,8 @@ class PeripheralsController{
       //ZMQ publisher
       /*
       publisher.bind("tcp://*:5564");
-      handStates.reserve(7);*/
+      */
+      handStates.reserve(7);
       context = zmq_ctx_new ();
       publisher = zmq_socket (context, ZMQ_PUB);
       zmq_bind (publisher, "tcp://*:5564");
@@ -781,8 +782,9 @@ class PeripheralsController{
         zmq::message_t zmqPubMsg(buf, size);
         publisher.send(zmqPubMsg);
         */
-        zmq_send (publisher, buf, size, 0);
-
+        if (handStates.size()>0){
+          zmq_send (publisher, buf, size, 0);
+        }
 
         pubBuilder.Clear();
 
