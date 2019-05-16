@@ -44,8 +44,8 @@ void ControllerEngine::readTrajZmqSub(){
     data9 = zmqSubMemPtr->data9;
     data10 = zmqSubMemPtr->data10;
     trajSize = zmqSubMemPtr->trajSize;
-    if (trajSize > 1024){
-      trajSize = 1024;
+    if (trajSize > 100){
+      trajSize = 100;
     }
     else if (trajSize < 0){
       trajSize = 0;
@@ -74,14 +74,15 @@ void ControllerEngine::writeOutput(){
 }
 
 void ControllerEngine::run(){
-  std::cout <<"controller engine run" << std::endl;
   while(1){
 
     //Check controller user inputs
     if (trajectoryMessage){
       readTrajZmqSub();
+      std::cout << "traj" << std::endl;
     }else{
       readZmqSub();
+      std::cout <<"simple" <<std::endl;
     }
 
     if ( !(controllerSelect == controllerId) ){
