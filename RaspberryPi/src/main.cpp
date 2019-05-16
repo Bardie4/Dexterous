@@ -349,7 +349,7 @@ class Finger{
       while( !(controllerSelect == 0) ){
           jsPosCntrllr.run();
           ctPosCntrllr.run();
-          std::cout <<"id after bind: "<<jsPosCntrllr.controllerEngine.controllerId<<std::endl;
+        //  std::cout <<"id after bind: "<<jsPosCntrllr.controllerEngine.controllerId<<std::endl;
           pthread_mutex_lock(&zmqSubLock);
           controllerSelect = zmqSubSharedMem.controllerSelect;
           pthread_mutex_unlock(&zmqSubLock);
