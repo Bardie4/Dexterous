@@ -14,6 +14,7 @@ void ControllerEngine::readZmqSub(){
   pthread_mutex_lock(&zmqSubLock);
   if (zmqSubMemPtr->newMessage){
     controllerSelect = zmqSubMemPtr->controllerSelect;
+    std::cout <<"updated controllerSelect" << std::endl;
     data1 = zmqSubMemPtr->data1;
     data2 = zmqSubMemPtr->data2;
     data3 = zmqSubMemPtr->data3;
