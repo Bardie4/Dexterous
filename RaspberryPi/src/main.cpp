@@ -809,7 +809,7 @@ main(){
   //Additional fingers can be added (max 7 with the amount of GPIO pins on a RaspberryPi).
 
 	unsigned csSens1_f1 = 16;
-	unsigned csSens2_f1 = 21;
+	unsigned csSens2_f1 = 23;
 	unsigned i2cEsp32_f1 = 0x28;
 
   unsigned csSens1_f2 = 21;
