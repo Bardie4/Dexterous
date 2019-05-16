@@ -79,7 +79,7 @@ void ControllerEngine::run(){
 
     //Check controller user inputs
     if (trajectoryMessage){
-      zmqSubReadTraj;
+      readTrajZmqSub();
     }else{
       readZmqSub();
     }
