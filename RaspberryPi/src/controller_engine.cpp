@@ -2,7 +2,9 @@
 #include "globals.h"
 #include <iostream>
 
-ControllerEngine::ControllerEngine(){}
+ControllerEngine::ControllerEngine(){
+  trajectoryMessage = 0;
+}
 
 float** ControllerEngine::getTunableVarPtr(){
   return varPtrs;
@@ -42,8 +44,8 @@ void ControllerEngine::readTrajZmqSub(){
     data9 = zmqSubMemPtr->data9;
     data10 = zmqSubMemPtr->data10;
     trajSize = zmqSubMemPtr->trajSize;
-    if (trajSize > 1024){
-      trajSize = 1024;
+    if (trajSize > 100){
+      trajSize = 100;
     }
     else if (trajSize < 0){
       trajSize = 0;
@@ -72,13 +74,15 @@ void ControllerEngine::writeOutput(){
 }
 
 void ControllerEngine::run(){
-  std::cout <<"controller engine run" << std::endl;
   while(1){
-    //Check controller user inputs
-    readZmqSub();
-    //Alternativly: ControllerEngine::zmqSubReadTraj;
 
-    //If this is not the correct controller
+    //Check controller user inputs
+    if (trajectoryMessage){
+      readTrajZmqSub();
+    }else{
+      readZmqSub();
+    }
+
     if ( !(controllerSelect == controllerId) ){
       //Mark the message as unread
       pthread_mutex_lock(&zmqSubLock);
@@ -95,7 +99,7 @@ void ControllerEngine::run(){
     pthread_cond_wait(&start_cond, &begin_control_iteration);
     pthread_mutex_unlock(&begin_control_iteration);
 
-    //Read sensordata while spi thread is sleeping
+    //Read sensordata
     readPeriph();
 
     iterate(controllerObject);

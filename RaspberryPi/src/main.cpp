@@ -338,105 +338,6 @@ class Finger{
       }
       //
 		}
-/*
-    void jointspace_ijc_pid(){
-			while(1){
-
-				//Check instructions
-				update_local_zmq_mem();
-				//Exit and stop motors if this is not the correct controller
-				if ( !(controller_select == 2) ){
-					torque1 = 0;
-					torque2 = 0;
-					update_shared_spi_mem();
-					break;
-          std::cout <<"Exiting js controller" <<std::endl;
-				}
-
-				//Read sensors
-        pthread_mutex_lock(&begin_control_iteration);
-        pthread_cond_wait(&start_cond, &begin_control_iteration);
-        pthread_mutex_unlock(&begin_control_iteration);
-				update_local_spi_mem();
-				//Proportional controller
-				pid_ijc_js.error1 = *(pid_ijc_js.theta1_setpoint) - theta1;
-				torque1 = pid_ijc_js.error1*pid_ijc_js.kp1;
-				pid_ijc_js.error2 = *(pid_ijc_js.theta2_setpoint) - theta2;
-				torque2 = pid_ijc_js.error2*pid_ijc_js.kp2;
-				//Give output to SPI thread
-				update_shared_spi_mem();
-
-				//Print status every 1000 cycles
-				itr_counter++;
-				if ( itr_counter > 1000){
-					printf("FINGER %d: theta1: %d | theta1_setpoint: %d | error1: %f | u1: %f \n", id, theta1 , *(pid_ijc_js.theta1_setpoint), pid_ijc_js.error1, torque1);
-					printf("FINGER %d: theta2: %d | theta2_setpoint: %d | error2: %f | u2: %f \n", id, theta2 , *(pid_ijc_js.theta2_setpoint), pid_ijc_js.error2, torque2);
-          printf("FINGER %d: Last iteration took %d us. (including wait time on spi thread)\n",id , step );
-					itr_counter=0;
-				}
-
-        time1=micros();
-        step=time1-time0;
-        time0=micros();
-
-			}
-		}
-*/
-/*
-		void cartesian_ijc_pid(){
-			while(1){
-				//Check instructions
-				update_local_zmq_mem();
-				//Exit and stop motors if this is not the correct controller
-				if ( !(controller_select == 3) ){
-					torque1 = 0;
-					torque2 = 0;
-					update_shared_spi_mem();
-					break;
-				}
-
-				//Read sensors
-        pthread_mutex_lock(&begin_control_iteration);
-        pthread_cond_wait(&start_cond, &begin_control_iteration);
-        pthread_mutex_unlock(&begin_control_iteration);
-
-				update_local_spi_mem();
-				//Inverse kinematics. Source: http://www.hessmer.org/uploads/RobotArm/Inverse%2520Kinematics%2520for%2520Robot%2520Arm.pdf
- 				pid_ijc_cs.temp = ( pow( *(pid_ijc_cs.x) ,2) + pow( *(pid_ijc_cs.y) ,2) - pow(pid_ijc_cs.l1,2)-pow(pid_ijc_cs.l2,2))/(2*pid_ijc_cs.l1*pid_ijc_cs.l2);
-				pid_ijc_cs.theta2_setpoint = atan2( sqrt( 1- pow(pid_ijc_cs.temp,2) ), pid_ijc_cs.temp );
-				pid_ijc_cs.k1 = pid_ijc_cs.l1 + pid_ijc_cs.l2*cos(pid_ijc_cs.theta2_setpoint);
-				pid_ijc_cs.k2 = pid_ijc_cs.l2*sin(pid_ijc_cs.theta2_setpoint);
-				pid_ijc_cs.gamma = atan2(pid_ijc_cs.k2,pid_ijc_cs.k1);
-				pid_ijc_cs.theta1_setpoint = atan2( *(pid_ijc_cs.y), *(pid_ijc_cs.x) ) - pid_ijc_cs.gamma;
-				//Run controller
-				pid_ijc_cs.errorfingerMemPtr1 = pid_ijc_cs.theta1_setpoint - theta1;
-				torque1 = pid_ijc_cs.error1*pid_ijc_cs.kp1;
-				pid_ijc_cs.error2 = pid_ijc_cs.theta2_setpoint - theta2;
-				torque2 = pid_ijc_cs.error2*pid_ijc_cs.kp2;
-				//Give output to SPI thread
-				update_shared_spi_mem();
-
-				//Print status every 1000 cycles
-				itr_counter++;
-				if ( itr_counter > 1000){
-					printf("FINGER %d: theta1: %d | theta1_setpoint: %f | error1: %f | u1: %f \n",id,  theta1 , pid_ijc_cs.theta1_setpoint, pid_ijc_cs.error1, torque1);
-					printf("FINGER %d: theta2: %d | theta2_setpoint: %f | error2: %f | u2: %f \n",id,  theta2 , pid_ijc_cs.theta2_setpoint, pid_ijc_cs.error2, torque2);
-          printf("FINGER %d: Last iteration took %d us. (including wait time on spi thread)\n",id , step );
-          double temp123=sqrt( 1- pow(pid_ijc_cs.temp,2) );
-          double temp321=pid_ijc_cs.temp;
-          std::cout <<"temp: " <<  temp123 << std::endl;
-
-          std::cout <<"temp: " <<  temp321 << std::endl;
-                  std::cout <<"x: "<< *(pid_ijc_cs.x) <<" y: "<< *(pid_ijc_cs.y) << std::endl;
-					itr_counter = 0;
-				}
-
-        time1=micros();
-        step=time1-time0;
-        time0=micros();
-			}
-		}
-*/
 
     void* run(){
 			std::cout << "i am thread: "<< id << "  >:O" << std::endl;
@@ -448,6 +349,7 @@ class Finger{
       while( !(controllerSelect == 0) ){
           jsPosCntrllr.run();
           ctPosCntrllr.run();
+        //  std::cout <<"id after bind: "<<jsPosCntrllr.controllerEngine.controllerId<<std::endl;
           pthread_mutex_lock(&zmqSubLock);
           controllerSelect = zmqSubSharedMem.controllerSelect;
           pthread_mutex_unlock(&zmqSubLock);
@@ -766,7 +668,8 @@ class PeripheralsController{
       //ZMQ publisher
       /*
       publisher.bind("tcp://*:5564");
-      handStates.reserve(7);*/
+      */
+      handStates.reserve(7);
       context = zmq_ctx_new ();
       publisher = zmq_socket (context, ZMQ_PUB);
       zmq_bind (publisher, "tcp://*:5564");
@@ -848,7 +751,7 @@ class PeripheralsController{
             auto fingerStates= CreateFingerStates(pubBuilder,  i,  fingerMem[i].jointAngle1,       fingerMem[i].jointAngle2,
                                                                 fingerMem[i].angularVel1,       fingerMem[i].angularVel2,
                                                                 0,                              0,
-                                                                fingerMem[i].commandedTorque1,  fingerMem[i].commandedTorque1,
+                                                                fingerMem[i].commandedTorque1,  fingerMem[i].commandedTorque2,
                                                                 0,0,0,0);
             handStates.push_back(fingerStates);
 					}
@@ -879,8 +782,9 @@ class PeripheralsController{
         zmq::message_t zmqPubMsg(buf, size);
         publisher.send(zmqPubMsg);
         */
-        zmq_send (publisher, buf, size, 0);
-
+        if (handStates.size()>0){
+          zmq_send (publisher, buf, size, 0);
+        }
 
         pubBuilder.Clear();
 
@@ -907,8 +811,8 @@ main(){
   //The identity corresponds to specific SPI pins. Choose a value between 0-6.
   //Additional fingers can be added (max 7 with the amount of GPIO pins on a RaspberryPi).
 
-	unsigned csSens1_f1 = 6;
-	unsigned csSens2_f1 = 16;
+	unsigned csSens1_f1 = 16;
+	unsigned csSens2_f1 = 23;
 	unsigned i2cEsp32_f1 = 0x28;
 
   unsigned csSens1_f2 = 21;

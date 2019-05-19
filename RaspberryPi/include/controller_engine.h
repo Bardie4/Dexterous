@@ -37,6 +37,8 @@ class ControllerEngine {
   float angularAcc2;
   float commandedTorque1;
   float commandedTorque2;
+  //REQUIRED: Selecting input message type
+  bool trajectoryMessage;
 
   //***********EDIT THIS PART**************
   //When bindToFinger() is called, these references is assigned to data1-4,
@@ -47,8 +49,6 @@ class ControllerEngine {
   float& meaningFullVarName3;
   float& meaningFullVarName4;
 */
-  //OPTIONAL: Used to count iterations
-  int itrCounter;
 
   short fingerId;
   short controllerId;
