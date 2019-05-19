@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "cstdlib": "cpp",
-        "mcpwm.h": "c"
+        "mcpwm.h": "c",
+        "iostream": "cpp"
     }
 }
