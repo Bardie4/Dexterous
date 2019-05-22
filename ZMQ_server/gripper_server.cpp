@@ -130,8 +130,8 @@ class finger{
     finger* fing = (finger*)input_ptr;
     fing->angle1_setpoint = (int)gtk_range_get_value(range);  //Update value
     fing->zmq.controller_select = 2;                 //Update and clear buffer
-    fing->zmq.data1 = fing->angle1_setpoint;
-    fing->zmq.data2 = fing->angle2_setpoint;
+    fing->zmq.data1 = fing->angle1_setpoint * 3.14/180.0 ;
+    fing->zmq.data2 = fing->angle2_setpoint * 3.14/180.0 ;
     fing->zmq.data3 = 0;
     fing->zmq.data4 = 0;
 
@@ -145,8 +145,8 @@ class finger{
 
     fing->angle2_setpoint = (int) gtk_range_get_value(range);  //Update value
     fing->zmq.controller_select = 2;                  //Update and clear buffer
-    fing->zmq.data1 = fing->angle1_setpoint;
-    fing->zmq.data2 = fing->angle2_setpoint;
+    fing->zmq.data1 = fing->angle1_setpoint * 3.14/180.0 ;
+    fing->zmq.data2 = fing->angle2_setpoint * 3.14/180.0 ;
     fing->zmq.data3 = 0;
     fing->zmq.data4 = 0;
 
@@ -161,8 +161,8 @@ class finger{
 
     fing->radius_setpoint = (int)gtk_range_get_value(range);  //Update value
     fing->zmq.controller_select = 3;                 //Update and clear buffer
-    fing->zmq.data1 = cos(fing->angle_setpoint*(3.14/180))*fing->radius_setpoint;
-    fing->zmq.data2 = sin(fing->angle_setpoint*(3.14/180))*fing->radius_setpoint;
+    fing->zmq.data1 = cos(fing->angle_setpoint*(3.14/180))*fing->radius_setpoint * 0.001;
+    fing->zmq.data2 = sin(fing->angle_setpoint*(3.14/180))*fing->radius_setpoint * 0.001;
     fing->zmq.data3 = 0;
     fing->zmq.data4 = 0;
 
@@ -176,8 +176,8 @@ class finger{
 
     fing->angle_setpoint = (int)gtk_range_get_value(range);  //Update value
     fing->zmq.controller_select = 3;                //Update and clear buffer
-    fing->zmq.data1 = cos(fing->angle_setpoint*(3.14/180))*fing->radius_setpoint;
-    fing->zmq.data2 = sin(fing->angle_setpoint*(3.14/180))*fing->radius_setpoint;
+    fing->zmq.data1 = cos(fing->angle_setpoint*(3.14/180))*fing->radius_setpoint * 0.001;
+    fing->zmq.data2 = sin(fing->angle_setpoint*(3.14/180))*fing->radius_setpoint * 0.001;
     fing->zmq.data3 = 0;
     fing->zmq.data4 = 0;
 
