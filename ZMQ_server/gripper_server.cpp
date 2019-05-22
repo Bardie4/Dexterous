@@ -27,7 +27,7 @@ typedef struct zmq_bundle {
    double data4;
 }zmq_bundle;
 
-f'latbuffers::FlatBufferBuilder builder(1024);
+flatbuffers::FlatBufferBuilder builder(1024);
 
 class finger{
   private:
@@ -461,8 +461,8 @@ int main (int  argc, char *argv[])
 
     void* context = zmq_ctx_new ();
     void* publisher = zmq_socket (context, ZMQ_PUB);
-    zmq_bind (publisher, "tcp://wlp1s0:5563");
     //zmq_bind (publisher, "tcp://enp1s0f1:5563");
+    zmq_bind (publisher, "tcp://wlp1s0:5563");
 
     /*
     zmq::context_t context (1);
