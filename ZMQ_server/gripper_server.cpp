@@ -461,8 +461,8 @@ int main (int  argc, char *argv[])
 
     void* context = zmq_ctx_new ();
     void* publisher = zmq_socket (context, ZMQ_PUB);
-    //zmq_bind (publisher, "tcp://enp1s0f1:5563");
-    zmq_bind (publisher, "tcp://wlp1s0:5563");
+    zmq_bind (publisher, "tcp://enp1s0f1:5563");
+    //zmq_bind (publisher, "tcp://wlp1s0:5563");
 
     /*
     zmq::context_t context (1);
