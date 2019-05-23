@@ -457,7 +457,7 @@ class ZmqSubscriber{
       *fingerMemPtr[fingerMem.fingerSelect] = fingerMem;
 
       //If finger is not already running
-      if (oldRunFlag == 0){
+      if ( (oldRunFlag == 0) && !(fingerMem.controllerSelect == 0)){
         //Start the finger on a new thread.
         std::cout << "Attempting to create thread"<< (2+fingerMem.fingerSelect) << std::endl;
         pthread_create(&(tid[2+fingerMem.fingerSelect]), NULL, &initFinger, fingerPtrs[fingerMem.fingerSelect]);
