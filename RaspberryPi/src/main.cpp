@@ -729,8 +729,8 @@ class PeripheralsController{
 					if (fingerMem[i].runFlag){
 
 						//Read sensors (store it locally)
-						fingerMem[i].jointAngle1 = readAngle12(csAndI2cAddr[i][0]);
-						fingerMem[i].jointAngle2 = readAngle12(csAndI2cAddr[i][1]);
+						fingerMem[i].jointAngle1 = 90*3.142/180.0 - readAngle12(csAndI2cAddr[i][0]);
+						fingerMem[i].jointAngle2 = 135*3.142/180.0 - readAngle12(csAndI2cAddr[i][1]);
 
 						//Process sensor information (store it locally)
             fingerMem[i].angularVel1 = (fingerMem[i].jointAngle1 - fingerMemPrev[i].jointAngle1)/(step*1000000);
