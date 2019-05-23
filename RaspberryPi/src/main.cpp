@@ -115,8 +115,8 @@ class Finger{
 			//*****************************************
 			//NOT DONE
 			torque_cmd[0]=(uint8_t) 0b00000011;
-			torque_cmd[1]=(uint8_t) 100; //Skift retning
-			torque_cmd[2]=(uint8_t) 50;
+			torque_cmd[1]=(uint8_t) 50; //Skift retning
+			torque_cmd[2]=(uint8_t) 0;
 
 			pthread_mutex_lock(&periphLock);
       i2cWriteDevice(i2cHandle, torque_cmd, 3);
