@@ -114,8 +114,8 @@ class Finger{
 			//******DRIVE MOTORS TO END POSITION*******
 			//*****************************************
 			//NOT DONE
-			torque_cmd[0]=(uint8_t) 0;
-			torque_cmd[1]=(uint8_t) 100;
+			torque_cmd[0]=(uint8_t) 90;
+			torque_cmd[1]=(uint8_t) 0; //Skift retning
 			torque_cmd[2]=(uint8_t) 0;
 
 			pthread_mutex_lock(&periphLock);
