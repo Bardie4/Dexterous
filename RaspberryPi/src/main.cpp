@@ -80,6 +80,9 @@ class Finger{
       bindController(&ctPosCntrllr.controllerEngine, 3);
       zmqSubSharedMem.runFlag=0;
       periphSharedMem.runFlag=0;
+      periphSharedMem.commandedTorque1 = 0;
+      periphSharedMem.commandedTorque2 = 0;
+
     }
 
 		void shutdown(){
