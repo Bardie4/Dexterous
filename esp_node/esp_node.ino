@@ -11,9 +11,14 @@
 #include "BluetoothSerial.h" //Header File for Serial Bluetooth, will be added by default into Arduino
 
 
-#define I2C_DEBUG false
-#define PWM_DEBUG false
+#define I2C_DEBUG true
 #define BLT_DEBUG false
+#define PWM_DEBUG true
+#define SPI_DEBUG false
+
+SemaphoreHandle_t xPrintMtx;
+SemaphoreHandle_t xMotorHMtx;
+SemaphoreHandle_t xMotorVMtx;
 
 #define TASK_RESET_PERIOD_S 10
 
@@ -75,6 +80,8 @@ const uint8_t pwmSin[] = {128,131,134,137,140,143,146,149,152,155,158,162,165,16
 
 struct params
 {
+  // ID for debugging purposes
+  const int id;
   // Motor
   const int PWMU, PWMV, PWMW, NFLT, CHN1, CHN2, CHN3;
   // SPI
@@ -87,19 +94,22 @@ struct params
 };
 
 params joint_V =  {
+    .id = 0,
     .PWMU = M1_PWMU, .PWMV = M1_PWMV, .PWMW = M1_PWMW, 
     .NFLT = M1_nFlt, .CHN1 = M1_CH1, .CHN2 = M1_CH2, .CHN3 = M1_CH3, 
-    .spi_com = vspi, .spi_bus = VSPI,
-    .MOSI = V_MOSI, .CS = V_CS, .MISO = V_MISO, .CLK = V_CLK,
-    .q_angle = q_angle_V, .q_scale = q_scale_V, .q_dir = q_dir_V
-};
-
-params joint_H = {
-    .PWMU = M2_PWMU, .PWMV = M2_PWMV, .PWMW = M2_PWMW, 
-    .NFLT = M2_nFlt, .CHN1 = M2_CH1, .CHN2 = M2_CH2, .CHN3 = M2_CH3, 
     .spi_com = hspi, .spi_bus = HSPI,
     .MOSI = H_MOSI, .CS = H_CS, .MISO = H_MISO, .CLK = H_CLK,
     .q_angle = q_angle_H, .q_scale = q_scale_H, .q_dir = q_dir_H
+
+};
+
+params joint_H = {
+    .id = 1,
+    .PWMU = M2_PWMU, .PWMV = M2_PWMV, .PWMW = M2_PWMW, 
+    .NFLT = M2_nFlt, .CHN1 = M2_CH1, .CHN2 = M2_CH2, .CHN3 = M2_CH3, 
+    .spi_com = vspi, .spi_bus = VSPI,
+    .MOSI = V_MOSI, .CS = V_CS, .MISO = V_MISO, .CLK = V_CLK,
+    .q_angle = q_angle_V, .q_scale = q_scale_V, .q_dir = q_dir_V
 };
 
 
@@ -174,12 +184,20 @@ void motorTask(void* pvParameters) {
   Serial.println("start M1");
   xQueuePeek(joint->q_angle, &theta_0_mech, 0);
     
-  while(1){    
+  for(;;){    
+    // if (joint -> id == 1)
+    // {
+    //   xSemaphoreTake(xMotorHMtx, portMAX_DELAY);
+    // } else
+    // {
+    //   xSemaphoreTake(xMotorVMtx, portMAX_DELAY);
+    // }
+    
     // Read angle
     //theta_raw = getAngle(&joint);
     xQueuePeek(joint->q_scale, &velocity_scale, 0);
     xQueuePeek(joint->q_dir, &dir, 0);
-    xQueuePeek(joint->q_angle, &theta, 0);
+    xQueuePeek(joint->q_angle, &theta_raw, 0);
 
     velocity_scale = 1; //(((double)scaling * 100.0) / 255.0) / 100.0;
 
@@ -196,21 +214,36 @@ void motorTask(void* pvParameters) {
     current_step_W = current_step_V + phaseShift8_120;
 
     //Output
-    pwm_U = (int)((double)pwmSin[current_step_U] * velocity_scale);
-    pwm_V = (int)((double)pwmSin[current_step_V] * velocity_scale);
-    pwm_W = (int)((double)pwmSin[current_step_W] * velocity_scale);
+    pwm_U = (int)((double)pwmSin[current_step_U] ); //* velocity_scale);
+    pwm_V = (int)((double)pwmSin[current_step_V] ); //* velocity_scale);
+    pwm_W = (int)((double)pwmSin[current_step_W] ); //* velocity_scale);
 
     ledcWrite(joint->CHN1, pwm_U);
     ledcWrite(joint->CHN2, pwm_V);
     ledcWrite(joint->CHN3, pwm_W);
+
+    //usleep(50);
     
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
     TIMERG0.wdt_feed = 1;
     TIMERG0.wdt_wprotect = 0;
 
+    // if (joint -> id == 1)
+    // {
+    //   xSemaphoreGive(xMotorHMtx);
+    // } else
+    // {
+    //   xSemaphoreGive(xMotorVMtx);
+    // }
+
     if (PWM_DEBUG)
     {
-      Serial.print("Theta: ");
+      xSemaphoreTake( xPrintMtx, portMAX_DELAY );
+      if (joint->id == 1)
+      {
+        Serial.print("            ");
+      }
+      Serial.print(" |Theta: ");
       Serial.print(theta_raw);
       Serial.print(" | Theta_mult: ");
       Serial.print(theta_multiplied);
@@ -224,124 +257,138 @@ void motorTask(void* pvParameters) {
       Serial.print(pwm_V);
       Serial.print(" ");
       Serial.println(pwm_W);
+      xSemaphoreGive( xPrintMtx );
     }
   }
 }
 
 // the loop function runs over and over again until power down or reset
-// void getAngleTask(void *pvParameters) {
-//   params *joint;
-//   joint = (params *) pvParameters;
+void getAngleTask(void *pvParameters) {
+  params *joint;
+  joint = (params *) pvParameters;
 
-//   uint8_t ui_angle;
+  uint8_t ui_angle;
 
-//   for (;;)
-//   {
-//     joint->spi_com->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
-//     digitalWrite(joint->CS, LOW);
-//     ui_angle = joint->spi_com->transfer(0x00);
-//     digitalWrite(joint->CS, HIGH);
-//     //theta = (ui_angle*360.0)/65536.0;
-//     joint->spi_com->endTransaction();
+  for (;;)
+  {
+    joint->spi_com->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
+    digitalWrite(joint->CS, LOW);
+    ui_angle = joint->spi_com->transfer(0x00);
+    digitalWrite(joint->CS, HIGH);
+    //theta = (ui_angle*360.0)/65536.0;
+    joint->spi_com->endTransaction();
 
-//     xQueueOverwrite(queue[0][1], &ui_angle);
+    xQueueOverwrite(joint->q_angle, &ui_angle);
 
-//     vTaskDelay(100 / portTICK_RATE_MS);
-//   }
-// }
+    if (SPI_DEBUG)
+    {
+      xSemaphoreTake( xPrintMtx, portMAX_DELAY );
+      Serial.print(" Node: ");
+      Serial.print(joint->id);
+      Serial.print(" | ui_angle: ");
+      Serial.println(ui_angle);
+      xSemaphoreGive( xPrintMtx );
+    }
+    
+    TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+    TIMERG0.wdt_feed = 1;
+    TIMERG0.wdt_wprotect = 0;
+    //vTaskDelay(1 / portTICK_RATE_MS);
+  }
+}
 
 // // #######################################################################################
 // // ########################### MASTER COM ################################################
 // // #######################################################################################
 
-// void masterComTask(void *pvParameters) {
-//   i2c_slave i2c_s(I2C_SLAVE_ADDR);
-//   i2c_packet i2c_received;
+void masterComTask(void *pvParameters) {
+  i2c_slave i2c_s(I2C_SLAVE_ADDR);
+  i2c_packet i2c_received;
 
-//   cmd_t command;
-//   bool directionL, directionH;
+  cmd_t command;
+  bool directionL, directionH;
 
-//   while (1)
-//   {
-//     i2c_received = i2c_s.read();
+  while (1)
+  {
+    i2c_received = i2c_s.read();
 
-//     if (i2c_received.size){
-//       // Read three latest
-//       command.commandbyte = i2c_received.data[i2c_received.size - 3];
-//       command.m1_torque   = i2c_received.data[i2c_received.size - 2];
-//       command.m2_torque   = i2c_received.data[i2c_received.size - 1];
+    if (i2c_received.size){
+      // Read three latest
+      command.commandbyte = i2c_received.data[i2c_received.size - 3];
+      command.m1_torque   = i2c_received.data[i2c_received.size - 2];
+      command.m2_torque   = i2c_received.data[i2c_received.size - 1];
 
-//       // bitmask
-//       directionL = (command.commandbyte & ( 1 << 0 )) >> 0; // LSB
-//       directionH = (command.commandbyte & ( 1 << 1 )) >> 1; // LSB - 1
+      // bitmask
+      directionL = (command.commandbyte & ( 1 << 0 )) >> 0; // LSB
+      directionH = (command.commandbyte & ( 1 << 1 )) >> 1; // LSB - 1
 
-//       uint8_t buf[] = {command.commandbyte, command.m1_torque, command.m2_torque};
-//       i2c_s.write(buf);
+      uint8_t buf[] = {command.commandbyte, command.m1_torque, command.m2_torque};
+      i2c_s.write(buf);
 
-//       xQueueOverwrite(joint_V.q_scale, &command.m1_torque);
-//       xQueueOverwrite(joint_V.q_dir, &directionL);
-//       xQueueOverwrite(joint_H.q_scale, &command.m2_torque);
-//       xQueueOverwrite(joint_H.q_dir, &directionH);
+      xQueueOverwrite(joint_V.q_scale, &command.m1_torque);
+      xQueueOverwrite(joint_V.q_dir, &directionL);
+      xQueueOverwrite(joint_H.q_scale, &command.m2_torque);
+      xQueueOverwrite(joint_H.q_dir, &directionH);
 
-//       if (I2C_DEBUG)
-//       {
-//         Serial.print("I2C: "); Serial.print(command.commandbyte);
-//         Serial.print(" "); Serial.print(command.m1_torque);
-//         Serial.print(" "); Serial.print(command.m2_torque);
-//         Serial.println();
-//       }
-//     }
-//     vTaskDelay(100 / portTICK_RATE_MS);
-//   }
-// }
+      if (I2C_DEBUG)
+      {
+        Serial.print("I2C: "); Serial.print(command.commandbyte);
+        Serial.print(" "); Serial.print(command.m1_torque);
+        Serial.print(" "); Serial.print(command.m2_torque);
+        Serial.println();
+      }
+    }
+    vTaskDelay(1000 / portTICK_RATE_MS);
+  }
+}
 
-// void blComTask(void *pvParameters) {
-//   BluetoothSerial BT; //Object for Bluetooth
-//   char buf;
+void blComTask(void *pvParameters) {
+  BluetoothSerial BT; //Object for Bluetooth
+  char buf;
 
-//   struct rec_buf
-//   {
-//     char buf;
-//     char command;
-//     char motor_V;
-//     char motor_H;
-//   } received;
+  struct rec_buf
+  {
+    char buf;
+    char command;
+    char motor_V;
+    char motor_H;
+  } received;
   
-//   bool directionL, directionH;
+  bool directionL, directionH;
 
-//   BT.begin("DEX"); // Bluetooth device
-//   Serial.println("DEX is Ready to Pair");
+  BT.begin("DEX"); // Bluetooth device
+  Serial.println("DEX is Ready to Pair");
 
-//   while (1){
-//     if (BT.available()){ //Check if we receive anything from Bluetooth
-//       received.buf = BT.read(); //Read what we recevive 
-//       Serial.print("Received:"); Serial.println(received.buf);
-//       BT.write(received.buf);
-//       switch (received.buf){
-//         case 'a':
-//           received.command = BT.read();
-//           break;
-//         case 'b':
-//           received.motor_V = BT.read();
-//           break;
-//         case 'c':
-//           received.motor_H = BT.read();
-//           break;
-//         default:
-//           break;
-//       }
-//     }
+  while (1){
+    if (BT.available()){ //Check if we receive anything from Bluetooth
+      received.buf = BT.read(); //Read what we recevive 
+      Serial.print("Received:"); Serial.println(received.buf);
+      BT.write(received.buf);
+      switch (received.buf){
+        case 'a':
+          received.command = BT.read();
+          break;
+        case 'b':
+          received.motor_V = BT.read();
+          break;
+        case 'c':
+          received.motor_H = BT.read();
+          break;
+        default:
+          break;
+      }
+    }
 
-//     if (BLT_DEBUG)
-//     {
-//       Serial.print("commandbyte"); Serial.println(received.command);
-//       Serial.print("motor_V"); Serial.println((int)received.motor_V);
-//       Serial.print("motor_H"); Serial.println((int)received.motor_H);
-//     }
+    if (BLT_DEBUG)
+    {
+      Serial.print("commandbyte"); Serial.println(received.command);
+      Serial.print("motor_V"); Serial.println((int)received.motor_V);
+      Serial.print("motor_H"); Serial.println((int)received.motor_H);
+    }
     
-//     vTaskDelay(10 / portTICK_RATE_MS);
-//   }
-// }
+    vTaskDelay(10 / portTICK_RATE_MS);
+  }
+}
 
 // #######################################################################################
 // ########################### SETUP & LOOP ##############################################
@@ -366,14 +413,19 @@ void setup() {
   pinMode(M_EN, OUTPUT);
   digitalWrite(M_EN, HIGH);
 
+  xPrintMtx = xSemaphoreCreateMutex();
+  xMotorHMtx = xSemaphoreCreateMutex();
+  xMotorVMtx = xSemaphoreCreateMutex();
+
   // motor control tasks
   xTaskCreatePinnedToCore(motorTask, "motorV", 4096, (void *) &joint_V, 1, NULL, 0);
-  xTaskCreatePinnedToCore(motorTask, "motorH", 4096, (void *) &joint_H, 1, NULL, 1);
+  //xTaskCreatePinnedToCore(motorTask, "motorH", 4096, (void *) &joint_H, 1, NULL, 0);
+
   // angle getter tasks
-  //xTaskCreatePinnedToCore(getAngleTask, "angleV", 4096, (void *) &joint_V., 1, NULL, 0);
-  //xTaskCreatePinnedToCore(getAngleTask, "angleH", 4096, (void *) &joint_H., 1, NULL, 1);
+  xTaskCreatePinnedToCore(getAngleTask, "angleV", 4096, (void *) &joint_V, 1, NULL, 1);
+  xTaskCreatePinnedToCore(getAngleTask, "angleH", 4096, (void *) &joint_H, 1, NULL, 1);
   // communication tasks
-  //xTaskCreatePinnedToCore(masterComTask, "getscaleL", 4096, (void *)1, 1, NULL, 0);
+  //xTaskCreatePinnedToCore(masterComTask, "getscaleL", 4096, (void *)1, 1, NULL, 1);
   //xTaskCreatePinnedToCore(blComTask, "blCom", 4096, (void *)1, 1, NULL, 0);
 
   Serial.begin(115200);
