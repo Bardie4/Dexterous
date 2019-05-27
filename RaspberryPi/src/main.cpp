@@ -315,7 +315,7 @@ class Finger{
 
 			printf("After calibration: %d | %d \n",	theta1, theta2 );
 
-      sleep(10);
+      sleep(10000);
 			//Shut of motors
 			torque_cmd[0]=(uint8_t) 0;
 			torque_cmd[1]=(uint8_t) 0;
@@ -604,7 +604,7 @@ class PeripheralsController{
         std::cout << "i2cOpen() failed for adress: " << i2cAddress << std::endl;
       }*/
       i2cWriteDevice(i2c_handle, outBuf, 3);
-      i2cReadDevice(i2c_handle, outBuf, 3);
+      //i2cReadDevice(i2c_handle, outBuf, 3);
       /*
       if ( i2cClose( i2cHandle ) < 0 ){
         std::cout << "i2cClose failed! Handle: " << i2cHandle << std::endl;
