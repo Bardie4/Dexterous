@@ -154,7 +154,7 @@ class Finger{
 			//*************************************
 
 			//RESET OLD ZERO POINT
-      /*
+      
 			set_zero_angle_cmd[0]=0b10000001; //WRITE REG 1 (8 MSB of zero angle)
 			set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
 			pthread_mutex_lock(&periphLock);
@@ -223,7 +223,7 @@ class Finger{
 			gpioResult = gpioWrite(csAngleSensor1,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(100000);
-      */
+
 
 			//*********CALIBRATE SENSOR 2**********
 			//*************************************
