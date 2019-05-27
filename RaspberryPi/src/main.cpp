@@ -315,7 +315,7 @@ class Finger{
 
 			printf("After calibration: %d | %d \n",	theta1, theta2 );
 
-      sleep(10000);
+      sleep(5);
 			//Shut of motors
 			torque_cmd[0]=(uint8_t) 0;
 			torque_cmd[1]=(uint8_t) 1;
