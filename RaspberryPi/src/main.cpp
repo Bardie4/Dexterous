@@ -383,7 +383,7 @@ class Finger{
 			theta1=inBuf[0];
 
 			pthread_mutex_lock(&periphLock);
-			gpioResult = gpioWrite(csAngleSensor2,0);
+      gpioResult = gpioWrite(csAngleSensor2,0);
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 1);
 			gpioResult = gpioWrite(csAngleSensor2,1);
 			pthread_mutex_unlock(&periphLock);
@@ -707,7 +707,7 @@ class PeripheralsController{
       //not be connected to anything, the GPIO pins specified in csAndI2cAddr
       //is used instead.
     	spiChannel = 0;
-      spiFrequency = 10000000;
+      spiFrequency = 5000000;
       if (gpioInitialise() < 0){
         std::cout << "Pigpio initialisation failed. Run program as superuser"
         << std::endl;
