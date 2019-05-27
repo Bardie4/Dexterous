@@ -216,7 +216,7 @@ class Finger{
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
 			gpioResult = gpioWrite(csAngleSensor2,1);
 			pthread_mutex_unlock(&periphLock);
-      std::cout << "Value reg 1: " <<unsigned(inBuf[1])<< std::endl;
+      std::cout << "Value reg 1: " << unsigned(inBuf[0])<<" " << unsigned(inBuf[1]) << std::endl;
 			usleep(80*1000);
 			set_zero_angle_cmd[0]=0b10000000;
 			set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //8 LSB of Compliment of new zero angle
@@ -233,7 +233,7 @@ class Finger{
 			gpioResult = gpioWrite(csAngleSensor2,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(80*1000);
-      std::cout << "Value reg 2: " << unsigned(inBuf[1]) << std::endl;
+      std::cout << "Value reg 2: "  << unsigned(inBuf[0])<<" " << unsigned(inBuf[1]) << std::endl;
 
 
 			//*********CALIBRATE SENSOR 2**********
