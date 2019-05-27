@@ -707,7 +707,7 @@ class PeripheralsController{
       //not be connected to anything, the GPIO pins specified in csAndI2cAddr
       //is used instead.
     	spiChannel = 0;
-      spiFrequency = 20000000;
+      spiFrequency = 15000000;
       if (gpioInitialise() < 0){
         std::cout << "Pigpio initialisation failed. Run program as superuser"
         << std::endl;
