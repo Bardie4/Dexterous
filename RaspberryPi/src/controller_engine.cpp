@@ -87,6 +87,8 @@ void ControllerEngine::run(){
       //Mark the message as unread
       pthread_mutex_lock(&zmqSubLock);
       zmqSubMemPtr->newMessage = 1;
+      periphMemPtr->commandedTorque1 = 0;
+      periphMemPtr->commandedTorque2 = 0;
       pthread_mutex_unlock(&zmqSubLock);
 
       std::cout <<"controller select: " << controllerSelect<< " controller ID: " << controllerId <<std::endl;
