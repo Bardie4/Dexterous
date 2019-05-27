@@ -111,6 +111,8 @@ class Finger{
       char inBuf[4];
       char outBuf[4];
 
+      std::cout << "CS1: " << csAngleSensor1 << " CS2: " << csAngleSensor2 << std::endl;
+
 			//******DRIVE MOTORS TO END POSITION*******
 			//*****************************************
 			//NOT DONE
