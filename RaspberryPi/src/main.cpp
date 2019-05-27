@@ -235,7 +235,7 @@ class Finger{
 			usleep(80*1000);
       std::cout << "Value reg 2: "  << unsigned(inBuf[0])<<" " << unsigned(inBuf[1]) << std::endl;
 
-
+      sleep(1);
 			//*********CALIBRATE SENSOR 2**********
 			//*************************************
       set_zero_angle_cmd[0]=0b10000001; //WRITE REG 1 (8 MSB of zero angle)
