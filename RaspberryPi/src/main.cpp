@@ -248,12 +248,15 @@ class Finger{
       spiResult = spiXfer(spiHandle, set_zero_angle_cmd, inBuf, 2);
       gpioResult = gpioWrite(csAngleSensor1,1);
       pthread_mutex_unlock(&periphLock);
+      std::cout << "spi result" << spiResult << std::endl;
       usleep(80*1000);
       pthread_mutex_lock(&periphLock);
       gpioResult = gpioWrite(csAngleSensor1,0);
       spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
       gpioResult = gpioWrite(csAngleSensor1,1);
       pthread_mutex_unlock(&periphLock);
+
+      std::cout << "spi result" << spiResult << std::endl;
       std::cout << "Success reset reg1?: " << unsigned(inBuf[0]) << " "<<unsigned(inBuf[1]) << std::endl;
       usleep(80*1000);
       set_zero_angle_cmd[0]=0b10000000; //WRITE REG 0 (8 LSB of zero angle)
@@ -263,12 +266,16 @@ class Finger{
       spiResult = spiXfer(spiHandle, set_zero_angle_cmd, inBuf, 2);
       gpioResult = gpioWrite(csAngleSensor1,1);
       pthread_mutex_unlock(&periphLock);
+
+      std::cout << "spi result" << spiResult << std::endl;
       usleep(80*1000);
       pthread_mutex_lock(&periphLock);
       gpioResult = gpioWrite(csAngleSensor1,0);
       spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
       gpioResult = gpioWrite(csAngleSensor1,1);
       pthread_mutex_unlock(&periphLock);
+
+      std::cout << "spi result" << spiResult << std::endl;
       std::cout << "Success reset reg2?: " << unsigned(inBuf[0]) << " "<<unsigned(inBuf[1])<< std::endl;
       usleep(80*1000);
 
@@ -278,6 +285,8 @@ class Finger{
       spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
       gpioResult = gpioWrite(csAngleSensor1,1);									//MEASURE CURRENT ANGLE
       pthread_mutex_unlock(&periphLock);
+
+      std::cout << "spi result" << spiResult << std::endl;
       zero_point = (uint16_t) 0;
       zero_point = (inBuf[0] << 8);                               //COMBINE 8 bit values to 16 bit
       zero_point = zero_point + inBuf[1];
@@ -294,12 +303,16 @@ class Finger{
       spiResult = spiXfer(spiHandle, set_zero_angle_cmd, inBuf, 2);
       gpioResult = gpioWrite(csAngleSensor1,1);
       pthread_mutex_unlock(&periphLock);
+
+      std::cout << "spi result" << spiResult << std::endl;
       usleep(80*1000);
       pthread_mutex_lock(&periphLock);
       gpioResult = gpioWrite(csAngleSensor1,0);
       spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
       gpioResult = gpioWrite(csAngleSensor1,1);
       pthread_mutex_unlock(&periphLock);
+
+      std::cout << "spi result" << spiResult << std::endl;
 
       std::cout << "Value reg 1: " <<unsigned(inBuf[0])<< " " << unsigned(inBuf[1])<< std::endl;
       usleep(80*1000);
@@ -311,12 +324,16 @@ class Finger{
       spiResult = spiXfer(spiHandle, set_zero_angle_cmd, inBuf, 2);
       gpioResult = gpioWrite(csAngleSensor1,1);
       pthread_mutex_unlock(&periphLock);
+
+      std::cout << "spi result" << spiResult << std::endl;
       usleep(80*1000);
       pthread_mutex_lock(&periphLock);
       gpioResult = gpioWrite(csAngleSensor1,0);
       spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
       gpioResult = gpioWrite(csAngleSensor1,1);
       pthread_mutex_unlock(&periphLock);
+
+      std::cout << "spi result" << spiResult << std::endl;
 
       std::cout << "Value reg 2: " << unsigned(inBuf[0])<<" " << unsigned(inBuf[1]) << std::endl;
       usleep(80*1000);
@@ -399,6 +416,8 @@ class Finger{
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 1);
 			gpioResult = gpioWrite(csAngleSensor1,1);
 			pthread_mutex_unlock(&periphLock);
+
+      std::cout << "spi result" << spiResult << std::endl;
 			theta1=inBuf[0];
 
 			pthread_mutex_lock(&periphLock);
@@ -408,6 +427,7 @@ class Finger{
 			pthread_mutex_unlock(&periphLock);
 			theta2=inBuf[0];
 
+      std::cout << "spi result" << spiResult << std::endl;
 			printf("After calibration: %d | %d \n",	theta1, theta2 );
 
       sleep(1);
