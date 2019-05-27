@@ -826,7 +826,7 @@ class PeripheralsController{
 						//Read sensors (store it locally)
 						fingerMem[i].jointAngle1 = 101.29*3.142/180.0 - readAngle12(csAndI2cAddr[i][0]);
 						fingerMem[i].jointAngle2 = 146.29*3.142/180.0 - readAngle12(csAndI2cAddr[i][1]);
-
+            std::cout <<"im reading when i shouldent >:O "<<std::endl;
 						//Process sensor information (store it locally)
             fingerMem[i].angularVel1 = (fingerMem[i].jointAngle1 - fingerMemPrev[i].jointAngle1)/(step*1000000);
             fingerMem[i].angularVel2 = (fingerMem[i].jointAngle2 - fingerMemPrev[i].jointAngle2)/(step*1000000);
