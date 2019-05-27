@@ -424,11 +424,11 @@ class ZmqSubscriber{
     }
 
     void passOnSimpleInstructions(zmq::message_t* buffer){
-      std::cout <<"entering pass function. message is of size: "<< buffer->size() <<std::endl;
+      //std::cout <<"entering pass function. message is of size: "<< buffer->size() <<std::endl;
       //Parse flattbuffer and store it
       auto messageObj = GetSimpleInstructionMsg(buffer->data());
-        std::cout <<"created flattbuffer object" <<std::endl;
-        std::cout <<"Finger selected: " << messageObj->finger_select() <<std::endl;
+      //  std::cout <<"created flattbuffer object" <<std::endl;
+      //  std::cout <<"Finger selected: " << messageObj->finger_select() <<std::endl;
       fingerMem.fingerSelect = messageObj->finger_select();
       //Return if selected finger is not valid
       if ( (fingerMem.fingerSelect < 0) || (fingerMem.fingerSelect > 6) ){
@@ -477,7 +477,7 @@ class ZmqSubscriber{
         subscriber.recv(&address);
         subscriber.recv(&buffer);
 
-        std::cout <<"Message type: " <<flatbuffers::GetBufferIdentifier(buffer.data()) << std::endl;
+      //  std::cout <<"Message type: " <<flatbuffers::GetBufferIdentifier(buffer.data()) << std::endl;
 
         if ( SimpleInstructionMsgBufferHasIdentifier( buffer.data() ) ){
           passOnSimpleInstructions(&buffer);
@@ -733,8 +733,8 @@ class PeripheralsController{
 					if (fingerMem[i].runFlag){
 
 						//Read sensors (store it locally)
-						fingerMem[i].jointAngle1 = 90*3.142/180.0 - readAngle12(csAndI2cAddr[i][0]);
-						fingerMem[i].jointAngle2 = 135*3.142/180.0 - readAngle12(csAndI2cAddr[i][1]);
+						fingerMem[i].jointAngle1 = 78.70*3.142/180.0 - readAngle12(csAndI2cAddr[i][0]);
+						fingerMem[i].jointAngle2 = 123,71*3.142/180.0 - readAngle12(csAndI2cAddr[i][1]);
 
 						//Process sensor information (store it locally)
             fingerMem[i].angularVel1 = (fingerMem[i].jointAngle1 - fingerMemPrev[i].jointAngle1)/(step*1000000);
