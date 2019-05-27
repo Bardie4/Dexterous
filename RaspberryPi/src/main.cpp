@@ -193,7 +193,7 @@ class Finger{
 			gpioResult = gpioWrite(csAngleSensor2,1);									//MEASURE CURRENT ANGLE
 			pthread_mutex_unlock(&periphLock);
 
-      zero_point = (uint16_t) 0;
+      //zero_point = (uint16_t) 0;
 			zero_point = (inBuf[0] << 8);                               //COMBINE 8 bit values to 16 bit
 			zero_point = zero_point + inBuf[1];
 			zero_point = (uint16_t) (0b10000000000000000-zero_point+0b0000100000000000);   	//CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
@@ -266,7 +266,7 @@ class Finger{
       spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
       gpioResult = gpioWrite(csAngleSensor1,1);									//MEASURE CURRENT ANGLE
       pthread_mutex_unlock(&periphLock);
-      zero_point = (uint16_t) 0;
+      //zero_point = (uint16_t) 0;
       zero_point = (inBuf[0] << 8);                               //COMBINE 8 bit values to 16 bit
       zero_point = zero_point + inBuf[1];
       zero_point = (uint16_t) (0b10000000000000000-zero_point+0b0000100000000000);   	//CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
