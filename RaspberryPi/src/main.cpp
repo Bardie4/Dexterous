@@ -726,6 +726,7 @@ class PeripheralsController{
       //Therefore; set all to high on startup
       for (int i=0; i <= 6; i++){
         for (int j=0; j <2; j++){
+          gpioResult = gpioSetMode(csAndI2cAddr[i][j], PI_OUTPUT);
           gpioResult = gpioWrite(csAndI2cAddr[i][j], 1);
         }
       }
