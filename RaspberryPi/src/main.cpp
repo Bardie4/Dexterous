@@ -893,27 +893,27 @@ main(){
 	unsigned i2cEsp32_f1 = 0x28;
 
   unsigned csSens1_f2 = 21;
-	unsigned csSens2_f2 = 23;
+	unsigned csSens2_f2 = 21;
 	unsigned i2cEsp32_f2 = 0x29;
 
-  unsigned csSens1_f3 = 6;
-	unsigned csSens2_f3 = 16;
+  unsigned csSens1_f3 = 21;
+	unsigned csSens2_f3 = 21;
 	unsigned i2cEsp32_f3 = 0x29;
 
-  unsigned csSens1_f4 = 6;
-	unsigned csSens2_f4 = 16;
+  unsigned csSens1_f4 = 21;
+	unsigned csSens2_f4 = 21;
 	unsigned i2cEsp32_f4 = 0x29;
 
-  unsigned csSens1_f5 = 6;
-	unsigned csSens2_f5 = 16;
+  unsigned csSens1_f5 = 21;
+	unsigned csSens2_f5 = 21;
 	unsigned i2cEsp32_f5 = 0x29;
 
-  unsigned csSens1_f6 = 6;
-	unsigned csSens2_f6 = 16;
+  unsigned csSens1_f6 = 21;
+	unsigned csSens2_f6 = 21;
 	unsigned i2cEsp32_f6 = 0x29;
 
-  unsigned csSens1_f7 = 6;
-	unsigned csSens2_f7 = 16;
+  unsigned csSens1_f7 = 21;
+	unsigned csSens2_f7 = 21;
 	unsigned i2cEsp32_f7 = 0x29;
 
   //Chip select pins and i2c addresses is packed into array which is to be
