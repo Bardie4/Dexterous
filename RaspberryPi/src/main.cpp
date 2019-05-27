@@ -318,8 +318,8 @@ class Finger{
       sleep(10000);
 			//Shut of motors
 			torque_cmd[0]=(uint8_t) 0;
-			torque_cmd[1]=(uint8_t) 0;
-			torque_cmd[2]=(uint8_t) 0;
+			torque_cmd[1]=(uint8_t) 1;
+			torque_cmd[2]=(uint8_t) 1;
       pthread_mutex_lock(&periphLock);
       i2cWriteDevice(i2cHandle, torque_cmd, 3);
 			pthread_mutex_unlock(&periphLock);
