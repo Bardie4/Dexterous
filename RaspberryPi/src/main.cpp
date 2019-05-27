@@ -170,7 +170,7 @@ class Finger{
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
 			gpioResult = gpioWrite(csAngleSensor2,1);
 			pthread_mutex_unlock(&periphLock);
-      std::cout << "Success reset reg1?: " << inBuf[0] << inBuf[1] << std::endl;
+      std::cout << "Success reset reg1?: " << unsigned(inBuf[0]) << unsigned(inBuf[1]) << std::endl;
 			usleep(80*1000);
 			set_zero_angle_cmd[0]=0b10000000; //WRITE REG 0 (8 LSB of zero angle)
 			set_zero_angle_cmd[1]=0b00000000; //ZERO-ANGLE SET TO 0
@@ -185,7 +185,7 @@ class Finger{
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
 			gpioResult = gpioWrite(csAngleSensor2,1);
 			pthread_mutex_unlock(&periphLock);
-      std::cout << "Success reset reg2?: " << inBuf[0] << inBuf[1] << std::endl;
+      std::cout << "Success reset reg2?: " << unsigned(inBuf[0]) << unsigned(inBuf[1])<< std::endl;
 			usleep(80*1000);
 
 			//MEASURE ANGLE AFTER RESET AND CALCULATE REGISTER INPUT
@@ -214,7 +214,7 @@ class Finger{
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
 			gpioResult = gpioWrite(csAngleSensor2,1);
 			pthread_mutex_unlock(&periphLock);
-      std::cout << "Success set reg1?: " << inBuf[0] << inBuf[1] << std::endl;
+      std::cout << "Success set reg1?: " <<unsigned(inBuf[0]) << unsigned(inBuf[1])<< std::endl;
 			usleep(80*1000);
 			set_zero_angle_cmd[0]=0b10000000;
 			set_zero_angle_cmd[1]=(uint8_t) zero_point;                 //8 LSB of Compliment of new zero angle
@@ -230,7 +230,7 @@ class Finger{
 			gpioResult = gpioWrite(csAngleSensor2,1);
 			pthread_mutex_unlock(&periphLock);
 			usleep(80*1000);
-      std::cout << "Success set reg2?: " << inBuf[0] << inBuf[1] << std::endl;
+      std::cout << "Success set reg2?: " << unsigned(inBuf[0]) << unsigned(inBuf[1]) << std::endl;
 
 
 			//*********CALIBRATE SENSOR 2**********
