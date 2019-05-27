@@ -114,7 +114,7 @@ class Finger{
 			//******DRIVE MOTORS TO END POSITION*******
 			//*****************************************
 			//NOT DONE
-			torque_cmd[0]=(uint8_t) 0b00000010;
+			torque_cmd[0]=(uint8_t) 0b00000011;
 			torque_cmd[1]=(uint8_t) 90; //Skift retning
 			torque_cmd[2]=(uint8_t) 0;  //link2
 
