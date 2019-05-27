@@ -1,5 +1,5 @@
 #include <SPI.h>
-#include "freertos/event_groups.h"
+//#include "freertos/event_groups.h"
 #include "freertos/queue.h"
 #include <unistd.h>
 #include "soc/timer_group_struct.h"
@@ -152,7 +152,7 @@ void motorTask(void* pvParameters) {
 
   // control scaling
   int velocity_scale;
-  bool dir;
+  bool dir = true;
 
   // Initialize motor driver
   pinMode(joint->PWMU, OUTPUT);
@@ -181,8 +181,10 @@ void motorTask(void* pvParameters) {
 
   vTaskDelay(2000 / portTICK_RATE_MS);
 
-  Serial.println("start M1");
+  
   xQueuePeek(joint->q_angle, &theta_0_mech, 0);
+  Serial.println("theta_0_mech");
+  Serial.println(theta_0_mech);
     
   for(;;){    
     // if (joint -> id == 1)
@@ -196,7 +198,7 @@ void motorTask(void* pvParameters) {
     // Read angle
     //theta_raw = getAngle(&joint);
     xQueuePeek(joint->q_scale, &velocity_scale, 0);
-    xQueuePeek(joint->q_dir, &dir, 0);
+    //xQueuePeek(joint->q_dir, &dir, 0);
     xQueuePeek(joint->q_angle, &theta_raw, 0);
 
     velocity_scale = 1; //(((double)scaling * 100.0) / 255.0) / 100.0;
@@ -206,6 +208,7 @@ void motorTask(void* pvParameters) {
     else lead_lag = phaseShift8_90_minus;
 
     // Find optimal electrical angle
+    //theta_raw += (255 - theta_0_mech);
     theta_raw += (255 - theta_0_mech);
     theta_multiplied = theta_raw << 2;        //Multiplied by 4 for electrical angle.
     theta_multiplied += lead_lag;             //Adding lead/lag angle based on direction
@@ -224,9 +227,10 @@ void motorTask(void* pvParameters) {
 
     //usleep(50);
     
-    TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
-    TIMERG0.wdt_feed = 1;
-    TIMERG0.wdt_wprotect = 0;
+    // TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+    // TIMERG0.wdt_feed = 1;
+    // TIMERG0.wdt_wprotect = 0;
+
 
     // if (joint -> id == 1)
     // {
@@ -259,6 +263,8 @@ void motorTask(void* pvParameters) {
       Serial.println(pwm_W);
       xSemaphoreGive( xPrintMtx );
     }
+
+    vTaskDelay(1 / portTICK_RATE_MS);
   }
 }
 
@@ -290,10 +296,10 @@ void getAngleTask(void *pvParameters) {
       xSemaphoreGive( xPrintMtx );
     }
     
-    TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
-    TIMERG0.wdt_feed = 1;
-    TIMERG0.wdt_wprotect = 0;
-    //vTaskDelay(1 / portTICK_RATE_MS);
+    // TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+    // TIMERG0.wdt_feed = 1;
+    // TIMERG0.wdt_wprotect = 0;
+    vTaskDelay(1 / portTICK_RATE_MS);
   }
 }
 
@@ -421,9 +427,14 @@ void setup() {
   xTaskCreatePinnedToCore(motorTask, "motorV", 4096, (void *) &joint_V, 1, NULL, 0);
   //xTaskCreatePinnedToCore(motorTask, "motorH", 4096, (void *) &joint_H, 1, NULL, 0);
 
+  // xTaskCreate(motorTask, "motorV", 4096, (void *) &joint_V, 2, NULL);
+  // xTaskCreate(motorTask, "motorH", 4096, (void *) &joint_H, 2, NULL);
+
   // angle getter tasks
-  xTaskCreatePinnedToCore(getAngleTask, "angleV", 4096, (void *) &joint_V, 1, NULL, 1);
-  xTaskCreatePinnedToCore(getAngleTask, "angleH", 4096, (void *) &joint_H, 1, NULL, 1);
+  xTaskCreatePinnedToCore(getAngleTask, "angleV", 4096, (void *) &joint_V, 1, NULL, 0);
+  //xTaskCreatePinnedToCore(getAngleTask, "angleH", 4096, (void *) &joint_H, 1, NULL, 1);
+  // xTaskCreate(getAngleTask, "angleV", 4096, (void *) &joint_V, 1, NULL);
+  // xTaskCreate(getAngleTask, "angleH", 4096, (void *) &joint_H, 1, NULL);
   // communication tasks
   //xTaskCreatePinnedToCore(masterComTask, "getscaleL", 4096, (void *)1, 1, NULL, 1);
   //xTaskCreatePinnedToCore(blComTask, "blCom", 4096, (void *)1, 1, NULL, 0);
