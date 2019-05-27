@@ -142,6 +142,7 @@ class Finger{
 		 	pthread_mutex_unlock(&periphLock);
 			theta2 = inBuf[0];
 			printf("Before calibration: %d | %d\n", theta1 , theta2);
+			usleep(100000);
 			//Setting zero_angle at start position
 			//The measured angle in end position should be zero to avoid crossing from 0->255, as this will mess with the PID.
 			//Any previous zero angle setting is removed before the angle is measured. This measured angle is set as the new zero angle.
@@ -264,11 +265,12 @@ class Finger{
       zero_point = 0;
       zero_point = (inBuf[0] << 8);                               //COMBINE 8 bit values to 16 bit
       zero_point = zero_point + inBuf[1];
-      zero_point = (uint16_t) (0b10000000000000000-zero_point+0b0000100000000000);   	//CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
+      zero_point = (uint16_t) (0b10000000000000000-zero_point);//+0b0000100000000000);   	//CALCULATE COMPLIMENT (Formula 4 in Datasheet:  MagAlpha MA302  12-Bit, Digital, Contactless Angle Sensor with ABZ & UVW Incremental Outputs )
                                                                                       //ADDING 8 (in 16bit) to avoid crossing zero because of noise
       //SET NEW ZERO POINT
       set_zero_angle_cmd[0]=0b10000001;
       set_zero_angle_cmd[1]=(uint8_t) (zero_point >> 8);          //8 MSB of Compliment of new zero angle
+      usleep(100000);
       pthread_mutex_lock(&periphLock);
       gpioResult = gpioWrite(csAngleSensor2,0);
       spiResult = spiXfer(spiHandle, set_zero_angle_cmd, inBuf, 2);
