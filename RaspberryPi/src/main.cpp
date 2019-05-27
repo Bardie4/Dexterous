@@ -234,8 +234,11 @@ class Finger{
 			pthread_mutex_unlock(&periphLock);
 			usleep(80*1000);
       std::cout << "Value reg 2: "  << unsigned(inBuf[0])<<" " << unsigned(inBuf[1]) << std::endl;
+      gpioResult = gpioWrite(csAngleSensor1,1);
 
+      gpioResult = gpioWrite(csAngleSensor2,1);
       sleep(1);
+
 			//*********CALIBRATE SENSOR 2**********
 			//*************************************
       set_zero_angle_cmd[0]=0b10000001; //WRITE REG 1 (8 MSB of zero angle)
