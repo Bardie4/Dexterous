@@ -75,7 +75,7 @@ class Finger{
         handle->periphMemPtr = &periphSharedMem;
         handle->fingerId = id;
         handle->controllerId = controller_id;
-        controllerParameters[controller_id] = handle->varPtr;
+        controllerParameters[controller_id] = handle->varPtrs;
     }
 
     void adjustControllerParameter(){
@@ -88,22 +88,22 @@ class Finger{
 
       if ( !(controllerSelect == 999) ){
         //Exit while loop (Try next controller)
-        break;
+        return;
       }
       if ( controller < 0 || controller > 20 ){
         //Select one of twenty controllers or break
-        break;
+        return;
       }
 
       if ( param < 0 || param > 20 ){
         //Select one of twenty parameters or break
-        break;
+        return;
       }
 
-      if (controllerParameters[controller]  != NULL){
+      if (*controllerParameters[controller]  != NULL){
         //If the controller is bound: change parameter
 
-        *(controllerParameters[controller]+param) = newParamValue;
+        //*(controllerParameters[controller]+param) = newParamValue;
       }
 
 
@@ -158,7 +158,6 @@ class Finger{
 			sleep(1);
 
 			//READ ANGLE AT END POINT
-			outBuf[0] = 0b00000000;
 			pthread_mutex_lock(&periphLock);
 			gpioResult = gpioWrite(csAngleSensor1,0);
 			spiResult = spiXfer(spiHandle, read_angle_cmd, inBuf, 2);
@@ -342,7 +341,7 @@ class ZmqSubscriber{
     void passOnTrajectoryMsg(zmq::message_t* buffer){
       //std::cout <<"entering pass function. message is of size: "<< buffer->size() <<std::endl;
       //Parse flattbuffer and store it
-      auto messageObj = GetSimpleInstructionMsg(buffer->data());
+      auto messageObj = GetTrajectoryMsg(buffer->data());
       //  std::cout <<"created flattbuffer object" <<std::endl;
       //  std::cout <<"Finger selected: " << messageObj->finger_select() <<std::endl;
       fingerMem.fingerSelect = messageObj->finger_select();
