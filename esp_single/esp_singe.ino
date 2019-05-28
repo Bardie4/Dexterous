@@ -8,7 +8,7 @@
 
 #include "i2c_slave.h"
 
-#include "BluetoothSerial.h" //Header File for Serial Bluetooth, will be added by default into Arduino
+//#include "BluetoothSerial.h" //Header File for Serial Bluetooth, will be added by default into Arduino
 
 
 #define I2C_DEBUG false
@@ -112,7 +112,6 @@ params joint_H = {
     .q_angle = q_angle_V, .q_scale = q_scale_V, .q_dir = q_dir_V
 };
 
-
 // #######################################################################################
 // ########################### JOINT 1 (V) ###############################################
 // #######################################################################################
@@ -188,6 +187,7 @@ void motorTask(void* pvParameters) {
   Serial.println(theta_0_mech);
     
   for(;;){    
+    // Read angle
     joint->spi_com->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
     digitalWrite(joint->CS, LOW);
     theta_raw = joint->spi_com->transfer(0x00);
@@ -195,23 +195,16 @@ void motorTask(void* pvParameters) {
     //theta = (ui_angle*360.0)/65536.0;
     joint->spi_com->endTransaction();
     
-    // Read angle
-    //theta_raw = getAngle(&joint);
+    // Read master commands
     xQueuePeek(joint->q_scale, &velocity_raw, 0);
     xQueuePeek(joint->q_dir,   &dir,          0);
-
     velocity = (double)((velocity_raw / 255.0) * 1.0);
 
-    //xQueuePeek(joint->q_angle, &theta_raw, 0);
-
-    //velocity_scale = 1; //(((double)scaling * 100.0) / 255.0) / 100.0;
-
     //Leading or lagging electrical field
-    // if (dir) lead_lag = phaseShift8_90;
-    // else lead_lag = phaseShift8_90_minus;
+    if (dir) lead_lag = phaseShift8_90;
+    else lead_lag = phaseShift8_90_minus;
 
     // Find optimal electrical angle
-    //theta_raw += (255 - theta_0_mech);
     theta_raw += (255 - theta_0_mech);
     theta_multiplied = theta_raw << 2;        //Multiplied by 4 for electrical angle.
     theta_multiplied += lead_lag;             //Adding lead/lag angle based on direction
@@ -220,14 +213,15 @@ void motorTask(void* pvParameters) {
     current_step_W = current_step_V + phaseShift8_120;
 
     //Output
-    pwm_U = (uint8_t)((double)pwmSin[current_step_U] *0.0);//* velocity ); //* velocity_scale);
-    pwm_V = (uint8_t)((double)pwmSin[current_step_V] *0.0);//* velocity ); //* velocity_scale);
-    pwm_W = (uint8_t)((double)pwmSin[current_step_W] *0.0);//* velocity ); //* velocity_scale);
+    pwm_U = (uint8_t)((double)pwmSin[current_step_U] * velocity ); //* velocity_scale);
+    pwm_V = (uint8_t)((double)pwmSin[current_step_V] * velocity ); //* velocity_scale);
+    pwm_W = (uint8_t)((double)pwmSin[current_step_W] * velocity ); //* velocity_scale);
 
     ledcWrite(joint->CHN1, pwm_U);
     ledcWrite(joint->CHN2, pwm_V);
     ledcWrite(joint->CHN3, pwm_W);
     
+    // Feed watchdog
     TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
     TIMERG0.wdt_feed = 1;
     TIMERG0.wdt_wprotect = 0;
@@ -302,93 +296,105 @@ void masterComTask(void *pvParameters) {
   i2c_packet i2c_received;
 
   cmd_t command;
-  bool directionL, directionH;
+  bool directionV, directionH;
+  uint8_t commandbyte, m1_torque, m2_torque;
+
+  uint8_t send_buf[3];
 
   while (1)
   {
     i2c_received = i2c_s.read();
 
     if (i2c_received.size){
+      //i2c_reset_tx_fifo(I2C_NUM_0);
       // Read three latest
-      command.commandbyte = i2c_received.data[i2c_received.size - 3];
-      command.m1_torque   = i2c_received.data[i2c_received.size - 2];
-      command.m2_torque   = i2c_received.data[i2c_received.size - 1];
+      commandbyte = i2c_received.data[i2c_received.size - 3];
+      m1_torque   = i2c_received.data[i2c_received.size - 2];
+      m2_torque   = i2c_received.data[i2c_received.size - 1];
 
       // bitmask
-      directionL = (command.commandbyte & ( 1 << 0 )) >> 0; // LSB
-      directionH = (command.commandbyte & ( 1 << 1 )) >> 1; // LSB - 1
-      directionH = !directionH;
+      directionV = !((commandbyte & ( 1 << 0 )) >> 0); // LSB. Flipped
+      directionH = !((commandbyte & ( 1 << 1 )) >> 1); // LSB - 1. Flipped
 
-      uint8_t buf[] = {command.commandbyte, command.m1_torque, command.m2_torque};
-      i2c_s.write(buf);
+      send_buf[0] = commandbyte;
+      send_buf[1] = m1_torque;
+      send_buf[2] = m2_torque;
+      //i2c_s.write(buf);
 
-      xQueueOverwrite(joint_V.q_scale, &command.m1_torque);
-      xQueueOverwrite(joint_V.q_dir,   &directionL);
-      xQueueOverwrite(joint_H.q_scale, &command.m2_torque);
+      xQueueOverwrite(joint_V.q_scale, &m1_torque);
+      xQueueOverwrite(joint_V.q_dir,   &directionV);
+      xQueueOverwrite(joint_H.q_scale, &m2_torque);
       xQueueOverwrite(joint_H.q_dir,   &directionH);
 
       if (I2C_DEBUG)
       {
         xSemaphoreTake(xPrintMtx, 0);
-        Serial.print("I2C: "); Serial.print(command.commandbyte);
-        Serial.print(" "); Serial.print(command.m1_torque);
-        Serial.print(" "); Serial.print(command.m2_torque);
+        Serial.print("I2C: "); Serial.print(commandbyte);
+        Serial.print(" "); Serial.print(m1_torque);
+        Serial.print(" "); Serial.print(m2_torque);
         Serial.println();
         xSemaphoreGive(xPrintMtx);
       }
+
+      TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+      TIMERG0.wdt_feed = 1;
+      TIMERG0.wdt_wprotect = 0;
     }
 
-    vTaskDelay(100 / portTICK_RATE_MS);
-  }
-}
-
-void blComTask(void *pvParameters) {
-  BluetoothSerial BT; //Object for Bluetooth
-  char buf;
-
-  struct rec_buf
-  {
-    char buf;
-    char command;
-    char motor_V;
-    char motor_H;
-  } received;
-  
-  bool directionL, directionH;
-
-  BT.begin("DEX"); // Bluetooth device
-  Serial.println("DEX is Ready to Pair");
-
-  while (1){
-    if (BT.available()){ //Check if we receive anything from Bluetooth
-      received.buf = BT.read(); //Read what we recevive 
-      Serial.print("Received:"); Serial.println(received.buf);
-      BT.write(received.buf);
-      switch (received.buf){
-        case 'a':
-          received.command = BT.read();
-          break;
-        case 'b':
-          received.motor_V = BT.read();
-          break;
-        case 'c':
-          received.motor_H = BT.read();
-          break;
-        default:
-          break;
-      }
-    }
-
-    if (BLT_DEBUG)
-    {
-      Serial.print("commandbyte"); Serial.println(received.command);
-      Serial.print("motor_V"); Serial.println((int)received.motor_V);
-      Serial.print("motor_H"); Serial.println((int)received.motor_H);
-    }
-    
+    TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+    TIMERG0.wdt_feed = 1;
+    TIMERG0.wdt_wprotect = 0;
     vTaskDelay(10 / portTICK_RATE_MS);
   }
 }
+
+// void blComTask(void *pvParameters) {
+//   BluetoothSerial BT; //Object for Bluetooth
+//   char buf;
+
+//   struct rec_buf
+//   {
+//     char buf;
+//     char command;
+//     char motor_V;
+//     char motor_H;
+//   } received;
+  
+//   bool directionL, directionH;
+
+//   BT.begin("DEX"); // Bluetooth device
+//   Serial.println("DEX is Ready to Pair");
+
+//   while (1){
+//     if (BT.available()){ //Check if we receive anything from Bluetooth
+//       received.buf = BT.read(); //Read what we recevive 
+//       Serial.print("Received:"); Serial.println(received.buf);
+//       BT.write(received.buf);
+//       switch (received.buf){
+//         case 'a':
+//           received.command = BT.read();
+//           break;
+//         case 'b':
+//           received.motor_V = BT.read();
+//           break;
+//         case 'c':
+//           received.motor_H = BT.read();
+//           break;
+//         default:
+//           break;
+//       }
+//     }
+
+//     if (BLT_DEBUG)
+//     {
+//       Serial.print("commandbyte"); Serial.println(received.command);
+//       Serial.print("motor_V"); Serial.println((int)received.motor_V);
+//       Serial.print("motor_H"); Serial.println((int)received.motor_H);
+//     }
+    
+//     vTaskDelay(10 / portTICK_RATE_MS);
+//   }
+// }
 
 // #######################################################################################
 // ########################### SETUP & LOOP ##############################################
@@ -410,6 +416,29 @@ void setup() {
   joint_H.q_scale = xQueueCreate( 1, sizeof( uint8_t ) );
   joint_H.q_dir   = xQueueCreate( 1, sizeof( bool ) );
 
+  joint_V.spi_com->beginTransaction(SPISettings(spiClk, MSBFIRST, SPI_MODE0));
+  digitalWrite(joint_V.CS, LOW);
+  uint8_t theta_raw = joint_V.spi_com->transfer(0b10000000);
+  theta_raw = joint_V.spi_com->transfer(0b00000000);
+  usleep(20000);
+  uint16_t a = joint_V.spi_com->transfer16(0x0000);
+  digitalWrite(joint_V.CS, HIGH);
+  joint_V.spi_com->endTransaction();
+
+
+  pinMode(M1_PWMU, OUTPUT);
+  pinMode(M1_PWMV, OUTPUT);
+  pinMode(M1_PWMW, OUTPUT);
+  pinMode(M2_PWMU, OUTPUT);
+  pinMode(M2_PWMV, OUTPUT);
+  pinMode(M2_PWMW, OUTPUT);
+  digitalWrite(M1_PWMU, LOW);
+  digitalWrite(M1_PWMV, LOW);
+  digitalWrite(M1_PWMW, LOW);
+  digitalWrite(M2_PWMU, LOW);
+  digitalWrite(M2_PWMV, LOW);
+  digitalWrite(M2_PWMW, LOW);
+
   pinMode(M_EN, OUTPUT);
   digitalWrite(M_EN, HIGH);
 
@@ -418,15 +447,70 @@ void setup() {
   xMotorVMtx = xSemaphoreCreateMutex();
 
   // motor control tasks
-  xTaskCreatePinnedToCore(motorTask, "motorV", 4096, (void *) &joint_V, 1, NULL, 0);
-  //xTaskCreatePinnedToCore(motorTask, "motorH", 4096, (void *) &joint_H, 1, NULL, 0);
+  xTaskCreatePinnedToCore(motorTask, "motorV", 4096 * 3, (void *) &joint_V, 1, NULL, 0);  // Link 2
+  //xTaskCreatePinnedToCore(motorTask, "motorH", 4096 * 3, (void *) &joint_H, 1, NULL, 0); // Link 1
+
+  // xTaskCreatePinnedToCore(motorScroll, "motorV", 4096, (void *) &joint_V, 1, NULL, 0);
+  // xTaskCreatePinnedToCore(motorScroll, "motorH", 4096, (void *) &joint_H, 1, NULL, 0);
 
   //xTaskCreatePinnedToCore(blComTask, "motorV", 4096, (void *) &joint_V, 1, NULL, 0);
   xTaskCreatePinnedToCore(masterComTask, "com", 4096, (void *) &joint_H, 1, NULL, 1);
 
   Serial.begin(115200);
+
+    Serial.print("a: ");
+  Serial.println(a);
 }
 
 void loop() {
   vTaskDelay(portMAX_DELAY);
+}
+
+void motorScroll(void *pvParameters) {
+  params* joint;
+  joint = (params *) pvParameters;
+
+  uint8_t phaseShift8_120 = 256/3;
+  uint8_t currentStepA = 0;
+  uint8_t currentStepB = currentStepA + 85;
+  uint8_t currentStepC = currentStepB + 85;
+  //pwm
+  uint8_t pwmA, pwmB, pwmC;
+
+  // Initialize motor driver
+  pinMode(joint->PWMU, OUTPUT);
+  pinMode(joint->PWMV, OUTPUT);
+  pinMode(joint->PWMW, OUTPUT);
+
+  pinMode(joint->NFLT, INPUT);
+
+  // PWM setup
+  ledcSetup(joint->CHN1, PWM_FRQ, PWM_RES);
+  ledcSetup(joint->CHN2, PWM_FRQ, PWM_RES);
+  ledcSetup(joint->CHN3, PWM_FRQ, PWM_RES);
+
+  ledcAttachPin(joint->PWMU, joint->CHN1);
+  ledcAttachPin(joint->PWMV, joint->CHN2);
+  ledcAttachPin(joint->PWMW, joint->CHN3);
+
+  while(1){
+    // Scroll through field
+    for(uint8_t i = 0; i < 0; i++)
+    {
+      currentStepA = i; currentStepB = i, currentStepC = i;         //Masked by conversion back to 16 bit to cycle around 360 deg 4 times in one mechanical rotation. (Modulus 360 degrees)
+      // currentStepB = currentStepA + phaseShift8_120;
+      // currentStepC = currentStepB + phaseShift8_120;
+      pwmA = (uint8_t)(pwmSin[currentStepA]);
+      pwmB = (uint8_t)(pwmSin[currentStepB]);
+      pwmC = (uint8_t)(pwmSin[currentStepC]);
+      ledcWrite(joint->CHN1, pwmA);
+      ledcWrite(joint->CHN2, pwmB);
+      ledcWrite(joint->CHN3, pwmC);
+  
+      // xQueueOverwrite(qPrintPWM2A, &pwmA);
+      // xQueueOverwrite(qPrintPWM2B, &pwmB);
+      // xQueueOverwrite(qPrintPWM2C, &pwmC);
+      vTaskDelay(10/portTICK_RATE_MS);
+    }
+  }
 }

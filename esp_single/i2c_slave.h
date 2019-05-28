@@ -8,7 +8,7 @@
 
 
 #define DATA_LENGTH                        512              /*!<Data buffer length for test buffer*/
-#define RW_TEST_LENGTH                     3*8              /*!<Data length for r/w test, any value from 0-DATA_LENGTH*/
+#define RW_TEST_LENGTH                     129              /*!<Data length for r/w test, any value from 0-DATA_LENGTH*/
 #define DELAY_TIME_BETWEEN_ITEMS_MS        100             /*!< delay time between different test items */
 
 #define I2C_EXAMPLE_SLAVE_SCL_IO           GPIO_NUM_16    //RX - SCL           /*!<gpio number for i2c slave clock  */
