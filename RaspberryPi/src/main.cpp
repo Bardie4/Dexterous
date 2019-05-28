@@ -59,7 +59,7 @@ class Finger{
     float theta2Zero;
 
     //Pointer to list of parameters for twenty different controllers
-    float** controllerParameters[20];
+    float* controllerParameters[20];
 
 
     //Shared memory
@@ -99,13 +99,6 @@ class Finger{
         //Select one of twenty parameters or break
         return;
       }
-
-      if (controllerParameters[controller][param]  != NULL){
-        //If the controller is bound: change parameter
-
-        //*(controllerParameters[controller]+param) = newParamValue;
-      }
-
 
     }
 
