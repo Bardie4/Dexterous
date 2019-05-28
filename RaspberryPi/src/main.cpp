@@ -59,7 +59,7 @@ class Finger{
     float theta2Zero;
 
     //Pointer to list of parameters for twenty different controllers
-    float* controllerParameters[20][20];
+    float* controllerParameters[20];
 
 
     //Shared memory
@@ -369,10 +369,10 @@ class ZmqSubscriber{
       auto velocity = messageObj->trajVelocity();
       auto acceleration = messageObj->trajAcceleration();
       for (int i= 0; i < fingerMem.trajSize ; i++){
-        fingerMem.trajTimeStamp[i] = timeStamp->get(i);
-        fingerMem.trajPosition[i] = position->get(i);
-        fingerMem.trajVelocity[i] = velocity->get(i);
-        fingerMem.trajAcceleration[i] = acceleration->get(i);
+        fingerMem.trajTimeStamp[i] = timeStamp->Get(i);
+        fingerMem.trajPosition[i] = position->Get(i);
+        fingerMem.trajVelocity[i] = velocity->Get(i);
+        fingerMem.trajAcceleration[i] = acceleration->Get(i);
       }
 
       //std::cout << fingerMem.fingerSelect << " " << fingerMem.controllerSelect << std::endl;
