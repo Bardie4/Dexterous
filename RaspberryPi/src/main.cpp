@@ -415,7 +415,7 @@ class PeripheralsController{
 		PeripheralFingerMem* fingerMemPtr[7];
     PeripheralFingerMem fingerMem[7];
     PeripheralFingerMem fingerMemPrev[7];
-    float zeroAngle[7][2];
+    float* zeroAngle[7][2];
     bool zeroCross[7][2];
     unsigned (*csAndI2cAddr)[3];
 
@@ -623,8 +623,8 @@ class PeripheralsController{
 
       //The finger threads and periphersal thread use this memory to communicate
       fingerMemPtr[finger->id] = &(finger->periphSharedMem);
-      zeroAngle[finger->id][0] = finger->theta1Zero;
-      zeroAngle[finger->id][1] = finger->theta2Zero;
+      zeroAngle[finger->id][0] = &finger->theta1Zero;
+      zeroAngle[finger->id][1] = &finger->theta2Zero;
       //During calibration, the finger takes control over the pheripherals.
       //Here it it given the means to do so.
       finger->spiHandle = spiHandle;
@@ -662,22 +662,22 @@ class PeripheralsController{
 
 						//Read sensors (store it locally)
             fingerMem[i].jointAngle1 = readAngle12(csAndI2cAddr[i][0]);   //Read angle raw
-            if (fingerMem[i].jointAngle1 < zeroAngle[i][0]){              //Check if it has crossed zero point
+            if (fingerMem[i].jointAngle1 < *zeroAngle[i][0]){              //Check if it has crossed zero point
               zeroCross[i][0] = 1;
             }else{
               zeroCross[i][0] = 0;
             }
             std::cout << "raw angle" << fingerMem[i].jointAngle1 << "zeroAgnle:"<<  zeroAngle[i][0] << "zero cross "<<zeroCross[i][0] <<std::endl;
-            
-            fingerMem[i].jointAngle1 = 90.0*3.142/180.0 - fingerMem[i].jointAngle1 - (6.283*zeroCross[i][0]) + zeroAngle[i][0];
+
+            fingerMem[i].jointAngle1 = 90.0*3.142/180.0 - fingerMem[i].jointAngle1 - (6.283*zeroCross[i][0]) + *zeroAngle[i][0];
             //std::cout << "adjusted angle" << fingerMem[i].jointAngle1 << std::endl;
             fingerMem[i].jointAngle2 = readAngle12(csAndI2cAddr[i][1]);   //Read angle raw
-            if (fingerMem[i].jointAngle2 < zeroAngle[i][1]){              //Check if it has crossed zero point
+            if (fingerMem[i].jointAngle2 < *zeroAngle[i][1]){              //Check if it has crossed zero point
               zeroCross[i][1] = 1;
             }else{
               zeroCross[i][1] = 0;
             }
-            fingerMem[i].jointAngle2 = 135*3.142/180.0 - fingerMem[i].jointAngle2 - 6.283 * zeroCross[i][1] + zeroAngle[i][1];
+            fingerMem[i].jointAngle2 = 135*3.142/180.0 - fingerMem[i].jointAngle2 - 6.283 * zeroCross[i][1] + *zeroAngle[i][1];
 
 
 						//Process sensor information (store it locally)
