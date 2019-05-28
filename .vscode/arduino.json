@@ -1,8 +1,0 @@
-{
-    "programmer": "AVRISP mkII",
-    "board": "esp32:esp32:esp32doit-devkit-v1",
-    "output": "../build",
-    "port": "/dev/ttyUSB0",
-    "sketch": "esp_single/esp_singe.ino",
-    "configuration": "FlashFreq=80,UploadSpeed=921600,DebugLevel=none"
-}
