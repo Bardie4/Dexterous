@@ -189,7 +189,7 @@ class Finger{
       i2cWriteDevice(i2cHandle, torque_cmd, 3);
 			pthread_mutex_unlock(&periphLock);
 
-      std::cout << "Zero point 1" << theta1Zero <<" zero point 2: " << theta1Zero << std::endl;
+      std::cout << "Zero point 1: " << theta1Zero <<" zero point 2: " << theta2Zero << std::endl;
 
 			//Tell SPI thread to include sensors in measurement loop
 			pthread_mutex_lock(&periphLock);
@@ -667,8 +667,9 @@ class PeripheralsController{
             }else{
               zeroCross[i][0] = 0;
             }
-            //std::cout << "raw angle" << fingerMem[i].jointAngle1 << std::endl;
-            fingerMem[i].jointAngle1 = 90.0*3.142/180.0 - fingerMem[i].jointAngle1 - 6.283 * zeroCross[i][0] + zeroAngle[i][0];
+            std::cout << "raw angle" << fingerMem[i].jointAngle1 << "zeroAgnle:"<<  zeroAngle[i][0] << "zero cross "<<zeroCross[i][0] <<std::endl;
+            
+            fingerMem[i].jointAngle1 = 90.0*3.142/180.0 - fingerMem[i].jointAngle1 - (6.283*zeroCross[i][0]) + zeroAngle[i][0];
             //std::cout << "adjusted angle" << fingerMem[i].jointAngle1 << std::endl;
             fingerMem[i].jointAngle2 = readAngle12(csAndI2cAddr[i][1]);   //Read angle raw
             if (fingerMem[i].jointAngle2 < zeroAngle[i][1]){              //Check if it has crossed zero point
