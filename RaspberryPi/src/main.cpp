@@ -31,7 +31,7 @@ pthread_t tid[10];
 pthread_t i2c_threads[7];
 //micro seconds between sensor reads.
 //(the process of reading adds additional time to the total step length)
-#define ITR_DEADLINE 5000
+#define ITR_DEADLINE 1
 
 //Flatbuffers
 using namespace my_schemas; // Specified in the schema.
