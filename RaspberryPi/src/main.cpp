@@ -59,7 +59,7 @@ class Finger{
     float theta2Zero;
 
     //Pointer to list of parameters for twenty different controllers
-    float* controllerParameters[20];
+    float** controllerParameters[20];
 
 
     //Shared memory
