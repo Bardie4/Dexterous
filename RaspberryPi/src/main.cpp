@@ -539,6 +539,12 @@ class PeripheralsController{
       if (outBuf[0] & 0b00000010){
         torque2 = -1.0*torque2;
       }
+      for (int i = 0; i<7; i++){
+        fingerMemPrev[i].jointAngle1 = 0;
+        fingerMemPrev[i].jointAngle2 = 0;
+        fingerMemPrev[i].angularVel1 = 0;
+        fingerMemPrev[i].angularVel2 = 0;
+      }
 		}
 
   public:
@@ -686,6 +692,9 @@ class PeripheralsController{
 						//Process sensor information (store it locally)
             fingerMem[i].angularVel1 = (fingerMem[i].jointAngle1 - fingerMemPrev[i].jointAngle1)/(step/1000000.0);
             fingerMem[i].angularVel2 = (fingerMem[i].jointAngle2 - fingerMemPrev[i].jointAngle2)/(step/1000000.0);
+
+            fingerMem[i].angularVel1 = (fingerMem[i].angularVel1 + fingerMemPrev[i].angularVel1)/2;
+            fingerMem[i].angularVel1 = (fingerMem[i].angularVel1 + fingerMemPrev[i].angularVel1)/2;
             fingerMemPrev[i] = fingerMem[i];
 
 						pthread_mutex_lock(&periphLock);
