@@ -694,7 +694,7 @@ class PeripheralsController{
             fingerMem[i].angularVel2 = (fingerMem[i].jointAngle2 - fingerMemPrev[i].jointAngle2)/(step/1000000.0);
 
             fingerMem[i].angularVel1 = (fingerMem[i].angularVel1 + fingerMemPrev[i].angularVel1)/2;
-            fingerMem[i].angularVel1 = (fingerMem[i].angularVel1 + fingerMemPrev[i].angularVel1)/2;
+            fingerMem[i].angularVel2 = (fingerMem[i].angularVel2 + fingerMemPrev[i].angularVel2)/2;
             fingerMemPrev[i] = fingerMem[i];
 
 						pthread_mutex_lock(&periphLock);
