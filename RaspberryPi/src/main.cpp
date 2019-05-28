@@ -539,12 +539,7 @@ class PeripheralsController{
       if (outBuf[0] & 0b00000010){
         torque2 = -1.0*torque2;
       }
-      for (int i = 0; i<7; i++){
-        fingerMemPrev[i].jointAngle1 = 0;
-        fingerMemPrev[i].jointAngle2 = 0;
-        fingerMemPrev[i].angularVel1 = 0;
-        fingerMemPrev[i].angularVel2 = 0;
-      }
+
 		}
 
   public:
@@ -614,6 +609,12 @@ class PeripheralsController{
         }
       }
       time0=micros();
+      for (int i = 0; i<7; i++){
+        fingerMemPrev[i].jointAngle1 = 0;
+        fingerMemPrev[i].jointAngle2 = 0;
+        fingerMemPrev[i].angularVel1 = 0;
+        fingerMemPrev[i].angularVel2 = 0;
+      }
 
     }
 
@@ -692,13 +693,13 @@ class PeripheralsController{
 
 						//Process sensor information (store it locally)
 
-            std::cout <<"new value" << fingerMem[i].jointAngle1 <<" old value: "<< fingerMemPrev[i].jointAngle1<<std::endl;
+          //  std::cout <<"new value" << fingerMem[i].jointAngle1 <<" old value: "<< fingerMemPrev[i].jointAngle1<<std::endl;
             fingerMem[i].angularVel1 = (fingerMem[i].jointAngle1 - fingerMemPrev[i].jointAngle1)/(step/1000000.0);
             fingerMem[i].angularVel2 = (fingerMem[i].jointAngle2 - fingerMemPrev[i].jointAngle2)/(step/1000000.0);
 
             fingerMem[i].angularVel1 = (fingerMem[i].angularVel1 + fingerMemPrev[i].angularVel1)/2.0;
             fingerMem[i].angularVel2 = (fingerMem[i].angularVel2 + fingerMemPrev[i].angularVel2)/2.0;
-            std::cout <<"steplength" << (step/1000000.0) <<" Delta angle: "<< (fingerMem[i].jointAngle1 - fingerMemPrev[i].jointAngle1)<<std::endl;
+            //std::cout <<"steplength" << (step/1000000.0) <<" Delta angle: "<< (fingerMem[i].jointAngle1 - fingerMemPrev[i].jointAngle1)<<std::endl;
             fingerMemPrev[i].jointAngle1 = fingerMem[i].jointAngle1;
             fingerMemPrev[i].jointAngle2 = fingerMem[i].jointAngle2;
             fingerMemPrev[i].angularVel1 = fingerMem[i].angularVel1;
