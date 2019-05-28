@@ -11,9 +11,9 @@
 //#include "BluetoothSerial.h" //Header File for Serial Bluetooth, will be added by default into Arduino
 
 
-#define I2C_DEBUG false
+#define I2C_DEBUG true
 #define BLT_DEBUG false
-#define PWM_DEBUG true
+#define PWM_DEBUG false
 #define SPI_DEBUG false
 
 SemaphoreHandle_t xPrintMtx;
@@ -198,7 +198,7 @@ void motorTask(void* pvParameters) {
     // Read master commands
     xQueuePeek(joint->q_scale, &velocity_raw, 0);
     xQueuePeek(joint->q_dir,   &dir,          0);
-    velocity = (double)((velocity_raw / 255.0) * 1.0);
+    velocity = (double)((velocity_raw / 300.0) * 1.0);
 
     //Leading or lagging electrical field
     if (dir) lead_lag = phaseShift8_90;
@@ -314,7 +314,7 @@ void masterComTask(void *pvParameters) {
 
       // bitmask
       directionV = !((commandbyte & ( 1 << 0 )) >> 0); // LSB. Flipped
-      directionH = !((commandbyte & ( 1 << 1 )) >> 1); // LSB - 1. Flipped
+      directionH = ((commandbyte & ( 1 << 1 )) >> 1); // LSB - 1.
 
       send_buf[0] = commandbyte;
       send_buf[1] = m1_torque;
@@ -448,7 +448,7 @@ void setup() {
 
   // motor control tasks
   xTaskCreatePinnedToCore(motorTask, "motorV", 4096 * 3, (void *) &joint_V, 1, NULL, 0);  // Link 2
-  //xTaskCreatePinnedToCore(motorTask, "motorH", 4096 * 3, (void *) &joint_H, 1, NULL, 0); // Link 1
+  xTaskCreatePinnedToCore(motorTask, "motorH", 4096 * 3, (void *) &joint_H, 1, NULL, 0); // Link 1
 
   // xTaskCreatePinnedToCore(motorScroll, "motorV", 4096, (void *) &joint_V, 1, NULL, 0);
   // xTaskCreatePinnedToCore(motorScroll, "motorH", 4096, (void *) &joint_H, 1, NULL, 0);
