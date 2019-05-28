@@ -697,8 +697,8 @@ class PeripheralsController{
             fingerMem[i].angularVel1 = (fingerMem[i].jointAngle1 - fingerMemPrev[i].jointAngle1)/(step/1000000.0);
             fingerMem[i].angularVel2 = (fingerMem[i].jointAngle2 - fingerMemPrev[i].jointAngle2)/(step/1000000.0);
 
-            fingerMem[i].angularVel1 = (fingerMem[i].angularVel1 + fingerMemPrev[i].angularVel1)/2.0;
-            fingerMem[i].angularVel2 = (fingerMem[i].angularVel2 + fingerMemPrev[i].angularVel2)/2.0;
+            //fingerMem[i].angularVel1 = (fingerMem[i].angularVel1 + fingerMemPrev[i].angularVel1)/2.0;
+            //fingerMem[i].angularVel2 = (fingerMem[i].angularVel2 + fingerMemPrev[i].angularVel2)/2.0;
             //std::cout <<"steplength" << (step/1000000.0) <<" Delta angle: "<< (fingerMem[i].jointAngle1 - fingerMemPrev[i].jointAngle1)<<std::endl;
             fingerMemPrev[i].jointAngle1 = fingerMem[i].jointAngle1;
             fingerMemPrev[i].jointAngle2 = fingerMem[i].jointAngle2;
