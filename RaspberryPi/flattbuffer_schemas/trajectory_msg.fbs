@@ -1,0 +1,25 @@
+// Example IDL file for our monster's schema.
+namespace my_schemas;
+
+table TrajectoryMsg {
+  finger_select:short;
+  controller_select:short;
+  data1:float;
+  data2:float;
+  data3:float;
+  data4:float;
+  data5:float;
+  data6:float;
+  data7:float;
+  data8:float;
+  data9:float;
+  data10:float;
+  trajSize:float;
+  trajTimeStamp:[float];
+  trajPosition:[float];
+  trajVelocity:[float];
+  trajAcceleration:[float];
+}
+
+root_type TrajectoryMsg;
+file_identifier "TRAJ";
