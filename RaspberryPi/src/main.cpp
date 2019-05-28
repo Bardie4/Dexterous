@@ -100,7 +100,7 @@ class Finger{
         return;
       }
 
-      if (*controllerParameters[controller]  != NULL){
+      if (*controllerParameters[controller][param]  != NULL){
         //If the controller is bound: change parameter
 
         //*(controllerParameters[controller]+param) = newParamValue;
