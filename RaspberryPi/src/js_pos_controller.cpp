@@ -40,8 +40,8 @@ JointSpacePosController::JointSpacePosController():controllerEngine(){
   kd2 = &controllerEngine.var6;
 
   //Iitial values:
-  *kp1 = 0.2 /(2*3.14*3.0/8.0) ;   //0.1 N/m at max possible error
-  *kp2 = 1 /(2*3.14*3.0/8.0) ;   //0.1 N/m at max possible error
+  *kp1 = 0.3 /(2*3.14*3.0/8.0) ;   //0.1 N/m at max possible error
+  *kp2 = 0.65 /(2*3.14*3.0/8.0) ;   //0.1 N/m at max possible error
   *ki1 = 0;
   *ki2 = 0;
   *kd1 = 0;
