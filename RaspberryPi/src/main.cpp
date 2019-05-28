@@ -59,7 +59,7 @@ class Finger{
     float theta2Zero;
 
     //Pointer to list of parameters for twenty different controllers
-    float** controllerParameters[20];
+    //float* controllerParameters[20];
 
 
     //Shared memory
@@ -75,7 +75,7 @@ class Finger{
         handle->periphMemPtr = &periphSharedMem;
         handle->fingerId = id;
         handle->controllerId = controller_id;
-        controllerParameters[controller_id] = handle->varPtrs;
+        //controllerParameters[controller_id] = handle->varPtrs;
     }
 
     void adjustControllerParameter(){
@@ -189,6 +189,7 @@ class Finger{
       i2cWriteDevice(i2cHandle, torque_cmd, 3);
 			pthread_mutex_unlock(&periphLock);
 
+      std::cout << "Zero point 1" << theta1Zero <<" zero point 2: " << theta1Zero << std::endl;
 
 			//Tell SPI thread to include sensors in measurement loop
 			pthread_mutex_lock(&periphLock);
