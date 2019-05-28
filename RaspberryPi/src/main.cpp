@@ -59,7 +59,7 @@ class Finger{
     float theta2Zero;
 
     //Pointer to list of parameters for twenty different controllers
-    float* controllerParameters[20];
+    float* controllerParameters[20][20];
 
 
     //Shared memory
@@ -369,10 +369,10 @@ class ZmqSubscriber{
       auto velocity = messageObj->trajVelocity();
       auto acceleration = messageObj->trajAcceleration();
       for (int i= 0; i < fingerMem.trajSize ; i++){
-        trajTimeStamp[i] = timeStamp->get(i);
-        trajPosition[i] = position->get(i);
-        trajVelocity[i] = velocity->get(i);
-        trajAcceleration[i] = acceleration->get(i);
+        fingerMem.trajTimeStamp[i] = timeStamp->get(i);
+        fingerMem.trajPosition[i] = position->get(i);
+        fingerMem.trajVelocity[i] = velocity->get(i);
+        fingerMem.trajAcceleration[i] = acceleration->get(i);
       }
 
       //std::cout << fingerMem.fingerSelect << " " << fingerMem.controllerSelect << std::endl;
@@ -669,19 +669,19 @@ class PeripheralsController{
 						//Read sensors (store it locally)
             fingerMem[i].jointAngle1 = readAngle12(csAndI2cAddr[i][0]);   //Read angle raw
             if (fingerMem[i].jointAngle1 < zeroAngle[i][0]){              //Check if it has crossed zero point
-              zerCross[i][0] = 1;
+              zeroCross[i][0] = 1;
             }else{
-              zerCross[i][0] = 0;
+              zeroCross[i][0] = 0;
             }
-            fingerMem[i].jointAngle1 = 90*3.142/180.0 - fingerMem[i].jointAngle1 + 6.283 * zerCross[i][0] - zeroAngle[i][0];
+            fingerMem[i].jointAngle1 = 90*3.142/180.0 - fingerMem[i].jointAngle1 + 6.283 * zeroCross[i][0] - zeroAngle[i][0];
 
             fingerMem[i].jointAngle2 = readAngle12(csAndI2cAddr[i][1]);   //Read angle raw
             if (fingerMem[i].jointAngle2 < zeroAngle[i][1]){              //Check if it has crossed zero point
-              zerCross[i][1] = 1;
+              zeroCross[i][1] = 1;
             }else{
-              zerCross[i][1] = 0;
+              zeroCross[i][1] = 0;
             }
-            fingerMem[i].jointAngle2 = 135*3.142/180.0 - fingerMem[i].jointAngle2 + 6.283 * zerCross[i][1] - zeroAngle[i][1];
+            fingerMem[i].jointAngle2 = 135*3.142/180.0 - fingerMem[i].jointAngle2 + 6.283 * zeroCross[i][1] - zeroAngle[i][1];
 
 
 						//Process sensor information (store it locally)
