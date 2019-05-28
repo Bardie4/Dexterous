@@ -40,8 +40,8 @@ JointSpacePosController::JointSpacePosController():controllerEngine(){
   kd2 = &controllerEngine.var6;
 
   //Iitial values:
-  *kp1 = 0.1 /(2*3.14*3.0/8.0) ;   //0.1 N/m at max possible error
-  *kp2 = 0.1 /(2*3.14*3.0/8.0) ;   //0.1 N/m at max possible error
+  *kp1 = 0.2 /(2*3.14*3.0/8.0) ;   //0.1 N/m at max possible error
+  *kp2 = 0.5 /(2*3.14*3.0/8.0) ;   //0.1 N/m at max possible error
   *ki1 = 0;
   *ki2 = 0;
   *kd1 = 0;
@@ -79,7 +79,7 @@ void JointSpacePosController::iterate(){
   if ( itrCounter > 10000){
     std::cout << "Finger "<< controllerEngine.fingerId << " controller: " << controllerEngine.controllerId << " iteration time: " << step << std::endl;
     std::cout << "setpoint1: " << ((*jointAngle1Setpoint)*(180.0/3.14)) <<" Angle1: "<< ((*jointAngle1)*(180.0/3.14)) << " error1: " << error1 <<" output1: " << *commandedTorque1 << std::endl;
-    std::cout << "setpoint2: " << ((*jointAngle1Setpoint)*(180.0/3.14)) <<" Angle2: "<< ((*jointAngle2)*(180.0/3.14)) << " error1: " << error2 <<" output2: " << *commandedTorque2 << std::endl;
+    std::cout << "setpoint2: " << ((*jointAngle2Setpoint)*(180.0/3.14)) <<" Angle2: "<< ((*jointAngle2)*(180.0/3.14)) << " error1: " << error2 <<" output2: " << *commandedTorque2 << std::endl;
     itrCounter=0;
   }
 }
