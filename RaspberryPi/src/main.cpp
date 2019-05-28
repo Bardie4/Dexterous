@@ -143,12 +143,12 @@ class Finger{
 			//***********************************************
 			torque_cmd[0]=(uint8_t) 0b00000010;
 			torque_cmd[1]=(uint8_t) 90; //Skift retning
-			torque_cmd[2]=(uint8_t) 60;  //link2
+			torque_cmd[2]=(uint8_t) 90;  //link2
 			pthread_mutex_lock(&periphLock);
       i2cWriteDevice(i2cHandle, torque_cmd, 3);
 			pthread_mutex_unlock(&periphLock);
 			printf("Driving to endpoint for link 1\n");
-			sleep(2);
+			sleep(3);
 
 			//READ ANGLE AT END POINT
 			pthread_mutex_lock(&periphLock);
@@ -165,9 +165,12 @@ class Finger{
       //***********************************************
       torque_cmd[0]=(uint8_t) 0b00000001;
       torque_cmd[1]=(uint8_t) 90; //Skift retning
-      torque_cmd[2]=(uint8_t) 60;  //link2
+      torque_cmd[2]=(uint8_t) 90;  //link2
+      pthread_mutex_lock(&periphLock);
+      i2cWriteDevice(i2cHandle, torque_cmd, 3);
+      pthread_mutex_unlock(&periphLock);
       printf("Driving to endpoint for link 2\n");
-      sleep(2);
+      sleep(3);
 
       //READ ANGLE AT END POINT
 			pthread_mutex_lock(&periphLock);
