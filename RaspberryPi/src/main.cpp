@@ -59,7 +59,7 @@ class Finger{
     float theta2Zero;
 
     //Pointer to list of parameters for twenty different controllers
-    float* controllerParameters[20];
+    //float** controllerParameters[20];
 
 
     //Shared memory
@@ -75,7 +75,7 @@ class Finger{
         handle->periphMemPtr = &periphSharedMem;
         handle->fingerId = id;
         handle->controllerId = controller_id;
-        controllerParameters[controller_id] = handle->varPtrs;
+        //controllerParameters = handle->varPtrs;
     }
 
     void adjustControllerParameter(){
