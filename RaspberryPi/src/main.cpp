@@ -667,15 +667,16 @@ class PeripheralsController{
             }else{
               zeroCross[i][0] = 0;
             }
-            fingerMem[i].jointAngle1 = 90*3.142/180.0 - fingerMem[i].jointAngle1 + 6.283 * zeroCross[i][0] - zeroAngle[i][0];
-
+            std::cout << "raw angle" << fingerMem[i].jointAngle1 << std::endl;
+            fingerMem[i].jointAngle1 = 90.0*3.142/180.0 - fingerMem[i].jointAngle1 - 6.283 * zeroCross[i][0] + zeroAngle[i][0];
+            std::cout << "adjusted angle" << fingerMem[i].jointAngle1 << std::endl;
             fingerMem[i].jointAngle2 = readAngle12(csAndI2cAddr[i][1]);   //Read angle raw
             if (fingerMem[i].jointAngle2 < zeroAngle[i][1]){              //Check if it has crossed zero point
               zeroCross[i][1] = 1;
             }else{
               zeroCross[i][1] = 0;
             }
-            fingerMem[i].jointAngle2 = 135*3.142/180.0 - fingerMem[i].jointAngle2 + 6.283 * zeroCross[i][1] - zeroAngle[i][1];
+            fingerMem[i].jointAngle2 = 135*3.142/180.0 - fingerMem[i].jointAngle2 - 6.283 * zeroCross[i][1] + zeroAngle[i][1];
 
 
 						//Process sensor information (store it locally)
