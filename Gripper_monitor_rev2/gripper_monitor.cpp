@@ -33,7 +33,7 @@ typedef struct InputData{
   float timeStamp;
 }InputData;
 
-int main(int argc, char **argv){
+int main(int argc, char *argv[]){
   timeval a;
   timeval b;
   zmq::context_t context(1);
@@ -43,11 +43,11 @@ int main(int argc, char **argv){
   subscriber.connect("tcp://169.254.23.164:5564");
   int n=0;
   int iterations = 10000;
-  if (argc>2)
+  if (argc >= 2)
   {
-    iterations = atoi(argv[0]);
+    iterations = atoi(argv[1]);
   }
-   atoi(argv[0]);
+
   InputData inputData[7];
   std::vector<InputData> fingerStateVector;
   fingerStateVector.reserve(7);
@@ -119,7 +119,7 @@ int main(int argc, char **argv){
   std::ofstream csv_file;
   csv_file.open ("data.csv");
 
-  for (int n=0 ; n< iterations; n=n+2){
+  for (int n=0 ; n< iterations; n=n+5){
         angle1.push_back(handStateVector[n][0].angle1);
         csv_file << handStateVector[n][0].angle1 << ",";
         angle2.push_back(handStateVector[n][0].angle2);
