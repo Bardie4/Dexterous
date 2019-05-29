@@ -457,6 +457,9 @@ class PeripheralsController{
     float torque2;
     int i2cHandles[7];
 
+    float angle1Temp;
+    float angle2Temp;
+
     std::vector<flatbuffers::Offset<FingerStates>> handStates;
     int size;
     uint8_t *buf;
@@ -672,27 +675,25 @@ class PeripheralsController{
 					if (fingerMem[i].runFlag){
 
 						//Read sensors (store it locally)
-            fingerMem[i].jointAngle1 = readAngle12(csAndI2cAddr[i][0]);   //Read angle raw
-            if (fingerMem[i].jointAngle1 < *zeroAngle[i][0] - 0.3){              //Check if it has crossed zero point
+            angle1Temp = readAngle12(csAndI2cAddr[i][0]);   //Read angle raw
+            if (angle2Temp < (*zeroAngle[i][0] - 0.785)){              //Check if it has crossed zero point
               zeroCross[i][0] = 1;
             }else{
               zeroCross[i][0] = 0;
             }
             //std::cout << "raw angle" << fingerMem[i].jointAngle1 << "zeroAgnle:"<<  zeroAngle[i][0] << "zero cross "<<zeroCross[i][0] <<std::endl;
-            fingerMem[i].jointAngle1 = (90.0*3.142/180.0) - (fingerMem[i].jointAngle1 - *zeroAngle[i][0] + (6.283*zeroCross[i][0]));
+            fingerMem[i].jointAngle1 = (90.0*3.142/180.0) - (angle1Temp - *zeroAngle[i][0] + (6.283*zeroCross[i][0]));
 
 
             //std::cout << "adjusted angle" << fingerMem[i].jointAngle1 << std::endl;
-            fingerMem[i].jointAngle2 = readAngle12(csAndI2cAddr[i][1]);   //Read angle raw
-            if (fingerMem[i].jointAngle2 <  *zeroAngle[i][1] - 0.3){              //Check if it has crossed zero point
+            angle2Temp= readAngle12(csAndI2cAddr[i][1]);   //Read angle raw
+            if (angle2Temp <  (*zeroAngle[i][1] - 0.785)){              //Check if it has crossed zero point
               zeroCross[i][1] = 1;
             }else{
               zeroCross[i][1] = 0;
             }
-            fingerMem[i].jointAngle2 = (135.0*3.142/180.0) - (fingerMem[i].jointAngle2 - *zeroAngle[i][1] + (6.283 * zeroCross[i][1])) ;
-            if (zeroCross[i][1]){
-              std::cout <<"ZERO CROSS" << std::endl;
-            }
+            fingerMem[i].jointAngle2 = (135.0*3.142/180.0) - (angle2Temp - *zeroAngle[i][1] + (6.283 * zeroCross[i][1])) ;
+
 
 						//Process sensor information (store it locally)
 
