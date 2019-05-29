@@ -192,13 +192,6 @@ class Finger{
       i2cWriteDevice(i2cHandle, torque_cmd, 3);
 			pthread_mutex_unlock(&periphLock);
 
-      if (theta1Zero < 3.14159256/4.0){
-        theta1Zero =3.14159256/4.0;
-      }
-
-      if (theta2Zero < 3.14159256/4.0){
-        theta2Zero = 3.14159256/4.0;
-      }
 
       std::cout << "Zero point 1: " << theta1Zero <<" zero point 2: " << theta2Zero << std::endl;
 
@@ -700,7 +693,7 @@ class PeripheralsController{
             }else{
               zeroCross[i][1] = 0;
             }
-            fingerMem[i].jointAngle2 = (135.0*3.142/180.0) - (angle2Temp - *zeroAngle[i][1] + (6.283 * zeroCross[i][1])) ;
+            fingerMem[i].jointAngle2 = (135.0*3.142/180.0) - (angle2Temp - *zeroAngle[i][1] );//+ (6.283 * zeroCross[i][1])) ;
 
 
 						//Process sensor information (store it locally)
