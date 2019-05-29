@@ -690,7 +690,9 @@ class PeripheralsController{
               zeroCross[i][1] = 0;
             }
             fingerMem[i].jointAngle2 = (135.0*3.142/180.0) - (fingerMem[i].jointAngle2 - *zeroAngle[i][1] + (6.283 * zeroCross[i][1])) ;
-
+            if (zeroCross[i][1]){
+              std::cout <<"ZERO CROSS" << std::endl;
+            }
 
 						//Process sensor information (store it locally)
 
