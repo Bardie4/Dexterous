@@ -170,7 +170,7 @@ class Finger{
       i2cWriteDevice(i2cHandle, torque_cmd, 3);
       pthread_mutex_unlock(&periphLock);
       printf("Driving to endpoint for link 2\n");
-      sleep(3);
+      sleep(4);
 
       //READ ANGLE AT END POINT
 			pthread_mutex_lock(&periphLock);
@@ -688,7 +688,7 @@ class PeripheralsController{
             }else{
               zeroCross[i][1] = 0;
             }
-            fingerMem[i].jointAngle2 = 135*3.142/180.0 - fingerMem[i].jointAngle2 - 6.283 * zeroCross[i][1] + *zeroAngle[i][1];
+            fingerMem[i].jointAngle2 = 135*3.142/180.0 - fingerMem[i].jointAngle2 -  (6.283 * zeroCross[i][1]) + *zeroAngle[i][1];
 
 
 						//Process sensor information (store it locally)
