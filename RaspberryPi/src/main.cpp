@@ -676,7 +676,7 @@ class PeripheralsController{
 
 						//Read sensors (store it locally)
             angle1Temp = readAngle12(csAndI2cAddr[i][0]);   //Read angle raw
-            if (angle2Temp < (*zeroAngle[i][0] - 0.785)){              //Check if it has crossed zero point
+            if (angle1Temp < (*zeroAngle[i][0] - 0.785)){              //Check if it has crossed zero point
               zeroCross[i][0] = 1;
             }else{
               zeroCross[i][0] = 0;
@@ -686,7 +686,7 @@ class PeripheralsController{
 
 
             //std::cout << "adjusted angle" << fingerMem[i].jointAngle1 << std::endl;
-            angle2Temp= readAngle12(csAndI2cAddr[i][1]);   //Read angle raw
+            angle2Temp = readAngle12(csAndI2cAddr[i][1]);   //Read angle raw
             if (angle2Temp <  (*zeroAngle[i][1] - 0.785)){              //Check if it has crossed zero point
               zeroCross[i][1] = 1;
             }else{
