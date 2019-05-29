@@ -487,7 +487,7 @@ class PeripheralsController{
       spiResult = spiXfer(spiHandle, outBuf, inBuf, 2);
       gpioResult = gpioWrite(cs,1);
       angle16 = 0;
-      angle16 = inBuf[0];// << 8;
+      angle16 = inBuf[1];// << 8;
     //  angle16 = angle16 + inBuf[1];
       //std::cout <<"Raw 16 bit angle: "<< angle16 << " on chip select: "<< cs <<" inbuf:"<<unsigned(inBuf[0])<<unsigned(inBuf[1])<<std::endl;
 			pthread_mutex_unlock(&periphLock);
