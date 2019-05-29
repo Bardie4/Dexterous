@@ -484,7 +484,7 @@ class PeripheralsController{
       outBuf[1] = read_command_16[1];
 			pthread_mutex_lock(&periphLock);
       gpioResult = gpioWrite(cs,0);
-      spiResult = spiXfer(spiHandle, outBuf, inBuf, 2);
+      spiResult = spiXfer(spiHandle, outBuf, inBuf, 1);
       gpioResult = gpioWrite(cs,1);
       angle16 = 0;
       angle16 = inBuf[0] << 8;
