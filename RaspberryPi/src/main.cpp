@@ -435,7 +435,7 @@ class PeripheralsController{
     char inBuf[4];
     char outBuf[4];
     char read_command_8;
-    char read_command_16[2];
+    char read_command_16[3];
     uint16_t angle16;
     uint8_t angle8;
     float angleRad;
@@ -484,10 +484,10 @@ class PeripheralsController{
       outBuf[1] = read_command_16[1];
 			pthread_mutex_lock(&periphLock);
       gpioResult = gpioWrite(cs,0);
-      spiResult = spiXfer(spiHandle, outBuf, inBuf, 1);
+      spiResult = spiXfer(spiHandle, outBuf, inBuf, 2);
       gpioResult = gpioWrite(cs,1);
       angle16 = 0;
-      angle16 = inBuf[0] << 8;
+      angle16 = (inBuf[0] << 8) | (inBuf[1] & 0xff);
     //  angle16 = angle16 + inBuf[1];
       //std::cout <<"Raw 16 bit angle: "<< angle16 << " on chip select: "<< cs <<" inbuf:"<<unsigned(inBuf[0])<<unsigned(inBuf[1])<<std::endl;
 			pthread_mutex_unlock(&periphLock);
@@ -586,6 +586,7 @@ class PeripheralsController{
       read_command_8 = 0b00000000;
       read_command_16[0] = 0b00000000;
       read_command_16[1] = 0b00000000;
+      read_command_16[2] = 0b00000000;
 
       //Maximum torque output allowed.
       //Must be set to same value in ESP32 and Raspberry, or it will also
