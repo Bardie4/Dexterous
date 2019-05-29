@@ -192,6 +192,14 @@ class Finger{
       i2cWriteDevice(i2cHandle, torque_cmd, 3);
 			pthread_mutex_unlock(&periphLock);
 
+      if (theta1Zero < 3.14159256/4.0){
+        theta1Zero =3.14159256/4.0;
+      }
+
+      if (theta2Zero < 3.14159256/4.0){
+        theta2Zero = 3.14159256/4.0;
+      }
+
       std::cout << "Zero point 1: " << theta1Zero <<" zero point 2: " << theta2Zero << std::endl;
 
 			//Tell SPI thread to include sensors in measurement loop
@@ -676,7 +684,7 @@ class PeripheralsController{
 
 						//Read sensors (store it locally)
             angle1Temp = readAngle12(csAndI2cAddr[i][0]);   //Read angle raw
-            if (angle1Temp < (*zeroAngle[i][0] - 0.785)){              //Check if it has crossed zero point
+            if ( angle1Temp < (*zeroAngle[i][0] - 0.785 ){              //Check if it has crossed zero point
               zeroCross[i][0] = 1;
             }else{
               zeroCross[i][0] = 0;
