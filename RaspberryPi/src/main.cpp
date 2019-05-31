@@ -695,7 +695,7 @@ class PeripheralsController{
             }else{
               zeroCross[i][1] = 0;
             }
-            fingerMem[i].jointAngle2 =readAngle12(csAndI2cAddr[i][1]);  //(135.0*3.142/180.0) - (angle2Temp - *zeroAngle[i][1] );//+ (6.283 * zeroCross[i][1])) ;
+            fingerMem[i].jointAngle2 =(135.0*3.142/180.0) - (angle2Temp - *zeroAngle[i][1] + (6.283 * zeroCross[i][1])) ;
 
 
 						//Process sensor information (store it locally)
