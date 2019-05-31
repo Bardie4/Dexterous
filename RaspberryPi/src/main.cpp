@@ -563,7 +563,7 @@ class PeripheralsController{
         std::cout << "Pigpio initialisation failed. Run program as superuser"
         << std::endl;
       }
-      if ( (spiHandle = spiOpen(spiChannel, spiFrequency, 0) ) < 0 ){
+      if ( (spiHandle = spiOpen(spiChannel, spiFrequency, 0b11) ) < 0 ){
         std::cout << "spiOpen() failed" << std::endl;
       } else {
         std::cout << "SPI is open. Hande: " << spiHandle << std::endl;
