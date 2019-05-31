@@ -436,7 +436,7 @@ class PeripheralsController{
     char outBuf[4];
     char read_command_8;
     char read_command_16[3];
-    uint16_t angle16;
+    uint32_t angle16;
     uint8_t angle8;
     float angleRad;
     float Output1Scaled8;       //Per
