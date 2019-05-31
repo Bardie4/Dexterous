@@ -158,7 +158,7 @@ class Finger{
 			pthread_mutex_unlock(&periphLock);
 			theta1Zero16 = inBuf[0] << 8;
       theta1Zero16 = theta1Zero16 +  inBuf[1];
-      theta1Zero = (theta1Zero16 * 2.0*3.14159) / 65520.0;
+      theta1Zero = (theta1Zero16 * 2.0*3.14159) / 65535.0;
 
 
 	    //*********FIND START POINT OF SENSOR 2**********
@@ -180,7 +180,7 @@ class Finger{
 		 	pthread_mutex_unlock(&periphLock);
       theta2Zero16 = inBuf[0] << 8;
       theta2Zero16 = theta2Zero16 +  inBuf[1];
-      theta2Zero = (theta2Zero16 * 2.0*3.14159) / 65520.0;
+      theta2Zero = (theta2Zero16 * 2.0*3.14159) / 65535.0;
 
 
       //*****************STOP MOTORS*******************
@@ -193,7 +193,7 @@ class Finger{
 			pthread_mutex_unlock(&periphLock);
 
 
-      std::cout << "Zero point 1: " << theta1Zero <<" zero point 2: " << theta2Zero << std::endl;
+      std::cout << "Zero point 1: " << theta1Zero*180.0/3.14 <<" zero point 2: " << theta2Zero*180.0/3.14 << std::endl;
 
 			//Tell SPI thread to include sensors in measurement loop
 			pthread_mutex_lock(&periphLock);
@@ -491,7 +491,7 @@ class PeripheralsController{
     //  angle16 = angle16 + inBuf[1];
       //std::cout <<"Raw 16 bit angle: "<< angle16 << " on chip select: "<< cs <<" inbuf:"<<unsigned(inBuf[0])<<unsigned(inBuf[1])<<std::endl;
 			pthread_mutex_unlock(&periphLock);
-      angleRad = (angle16 * 2.0*3.14159) / 65520.0;
+      angleRad = (angle16 * 2.0*3.14159) / 65535.0;
       return angleRad;
     }
 
@@ -679,7 +679,7 @@ class PeripheralsController{
 
 						//Read sensors (store it locally)
             angle1Temp = readAngle12(csAndI2cAddr[i][0]);   //Read angle raw
-            if ( angle1Temp < (*zeroAngle[i][0] - 0.7 )){              //Check if it has crossed zero point
+            if (( angle1Temp < (*zeroAngle[i][0] - 0.7 )) && (0 < *zeroAngle[i][1] - 0.7)){              //Check if it has crossed zero point
               zeroCross[i][0] = 1;
             }else{
               zeroCross[i][0] = 0;
@@ -690,7 +690,7 @@ class PeripheralsController{
 
             //std::cout << "adjusted angle" << fingerMem[i].jointAngle1 << std::endl;
             angle2Temp = readAngle12(csAndI2cAddr[i][1]);   //Read angle raw
-            if (angle2Temp <  (*zeroAngle[i][1] - 0.7)){              //Check if it has crossed zero point
+            if ((angle2Temp <  (*zeroAngle[i][1] - 0.7) )&& (0 < *zeroAngle[i][1] - 0.7)) {              //Check if it has crossed zero point
               zeroCross[i][1] = 1;
             }else{
               zeroCross[i][1] = 0;
