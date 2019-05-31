@@ -136,8 +136,8 @@ class Finger{
 			int gpioResult;
 			int spiResult;
       char inBuf[2];
-      uint16_t theta1Zero16;
-      uint16_t theta2Zero16;
+      uint32_t theta1Zero16=0;
+      uint32_t theta2Zero16=0;
 
       //*********FIND START POINT OF SENSOR 1**********
 			//***********************************************
@@ -158,7 +158,7 @@ class Finger{
 			pthread_mutex_unlock(&periphLock);
 			theta1Zero16 = inBuf[0] << 8;
       theta1Zero16 = theta1Zero16 +  inBuf[1];
-      theta1Zero = (theta1Zero16 * 3.14159) / 65535.0;
+      theta1Zero = (theta1Zero16 *2.0 * 3.14159) / 65535.0;
 
 
 	    //*********FIND START POINT OF SENSOR 2**********
@@ -180,7 +180,7 @@ class Finger{
 		 	pthread_mutex_unlock(&periphLock);
       theta2Zero16 = inBuf[0] << 8;
       theta2Zero16 = theta2Zero16 +  inBuf[1];
-      theta2Zero = (theta2Zero16 * 3.14159) / 65535.0;
+      theta2Zero = (theta2Zero16* 2.0* 3.14159) / 65535.0;
 
 
       //*****************STOP MOTORS*******************
@@ -491,7 +491,7 @@ class PeripheralsController{
     //  angle16 = angle16 + inBuf[1];
       //std::cout <<"Raw 16 bit angle: "<< angle16 << " on chip select: "<< cs <<" inbuf:"<<unsigned(inBuf[0])<<unsigned(inBuf[1])<<std::endl;
 			pthread_mutex_unlock(&periphLock);
-      angleRad = ((angle16) / 65535.0) * 3.14159;
+      angleRad = ((angle16) / 65535.0) * 2.0 * 3.14159;
       return angleRad;
     }
 
