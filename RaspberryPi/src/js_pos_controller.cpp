@@ -72,7 +72,7 @@ void JointSpacePosController::iterate(){
   }else if (integral2 < -0.1){
     integral2 = -0.1;
   }
-  *commandedTorque2 = error2 * (*kp2) + integral2 + (*angularVel2) * (*kd2); //- (*commandedTorque1)*(18.5/23)*(28.0/18);
+  *commandedTorque2 = error2 * (*kp2) + integral2 + (*angularVel2) * (*kd2) - (*commandedTorque1)*(18.5/23)*(28.0/18);
   // 28.0/18 is the amount of extra motor torque on motor 2 to get equal link torque has motor 1.
   // 18.5/23 is the amount of link torque for link 1 that carries over to link 2.
   // A total of 1.21 of motor 1 torque carries over to link 2.
