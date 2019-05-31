@@ -34,7 +34,7 @@ typedef struct InputData{
 }InputData;
 
 int main(int argc, char *argv[]){
-  double radToDeg= 180.0/3.14;
+  double radToDeg= 1;
   timeval a;
   timeval b;
   zmq::context_t context(1);
