@@ -158,7 +158,7 @@ class Finger{
 			pthread_mutex_unlock(&periphLock);
 			theta1Zero16 = inBuf[0] << 8;
       theta1Zero16 = theta1Zero16 +  inBuf[1];
-      theta1Zero = theta1Zero16*00019 -2.0*3.14159;
+      theta1Zero = ((float) theta1Zero16)*0.0019 -2.0*3.14159;
 
 
 	    //*********FIND START POINT OF SENSOR 2**********
@@ -180,7 +180,7 @@ class Finger{
 		 	pthread_mutex_unlock(&periphLock);
       theta2Zero16 = inBuf[0] << 8;
       theta2Zero16 = theta2Zero16 +  inBuf[1];
-      theta2Zero = theta2Zero16* 00019 - (2.0*3.14159);
+      theta2Zero = ((float) theta2Zero16)* 0.0019 - (2.0*3.14159);
       if (theta2Zero > 3.14159){
         theta2Zero = theta2Zero -3.14159;
       }
