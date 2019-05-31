@@ -181,11 +181,11 @@ class Finger{
       theta2Zero16 = inBuf[0] << 8;
       theta2Zero16 = theta2Zero16 +  inBuf[1];
       theta2Zero = ((float) theta2Zero16)* 0.00019 - (2.0*3.14159);
-      if (theta2Zero > 3.14159){
-        theta2Zero = theta2Zero -3.14159;
+      if (theta2Zero > 2.0*3.14159){
+        theta2Zero = theta2Zero -2.0*3.14159;
       }
-      if (theta1Zero > 3.14159){
-        theta1Zero = theta1Zero -3.14159;
+      if (theta1Zero > 2.0*3.14159){
+        theta1Zero = theta1Zero -2.0*3.14159;
       }
 
 
@@ -498,8 +498,8 @@ class PeripheralsController{
       //std::cout <<"Raw 16 bit angle: "<< angle16 << " on chip select: "<< cs <<" inbuf:"<<unsigned(inBuf[0])<<unsigned(inBuf[1])<<std::endl;
 			pthread_mutex_unlock(&periphLock);
       angleRad = ((float) angle16) *0.00019;
-      if (angleRad > 3.14159){
-        angleRad = angleRad -3.14159;
+      if (angleRad > 2.0*3.14159){
+        angleRad = angleRad -2.0*3.14159;
       }
 
       return angleRad;
@@ -695,7 +695,7 @@ class PeripheralsController{
               zeroCross[i][0] = 0;
             }
             //std::cout << "raw angle" << fingerMem[i].jointAngle1 << "zeroAgnle:"<<  zeroAngle[i][0] << "zero cross "<<zeroCross[i][0] <<std::endl;
-            fingerMem[i].jointAngle1 = angle1Temp; - *zeroAngle[i][0];// + 6.283*zeroCross[i][0] ;//+(6.283*zeroCross[i][0]));
+            fingerMem[i].jointAngle1 = angle1Temp - *zeroAngle[i][0];// + 6.283*zeroCross[i][0] ;//+(6.283*zeroCross[i][0]));
 
 
             //std::cout << "adjusted angle" << fingerMem[i].jointAngle1 << std::endl;
@@ -705,7 +705,7 @@ class PeripheralsController{
             }else{
               zeroCross[i][1] = 0;
             }
-            fingerMem[i].jointAngle2 = angle2Temp; //- *zeroAngle[i][1];// + 6.283*zeroCross[i][1] ;
+            fingerMem[i].jointAngle2 = angle2Temp - *zeroAngle[i][1];// + 6.283*zeroCross[i][1] ;
 //(135.0*3.142/180.0)
 
 						//Process sensor information (store it locally)
