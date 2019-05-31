@@ -492,7 +492,7 @@ class PeripheralsController{
       //std::cout <<"Raw 16 bit angle: "<< angle16 << " on chip select: "<< cs <<" inbuf:"<<unsigned(inBuf[0])<<unsigned(inBuf[1])<<std::endl;
 			pthread_mutex_unlock(&periphLock);
       angleRad = (angle16 * 2.0*3.14159) / 65520.0;
-      return (float) angle16;
+      return angleRad;
     }
 
 		void writeOutput8(int &i2c_handle, float &output1, float &output2){
