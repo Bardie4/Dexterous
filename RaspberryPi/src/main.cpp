@@ -158,7 +158,7 @@ class Finger{
 			pthread_mutex_unlock(&periphLock);
 			theta1Zero16 = inBuf[0] << 8;
       theta1Zero16 = theta1Zero16 +  inBuf[1];
-      theta1Zero = (theta1Zero16 * 2.0*3.14159) / 65535.0;
+      theta1Zero = (theta1Zero16 * 3.14159) / 65535.0;
 
 
 	    //*********FIND START POINT OF SENSOR 2**********
@@ -180,7 +180,7 @@ class Finger{
 		 	pthread_mutex_unlock(&periphLock);
       theta2Zero16 = inBuf[0] << 8;
       theta2Zero16 = theta2Zero16 +  inBuf[1];
-      theta2Zero = (theta2Zero16 * 2.0*3.14159) / 65535.0;
+      theta2Zero = (theta2Zero16 * 3.14159) / 65535.0;
 
 
       //*****************STOP MOTORS*******************
@@ -492,7 +492,7 @@ class PeripheralsController{
       //std::cout <<"Raw 16 bit angle: "<< angle16 << " on chip select: "<< cs <<" inbuf:"<<unsigned(inBuf[0])<<unsigned(inBuf[1])<<std::endl;
 			pthread_mutex_unlock(&periphLock);
       angleRad = ((angle16) / 65535.0) * 3.14159;
-      return angle16;
+      return angleRad;
     }
 
 		void writeOutput8(int &i2c_handle, float &output1, float &output2){
@@ -685,7 +685,7 @@ class PeripheralsController{
               zeroCross[i][0] = 0;
             }
             //std::cout << "raw angle" << fingerMem[i].jointAngle1 << "zeroAgnle:"<<  zeroAngle[i][0] << "zero cross "<<zeroCross[i][0] <<std::endl;
-            fingerMem[i].jointAngle1 = angle1Temp;//(90.0*3.142/180.0) - (angle1Temp - *zeroAngle[i][0] + (6.283*zeroCross[i][0]));
+            fingerMem[i].jointAngle1 = (90.0*3.142/180.0) - (angle1Temp - *zeroAngle[i][0] + (6.283*zeroCross[i][0]));
 
 
             //std::cout << "adjusted angle" << fingerMem[i].jointAngle1 << std::endl;
@@ -695,7 +695,7 @@ class PeripheralsController{
             }else{
               zeroCross[i][1] = 0;
             }
-            fingerMem[i].jointAngle2 =angle2Temp; //(135.0*3.142/180.0) - (angle2Temp - *zeroAngle[i][1] + (6.283 * zeroCross[i][1])) ;
+            fingerMem[i].jointAngle2 = (135.0*3.142/180.0) - (angle2Temp - *zeroAngle[i][1] + (6.283 * zeroCross[i][1])) ;
 
 
 						//Process sensor information (store it locally)
