@@ -34,7 +34,7 @@ typedef struct InputData{
 }InputData;
 
 int main(int argc, char *argv[]){
-  double radToDeg= 180.0/3.14159265;
+  double radToDeg= 1;
   timeval a;
   timeval b;
   zmq::context_t context(1);
@@ -151,7 +151,7 @@ int main(int argc, char *argv[]){
   // plt::named_plot("Angular velocity 1",time, angVelocity1);
   // plt::named_plot("Angular velocity 2",time, angVelocity2);
   //plt::named_plot("Angular acceleration 1",time, angAcceleration1);
-  //plt::named_plot("Angular acceleration 2",time, angAcceleration2);
+  //plt::named_plot("Angular acc3eleration 2",time, angAcceleration2);
   //plt::named_plot("Commanded torque 1",time, commandedTorque1);
   //plt::named_plot("Commanded torque 2",time, commandedTorque2);
   //plt::named_plot("Torque 1",torque1);
