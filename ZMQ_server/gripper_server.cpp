@@ -310,7 +310,7 @@ class finger{
     //Add content to vertical box 3
     angle_link1_slider = gtk_hscale_new_with_range(-45, 90, 1);
     angle_link2_slider = gtk_hscale_new_with_range(0, 135, 1);
-    radius_slider = gtk_hscale_new_with_range(50, 120, 1);
+    radius_slider = gtk_hscale_new_with_range(50, 122, 1);
     angle_slider = gtk_hscale_new_with_range(0, 90, 1);
     gtk_box_pack_start(GTK_BOX(vbox_3), angle_link1_slider, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox_3), angle_link2_slider, TRUE, TRUE, 0);

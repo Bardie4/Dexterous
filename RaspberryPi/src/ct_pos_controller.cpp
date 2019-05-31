@@ -37,15 +37,15 @@ CartesianPosController::CartesianPosController():controllerEngine(){
   kd2 = &controllerEngine.var6;
 
   //Iitial values:
-  (*kp1) = 0.1 /(2*3.14*3.0/8.0) ;   //0.1 N/m at max possible error
-  (*kp2) = 0.1 /(2*3.14*3.0/8.0) ;   //0.1 N/m at max possible error
+  *kp1 = 0.3 /(2*3.14*3.0/8.0) ;   //0.1 N/m at max possible error
+  *kp2 = 0.65 /(2*3.14*3.0/8.0) ;   //0.1 N/m at max possible error
   (*ki1) = 0;
   (*ki2) = 0;
   (*kd1) = 0;
   (*kd2) = 0;
 
-  l1 = 0.053;
-  l2 = 0.049;
+  l1 = 0.0529;
+  l2 = 0.0675;
 }
 
 void CartesianPosController::iterate(){
@@ -90,7 +90,7 @@ void CartesianPosController::iterate(){
   }else if (integral2 < -0.1){
     integral2 = -0.1;
   }
-  *commandedTorque2 = error2 * (*kp2) + integral2 + (*angularVel2) * (*kd2);
+  *commandedTorque2 = error2 * (*kp2) + integral2 + (*angularVel2) * (*kd2)- (1.5*(*commandedTorque1)*(18.5/23)*(28.0/18));
 
   //Print status every 10000 cycles
   itrCounter++;
