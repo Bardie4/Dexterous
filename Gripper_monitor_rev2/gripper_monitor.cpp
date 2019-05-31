@@ -13,6 +13,7 @@
 
 namespace plt = matplotlibcpp;
 
+#define radToDeg 180.0/3.14159265
 
 using namespace quad_double_me; // Specified in the schema.
 
@@ -96,12 +97,12 @@ int main(int argc, char *argv[]){
       {
         auto fingerStates = handObject->Get(i);
         inputData[i].id =  fingerStates->id();
-        inputData[i].angle1 = fingerStates->angle1();
-        inputData[i].angle2 = fingerStates->angle2();
-        inputData[i].angVelocity1 = fingerStates->angVelocity1();
-        inputData[i].angVelocity2 = fingerStates->angVelocity2();
-        inputData[i].angAcceleration1 = fingerStates->angAcceleration1();
-        inputData[i].angAcceleration2 = fingerStates->angAcceleration2();
+        inputData[i].angle1 = radToDeg * fingerStates->angle1();
+        inputData[i].angle2 = radToDeg * fingerStates->angle2();
+        inputData[i].angVelocity1 = radToDeg * fingerStates->angVelocity1();
+        inputData[i].angVelocity2 = radToDeg * fingerStates->angVelocity2();
+        inputData[i].angAcceleration1 = radToDeg * fingerStates->angAcceleration1();
+        inputData[i].angAcceleration2 = radToDeg * fingerStates->angAcceleration2();
         inputData[i].commandedTorque1 = fingerStates->commandedTorque1();
         inputData[i].commandedTorque2 = fingerStates->commandedTorque2();
         inputData[i].torque1 = fingerStates->Empty1();

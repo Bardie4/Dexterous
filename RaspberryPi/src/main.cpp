@@ -423,7 +423,7 @@ class PeripheralsController{
     bool zeroCross[7][2];
     unsigned (*csAndI2cAddr)[3];
 
-    unsigned long spiFrequency;
+    unsigned spiFrequency;
     unsigned spiChannel;
     int spiHandle;
     int gpioResult;
