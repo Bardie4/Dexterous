@@ -148,8 +148,8 @@ int main(int argc, char *argv[]){
   std::cout <<"got here"<< std::endl;
   plt::named_plot("Angle1",time, angle1);
   plt::named_plot("Angle2",time, angle2);
-  plt::named_plot("Angular velocity 1",time, angVelocity1);
-  plt::named_plot("Angular velocity 2",time, angVelocity2);
+  // plt::named_plot("Angular velocity 1",time, angVelocity1);
+  // plt::named_plot("Angular velocity 2",time, angVelocity2);
   //plt::named_plot("Angular acceleration 1",time, angAcceleration1);
   //plt::named_plot("Angular acceleration 2",time, angAcceleration2);
   //plt::named_plot("Commanded torque 1",time, commandedTorque1);
