@@ -13,7 +13,6 @@
 
 namespace plt = matplotlibcpp;
 
-#define radToDeg 180.0/3.14159265
 
 using namespace quad_double_me; // Specified in the schema.
 
@@ -35,6 +34,7 @@ typedef struct InputData{
 }InputData;
 
 int main(int argc, char *argv[]){
+  double radToDeg= 180.0/3.14159265;
   timeval a;
   timeval b;
   zmq::context_t context(1);
