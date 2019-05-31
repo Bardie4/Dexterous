@@ -43,10 +43,13 @@ int main(int argc, char *argv[]){
   subscriber.connect("tcp://169.254.23.164:5564");
   int n=0;
   int iterations = 10000;
-  if (argc >= 2)
+  char* name;
+  if (argc >= 3)
   {
     iterations = atoi(argv[1]);
+    name = argv[2];
   }
+  std::cout << name << std::endl;
 
   InputData inputData[7];
   std::vector<InputData> fingerStateVector;
@@ -117,7 +120,7 @@ int main(int argc, char *argv[]){
   }
 
   std::ofstream csv_file;
-  csv_file.open ("data.csv");
+  csv_file.open (name);
 
   for (int n=0 ; n< iterations; n=n+5){
         angle1.push_back(handStateVector[n][0].angle1);
@@ -144,12 +147,12 @@ int main(int argc, char *argv[]){
   std::cout <<"got here"<< std::endl;
   plt::named_plot("Angle1",time, angle1);
   plt::named_plot("Angle2",time, angle2);
-  plt::named_plot("Angular velocity 1",time, angVelocity1);
-  plt::named_plot("Angular velocity 2",time, angVelocity2);
+  //plt::named_plot("Angular velocity 1",time, angVelocity1);
+  //plt::named_plot("Angular velocity 2",time, angVelocity2);
   //plt::named_plot("Angular acceleration 1",time, angAcceleration1);
   //plt::named_plot("Angular acceleration 2",time, angAcceleration2);
-  plt::named_plot("Commanded torque 1",time, commandedTorque1);
-  plt::named_plot("Commanded torque 2",time, commandedTorque2);
+  //plt::named_plot("Commanded torque 1",time, commandedTorque1);
+  //plt::named_plot("Commanded torque 2",time, commandedTorque2);
   //plt::named_plot("Torque 1",torque1);
   //plt::named_plot("Torque 2",torque2);
   plt::legend();
