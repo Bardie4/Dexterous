@@ -685,7 +685,7 @@ class PeripheralsController{
               zeroCross[i][0] = 0;
             }
             //std::cout << "raw angle" << fingerMem[i].jointAngle1 << "zeroAgnle:"<<  zeroAngle[i][0] << "zero cross "<<zeroCross[i][0] <<std::endl;
-            fingerMem[i].jointAngle1 = (90.0*3.142/180.0) - (angle1Temp - *zeroAngle[i][0] ) //+(6.283*zeroCross[i][0]));
+            fingerMem[i].jointAngle1 = (90.0*3.142/180.0) - (angle1Temp - *zeroAngle[i][0] ) ;//+(6.283*zeroCross[i][0]));
 
 
             //std::cout << "adjusted angle" << fingerMem[i].jointAngle1 << std::endl;
