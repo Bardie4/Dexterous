@@ -6,3 +6,5 @@ This is the repository for a MSc in cybernetics and robotics, dubbed Dexterous G
 * Gripper_monitor: contains code for plotting ZMQ messages
 * RaspberryPi: code to run on a Raspberry Pi as he master controller
 * ZMQ_server: code to run on the Task level controller, externally controlling the system
+
+Also included are Assembly guide for finger and pre-projects Winsjansen2018 and Danielsen2018.
